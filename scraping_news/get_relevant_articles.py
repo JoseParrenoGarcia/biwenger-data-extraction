@@ -1,5 +1,5 @@
 from scraping_news.config_landing_pages import TEAM_NEWS_SOURCES_test, TEAM_NEWS_SOURCES
-from scraper_utils import Website
+from scraping_news.scraper_utils import Website
 from config_logging import get_logger
 
 

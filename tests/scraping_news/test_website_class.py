@@ -1,17 +1,7 @@
-# import sys
-# import os
-#
-# # Get the absolute path to the project root (2 levels up)
-# project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-# sys.path.insert(0, project_root)
-
-import pytest
 from unittest.mock import patch, Mock
 from scraping_news.scraper_utils import Website
-from requests.exceptions import RequestException
 
-
-# 1. Simulate a valid HTML page with <a> tags
+# Simulate a valid HTML page with <a> tags
 @patch("scraping_news.scraper_utils.requests.get")
 def test_get_links_returns_expected_links(mock_get):
     """
@@ -45,3 +35,19 @@ def test_get_links_returns_expected_links(mock_get):
     assert "https://example.com/link2" in links
     assert not any("javascript" in l for l in links)
 
+# Simulate a valid page with no links
+@patch("scraping_news.scraper_utils.requests.get")
+def test_get_links_returns_empty_on_no_anchors(mock_get):
+    html = "<html><body><p>No links here</p></body></html>"
+
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.headers = {"Content-Type": "text/html"}
+    mock_response.content = html.encode("utf-8")
+
+    mock_get.return_value = mock_response
+
+    website = Website("https://example.com")
+    links = website.get_links()
+
+    assert links == []
