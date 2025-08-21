@@ -5,6 +5,23 @@ from typing import Dict, List, Any
 import logging
 from typing import Optional
 
+def _validate_scraped_links_structure(data: dict) -> None:
+    """
+    Validates that the input dictionary follows the expected structure:
+    {team: {source_url: [list_of_link_strings]}}
+
+    Raises:
+        AssertionError: If the structure does not match expectations.
+    """
+    assert isinstance(data, dict), "Input must be a dictionary"
+
+    for team, sources in data.items():
+        assert isinstance(sources, dict), f"Each team must map to a dict of sources. Found: {type(sources)}"
+        for source_url, links in sources.items():
+            assert isinstance(links, list), f"Each source URL must map to a list of links. Found: {type(links)}"
+            for link in links:
+                assert isinstance(link, str), f"Each link must be a string. Found: {type(link)}"
+
 
 def scrape_landing_pages_for_url_extractions(
         test=False,
@@ -77,6 +94,11 @@ def scrape_landing_pages_for_url_extractions(
                 # Store empty list for failed scrapes
                 results[team][source_url] = []
 
+    logger.info("-" * 30)
+    logger.info("Ensuring output structure is valid...")
+    _validate_scraped_links_structure(data=results)
+    logger.info("✅ Output structure validated. ")
+
     return results
 
 def filter_links_with_llm(
@@ -107,14 +129,7 @@ def filter_links_with_llm(
 
     # === Validate input structure ===
     logger.info("Ensuring input structure is valid...")
-    assert isinstance(scraped_links_dict, dict), "Input must be a dictionary"
-
-    for team, sources in scraped_links_dict.items():
-        assert isinstance(sources, dict), f"Each team must map to a dict of sources. Found: {type(sources)}"
-        for source_url, links in sources.items():
-            assert isinstance(links, list), f"Each source URL must map to a list of links. Found: {type(links)}"
-            for link in links:
-                assert isinstance(link, str), f"Each link must be a string. Found: {type(link)}"
+    _validate_scraped_links_structure(data=scraped_links_dict)
 
     # === Placeholder for actual filtering logic ===
     # TODO: For each team, combine all URLs, format LLM prompt, call call_llm(),

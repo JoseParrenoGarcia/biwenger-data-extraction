@@ -15,9 +15,12 @@
 2025-08-21 | ETL_get_relevant_articles | INFO     | Team 2/2: Real Madrid
 2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
 2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid
-2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 389 unique links (was 433 before deduplication)
+2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 388 unique links (was 432 before deduplication)
 2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
-2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 66 unique links (was 103 before deduplication)
+2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 66 unique links (was 102 before deduplication)
+2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-21 | ETL_get_relevant_articles | INFO     | Ensuring output structure is valid...
+2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ Output structure validated. 
 2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
 2025-08-21 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
 2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================

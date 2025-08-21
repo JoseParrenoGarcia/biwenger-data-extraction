@@ -1,5 +1,9 @@
 from unittest.mock import patch
-from scraping_news.get_relevant_articles import scrape_landing_pages_for_url_extractions
+import pytest
+from scraping_news.get_relevant_articles import (
+    scrape_landing_pages_for_url_extractions,
+    _validate_scraped_links_structure
+)
 
 # Fake config to control test inputs
 FAKE_TEAM_SOURCES = {
@@ -123,3 +127,36 @@ def test_deduplication_of_links(mock_website):
             assert len(links) == 2
             assert sorted(links) == sorted(set(links))
 
+def test_valid_structure_passes():
+    valid_input = {
+        "Valencia": {
+            "https://example.com": [
+                "https://example.com/article1",
+                "https://example.com/article2"
+            ]
+        }
+    }
+    # Should not raise any exception
+    _validate_scraped_links_structure(valid_input)
+
+def test_raises_if_not_dict():
+    with pytest.raises(AssertionError, match="Input must be a dictionary"):
+        _validate_scraped_links_structure(["this is not a dict"])
+
+
+def test_raises_if_team_value_not_dict():
+    bad_input = {"Valencia": ["this should be a dict"]}
+    with pytest.raises(AssertionError, match="Each team must map to a dict"):
+        _validate_scraped_links_structure(bad_input)
+
+
+def test_raises_if_source_links_not_list():
+    bad_input = {"Valencia": {"https://example.com": "not a list"}}
+    with pytest.raises(AssertionError, match="Each source URL must map to a list"):
+        _validate_scraped_links_structure(bad_input)
+
+
+def test_raises_if_link_not_string():
+    bad_input = {"Valencia": {"https://example.com": ["ok", 123]}}
+    with pytest.raises(AssertionError, match="Each link must be a string"):
+        _validate_scraped_links_structure(bad_input)
