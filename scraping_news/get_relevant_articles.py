@@ -1,8 +1,12 @@
 from scraping_news.config_landing_pages import TEAM_NEWS_SOURCES_test, TEAM_NEWS_SOURCES
 from scraping_news.scraper_utils import Website
+from scraping_news.llm_prompts import prompt_url_relevance_filter
+from llm_client.llm_orchestrator import call_llm
 from config_logging import get_logger
-from typing import Dict, List, Any
+from typing import Dict, List
 import logging
+import re
+import ast
 from typing import Optional
 
 def _validate_scraped_links_structure(data: dict) -> None:
@@ -22,6 +26,26 @@ def _validate_scraped_links_structure(data: dict) -> None:
             for link in links:
                 assert isinstance(link, str), f"Each link must be a string. Found: {type(link)}"
 
+def _extract_code_block(text: str) -> str:
+    """
+    Extracts a JSON-like code block from an LLM response that may be wrapped in triple backticks or triple quotes.
+
+    Supports:
+    - ```json
+    - ```python
+    - ``` (no lang)
+    - '''python
+    - ''' (no lang)
+
+    Args:
+        text (str): Raw string from LLM
+
+    Returns:
+        str: Cleaned block, or original text if no match found
+    """
+    # Matches ```json\n{...}\n```, ```python\n{...}```, '''python\n{...}''', etc.
+    match = re.search(r"(?:```|''')\s*(?:json|python)?\s*(\{.*?\})\s*(?:```|''')", text, re.DOTALL)
+    return match.group(1).strip() if match else text.strip()
 
 def scrape_landing_pages_for_url_extractions(
         test=False,
@@ -131,14 +155,43 @@ def filter_links_with_llm(
     logger.info("Ensuring input structure is valid...")
     _validate_scraped_links_structure(data=scraped_links_dict)
 
-    # === Placeholder for actual filtering logic ===
-    # TODO: For each team, combine all URLs, format LLM prompt, call call_llm(),
-    #       parse response, and rebuild a filtered version of scraped_links_dict.
+    # === Loop through teams to extract relevant articles with LLMs ===
+    filtered_dict = {}
 
-    logger.info("✅ Input structure validated. Ready for LLM-based filtering.")
+    for team, team_links_dict in scraped_links_dict.items():
+        logger.info(f"LLM filtering for {team}...")
+        system_prompt, user_prompt = prompt_url_relevance_filter(team=team, team_links_dict=team_links_dict)
 
-    # For now, return unfiltered version as placeholder
-    return scraped_links_dict
+        # Call LLM with fallback strategy
+        llm_response = call_llm(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            model_priority=model_priority,
+            logger=logger,
+        )
+
+        if not llm_response:
+            logger.warning(f"⚠️ No LLM response for team: {team}. Skipping filtering operation (keeping input dictionary as it was).")
+            filtered_dict[team] = team_links_dict  # fallback: keep all
+            continue
+
+        # Extract the JSON-like code block from the response
+        llm_response_clean = _extract_code_block(llm_response)
+
+        try:
+            parsed_team_result = ast.literal_eval(llm_response_clean)
+            _validate_scraped_links_structure({team: parsed_team_result})
+
+            # Assign it directly to the current team
+            filtered_dict[team] = parsed_team_result
+
+            logger.info(f"✅ Filtered {team}: {sum(len(v) for v in parsed_team_result.values())} links retained.")
+
+        except Exception as parse_err:
+            logger.error(f"❌ Failed to parse or validate LLM output for {team}: {parse_err}")
+            filtered_dict[team] = team_links_dict  # fallback
+
+    return filtered_dict
 
 def ETL_get_relevant_articles(test=False) -> dict:
     """
@@ -168,7 +221,13 @@ def ETL_get_relevant_articles(test=False) -> dict:
         logger=logger
     )
 
-    # Step 3: (future) Store in Supabase or log separately
+    # More steps: (future) Store in Supabase or log separately
+    # 1. Check the links for duplicates (ie, look the current links vs the database one, only keep new ones)
+    # 2. If database is empty them store directly. If not, then filter again for duplicates.
+    # 3. Store the filtered links in Supabase or another storage solution
+
+    # Step xxx: (future) Store in Supabase or log separately
+
 
     logger.info("=" * 60)
     logger.info("✅ ETL pipeline completed successfully.")
@@ -179,3 +238,4 @@ if __name__ == "__main__":
     results = ETL_get_relevant_articles(test=True)
     print("\n🧠 Final output:")
     print(results)
+
