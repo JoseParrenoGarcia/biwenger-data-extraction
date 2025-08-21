@@ -1,0 +1,27 @@
+2025-08-21 | ETL_get_relevant_articles | INFO     | Logger 'ETL_get_relevant_articles' initialized. Logging to: logs/ETL_get_relevant_articles.log
+2025-08-21 | ETL_get_relevant_articles | INFO     | 🚀 Starting ETL pipeline for relevant articles...
+2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-21 | ETL_get_relevant_articles | INFO     | STARTING URL EXTRACTION PROCESS
+2025-08-21 | ETL_get_relevant_articles | INFO     | Scope: 2 teams, 4 total sources
+2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-21 | ETL_get_relevant_articles | INFO     | Team 1/2: Valencia
+2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.superdeporte.es/valencia-cf/
+2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 233 unique links (was 482 before deduplication)
+2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://plazadeportiva.valenciaplaza.com/valenciacf/
+2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 148 before deduplication)
+2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-21 | ETL_get_relevant_articles | INFO     | Team 2/2: Real Madrid
+2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid
+2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 389 unique links (was 433 before deduplication)
+2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
+2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 66 unique links (was 103 before deduplication)
+2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-21 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
+2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-21 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
+2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ Input structure validated. Ready for LLM-based filtering.
+2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ ETL pipeline completed successfully.

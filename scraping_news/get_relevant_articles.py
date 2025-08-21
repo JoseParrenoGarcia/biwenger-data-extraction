@@ -1,12 +1,15 @@
 from scraping_news.config_landing_pages import TEAM_NEWS_SOURCES_test, TEAM_NEWS_SOURCES
 from scraping_news.scraper_utils import Website
 from config_logging import get_logger
+from typing import Dict, List, Any
+import logging
+from typing import Optional
 
 
 def scrape_landing_pages_for_url_extractions(
         test=False,
         verbose=False,
-        log_file="logs/get_relevant_articles_scrape_landing_pages_for_url_extractions.log"
+        logger: Optional[logging.Logger] = None
 ):
     """
     Scrape all websites from TEAM_NEWS_SOURCES and extract URLs found on each page.
@@ -20,7 +23,8 @@ def scrape_landing_pages_for_url_extractions(
               {team: {source_url: [list_of_unique_urls]}}
     """
     # Initialize logger for this module
-    logger = get_logger(__name__, log_file=log_file, include_timestamp_in_filename=True)
+    if logger is None:
+        logger = logging.getLogger(__name__)
 
     # Choose which source dictionary to use
     TEAM_NEWS_SOURCES_to_use = TEAM_NEWS_SOURCES_test if test else TEAM_NEWS_SOURCES
@@ -75,9 +79,88 @@ def scrape_landing_pages_for_url_extractions(
 
     return results
 
-# Run the function
-if __name__ == "__main__":
-    extracted_urls = scrape_landing_pages_for_url_extractions(test=True)
+def filter_links_with_llm(
+    scraped_links_dict: Dict[str, Dict[str, List[str]]],
+    model_priority: List[str] = ["gemini", "openai"],
+    logger: Optional[logging.Logger] = None
+) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Filters article links using an LLM to determine relevance, preserving the original structure.
 
-    print(f"{'=' * 50}")
-    print(extracted_urls)
+    Args:
+        scraped_links_dict (dict): Dictionary in the format:
+            {team: {source_url: [list_of_links]}}
+        model_priority (List[str]): Ordered list of LLMs to try (e.g. ["gemini", "openai"])
+        logger (logging.Logger): Optional logger instance.
+
+    Returns:
+        dict: Same structure as input, but with non-relevant links removed.
+    """
+    # Initialize logger for this module
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
+    # Log the start of the operation with key parameters
+    logger.info("=" * 60)
+    logger.info("STARTING URL FILTERING PROCESS")
+    logger.info("=" * 60)
+
+    # === Validate input structure ===
+    logger.info("Ensuring input structure is valid...")
+    assert isinstance(scraped_links_dict, dict), "Input must be a dictionary"
+
+    for team, sources in scraped_links_dict.items():
+        assert isinstance(sources, dict), f"Each team must map to a dict of sources. Found: {type(sources)}"
+        for source_url, links in sources.items():
+            assert isinstance(links, list), f"Each source URL must map to a list of links. Found: {type(links)}"
+            for link in links:
+                assert isinstance(link, str), f"Each link must be a string. Found: {type(link)}"
+
+    # === Placeholder for actual filtering logic ===
+    # TODO: For each team, combine all URLs, format LLM prompt, call call_llm(),
+    #       parse response, and rebuild a filtered version of scraped_links_dict.
+
+    logger.info("✅ Input structure validated. Ready for LLM-based filtering.")
+
+    # For now, return unfiltered version as placeholder
+    return scraped_links_dict
+
+def ETL_get_relevant_articles(test=False) -> dict:
+    """
+    Orchestrates the full pipeline:
+    1. Scrapes article URLs for each team from configured news sources.
+    2. Filters those links for relevance using an LLM.
+    3. (Future) Saves relevant links to Supabase or other storage.
+
+    Returns:
+        dict: Filtered dictionary {team: {source_url: [relevant_links]}}
+    """
+    logger = get_logger("ETL_get_relevant_articles", log_file="logs/ETL_get_relevant_articles.log")
+
+    logger.info("🚀 Starting ETL pipeline for relevant articles...")
+
+    # Step 1: Scrape landing pages
+    scraped_links_dict = scrape_landing_pages_for_url_extractions(
+        test=test,
+        verbose=False,
+        logger=logger
+    )
+
+    # Step 2: Filter with LLM
+    filtered_links_dict = filter_links_with_llm(
+        scraped_links_dict=scraped_links_dict,
+        model_priority=["gemini", "openai"],
+        logger=logger
+    )
+
+    # Step 3: (future) Store in Supabase or log separately
+
+    logger.info("=" * 60)
+    logger.info("✅ ETL pipeline completed successfully.")
+    return filtered_links_dict
+
+
+if __name__ == "__main__":
+    results = ETL_get_relevant_articles(test=True)
+    print("\n🧠 Final output:")
+    print(results)
