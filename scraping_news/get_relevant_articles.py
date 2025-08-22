@@ -222,6 +222,12 @@ def ETL_get_relevant_articles(test=False) -> dict:
     )
 
     # More steps: (future) Store in Supabase or log separately
+    # 1. generate an account
+    # 2. generate the relevant connection points
+    # 3. check if a database exists
+    # 4. if not, we can store the links to the database (we could make it either as a text file database or a tabular set with features such as team, source, url)
+    # 5. if it does, then we can extract the links from the database and compare them with the LLM output, we can filter out duplicates that we already have in the database.
+    # 6. finally, append to the database new links.
     # 1. Check the links for duplicates (ie, look the current links vs the database one, only keep new ones)
     # 2. If database is empty them store directly. If not, then filter again for duplicates.
     # 3. Store the filtered links in Supabase or another storage solution
