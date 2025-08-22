@@ -63,7 +63,7 @@ def call_llm(
                     logger=logger,
                 )
                 if response:
-                    logger.info("✅ Gemini returned a valid response.")
+                    logger.info("Gemini returned a valid response.")
                     return response
                 else:
                     logger.warning("⚠️ Gemini returned an empty response.")
@@ -84,7 +84,7 @@ def call_llm(
                     client=openai_client,
                 )
                 if response:
-                    logger.info("✅ OpenAI returned a valid response.")
+                    logger.info("OpenAI returned a valid response.")
                     return response
                 else:
                     logger.warning("⚠️ OpenAI returned an empty response.")

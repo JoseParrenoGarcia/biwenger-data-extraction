@@ -124,7 +124,7 @@ def scrape_landing_pages_for_url_extractions(
     logger.info("-" * 30)
     logger.info("Ensuring output structure is valid...")
     _validate_scraped_links_structure(data=results)
-    logger.info("✅ Output structure validated. ")
+    logger.info("Output structure validated. ")
 
     return results
 
@@ -188,13 +188,40 @@ def filter_links_with_llm(
             # Assign it directly to the current team
             filtered_dict[team] = parsed_team_result
 
-            logger.info(f"✅ Filtered {team}: {sum(len(v) for v in parsed_team_result.values())} links retained.")
+            logger.info(f"Filtered {team}: {sum(len(v) for v in parsed_team_result.values())} links retained.")
 
         except Exception as parse_err:
             logger.error(f"❌ Failed to parse or validate LLM output for {team}: {parse_err}")
             filtered_dict[team] = team_links_dict  # fallback
 
     return filtered_dict
+
+
+def flatten_filtered_links_dict(filtered_links_dict: dict) -> list[dict]:
+    """
+    Converts a nested dictionary of the format:
+    {team: {source_url: [list of urls]}}
+    into a flat list of rows: [{team, source, url}].
+
+    Args:
+        filtered_links_dict (dict): Filtered article URLs
+
+    Returns:
+        List[dict]: Flat list of insertable rows
+    """
+    flattened = []
+
+    for team, sources in filtered_links_dict.items():
+        for source_url, urls in sources.items():
+            for url in urls:
+                flattened.append({
+                    "team": team,
+                    "source": source_url,
+                    "url": url
+                })
+
+    return flattened
+
 
 def ETL_get_relevant_articles(test=False) -> dict:
     """
@@ -216,23 +243,26 @@ def ETL_get_relevant_articles(test=False) -> dict:
         logger=logger
     )
 
-    # Step 2: Filter with LLM
-    filtered_links_dict = filter_links_with_llm(
-        scraped_links_dict=scraped_links_dict,
-        model_priority=["gemini", "openai"],
-        logger=logger
-    )
+    # # Step 2: Filter with LLM
+    # filtered_links_dict = filter_links_with_llm(
+    #     scraped_links_dict=scraped_links_dict,
+    #     model_priority=["gemini", "openai"],
+    #     logger=logger
+    # )
+    #
+    # # Step 3: Flatten the dictionary for easier storage
+    # flat_rows = flatten_filtered_links_dict(filtered_links_dict)
+    # logger.info(f"Flattened filtered links into {flat_rows} rows for potential storage.")
 
-    # Step 3: Check if Supabase table exists
+    # Step 4: Check if Supabase table exists
     supabase = get_supabase_client()
 
-    if not check_if_table_exists(supabase, "articles"):
-        logger.warning("🛠 Table 'articles' does not exist. Creating it now...")
+    if not check_if_table_exists(supabase, "article_urls"):
+        logger.warning("❌ Table 'articles' does not exist!")
     else:
-        logger.info("✅ Table 'articles' found.")
+        logger.info("Table 'articles' found.")
 
     # More steps: (future) Store in Supabase or log separately
-    # 3. check if a database exists
     # 4. if not, we can store the links to the database (we could make it either as a text file database or a tabular set with features such as team, source, url)
     # 5. if it does, then we can extract the links from the database and compare them with the LLM output, we can filter out duplicates that we already have in the database.
     # 6. finally, append to the database new links.
@@ -245,7 +275,7 @@ def ETL_get_relevant_articles(test=False) -> dict:
 
     logger.info("=" * 60)
     logger.info("✅ ETL pipeline completed successfully.")
-    return filtered_links_dict
+    return scraped_links_dict
 
 
 if __name__ == "__main__":
