@@ -15,31 +15,12 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, ".."))
 
 def load_openai_secrets():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = os.path.abspath(os.path.join(current_dir, ".."))
     secrets_path = os.path.join(root_dir, "secrets", "openAI.toml")
     return toml.load(secrets_path)
 
 def load_googleai_secrets():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = os.path.abspath(os.path.join(current_dir, ".."))
     google_secrets_path = os.path.join(root_dir, "secrets", "googleAI.toml")
     return toml.load(google_secrets_path)
-
-# # Load OpenAI credentials
-# openai_secrets_path = os.path.join(root_dir, "secrets", "openAI.toml")
-# openai_config = toml.load(openai_secrets_path)
-# OPENAI_API_KEY = openai_config["openai"]["api_key"]
-# OPENAI_MODEL = openai_config["openai"]["model"]
-# openai_client = OpenAI(api_key=OPENAI_API_KEY)
-
-# # Load Gemini credentials
-# google_secrets_path = os.path.join(root_dir, "secrets", "googleAI.toml")
-# google_config = toml.load(google_secrets_path)
-# GEMINI_API_KEY = google_config["googleai"]["api_key"]
-# GEMINI_MODEL = google_config["googleai"]["model"]
-# genai.configure(api_key=GEMINI_API_KEY)
-
 
 def call_llm(
         system_prompt: str,

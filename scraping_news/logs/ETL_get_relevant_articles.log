@@ -1,37 +1,33 @@
-2025-08-21 | ETL_get_relevant_articles | INFO     | Logger 'ETL_get_relevant_articles' initialized. Logging to: logs/ETL_get_relevant_articles.log
-2025-08-21 | ETL_get_relevant_articles | INFO     | 🚀 Starting ETL pipeline for relevant articles...
-2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-21 | ETL_get_relevant_articles | INFO     | STARTING URL EXTRACTION PROCESS
-2025-08-21 | ETL_get_relevant_articles | INFO     | Scope: 2 teams, 4 total sources
-2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-21 | ETL_get_relevant_articles | INFO     | Team 1/2: Valencia
-2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.superdeporte.es/valencia-cf/
-2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 230 unique links (was 480 before deduplication)
-2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://plazadeportiva.valenciaplaza.com/valenciacf/
-2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 147 before deduplication)
-2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-21 | ETL_get_relevant_articles | INFO     | Team 2/2: Real Madrid
-2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid
-2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 394 unique links (was 437 before deduplication)
-2025-08-21 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
-2025-08-21 | ETL_get_relevant_articles | INFO     | --> Found 68 unique links (was 105 before deduplication)
-2025-08-21 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-21 | ETL_get_relevant_articles | INFO     | Ensuring output structure is valid...
-2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ Output structure validated. 
-2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-21 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
-2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-21 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
-2025-08-21 | ETL_get_relevant_articles | INFO     | LLM filtering for Valencia...
-2025-08-21 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
-2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ Gemini returned a valid response.
-2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ Filtered Valencia: 44 links retained.
-2025-08-21 | ETL_get_relevant_articles | INFO     | LLM filtering for Real Madrid...
-2025-08-21 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
-2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ Gemini returned a valid response.
-2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ Filtered Real Madrid: 55 links retained.
-2025-08-21 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-21 | ETL_get_relevant_articles | INFO     | ✅ ETL pipeline completed successfully.
+2025-08-22 | ETL_get_relevant_articles | INFO     | Logger 'ETL_get_relevant_articles' initialized. Logging to: logs/ETL_get_relevant_articles.log
+2025-08-22 | ETL_get_relevant_articles | INFO     | 🚀 Starting ETL pipeline for relevant articles...
+2025-08-22 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-22 | ETL_get_relevant_articles | INFO     | STARTING URL EXTRACTION PROCESS
+2025-08-22 | ETL_get_relevant_articles | INFO     | Scope: 2 teams, 4 total sources
+2025-08-22 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-22 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-22 | ETL_get_relevant_articles | INFO     | Team 1/2: Valencia
+2025-08-22 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-22 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.superdeporte.es/valencia-cf/
+2025-08-22 | ETL_get_relevant_articles | INFO     | --> Found 232 unique links (was 480 before deduplication)
+2025-08-22 | ETL_get_relevant_articles | INFO     | -> Scraping: https://plazadeportiva.valenciaplaza.com/valenciacf/
+2025-08-22 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 147 before deduplication)
+2025-08-22 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-22 | ETL_get_relevant_articles | INFO     | Team 2/2: Real Madrid
+2025-08-22 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-22 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid
+2025-08-22 | ETL_get_relevant_articles | INFO     | --> Found 394 unique links (was 437 before deduplication)
+2025-08-22 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
+2025-08-22 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 105 before deduplication)
+2025-08-22 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-22 | ETL_get_relevant_articles | INFO     | Ensuring output structure is valid...
+2025-08-22 | ETL_get_relevant_articles | INFO     | ✅ Output structure validated. 
+2025-08-22 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-22 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
+2025-08-22 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-22 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
+2025-08-22 | ETL_get_relevant_articles | INFO     | LLM filtering for Valencia...
+2025-08-22 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-22 | ETL_get_relevant_articles | INFO     | ✅ Gemini returned a valid response.
+2025-08-22 | ETL_get_relevant_articles | INFO     | ✅ Filtered Valencia: 52 links retained.
+2025-08-22 | ETL_get_relevant_articles | INFO     | LLM filtering for Real Madrid...
+2025-08-22 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
