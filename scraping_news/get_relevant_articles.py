@@ -4,7 +4,7 @@ from scraping_news.llm_prompts import prompt_url_relevance_filter
 from llm_client.llm_orchestrator import call_llm
 from config_logging import get_logger
 from supabase_client.connection import get_supabase_client
-from supabase_client.utils import check_if_table_exists
+from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 
 from typing import Dict, List
 import logging
@@ -253,6 +253,28 @@ def ETL_get_relevant_articles(test=False) -> dict:
     # # Step 3: Flatten the dictionary for easier storage
     # flat_rows = flatten_filtered_links_dict(filtered_links_dict)
     # logger.info(f"Flattened filtered links into {flat_rows} rows for potential storage.")
+    flat_rows = [
+    {
+        "team": "Valencia",
+        "source": "https://www.superdeporte.es/valencia-cf/",
+        "url": "https://www.superdeporte.es/valencia-cf/2025/08/20/yangel-herrera-clave-llegada-sadiq-valencia-cf-120801557.html"
+    },
+    {
+        "team": "Valencia",
+        "source": "https://plazadeportiva.valenciaplaza.com/valenciacf/",
+        "url": "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/ron-gourlay-hay-muchas-vocesen-cuanto-a-la-posibilidad-de-incorporar-un-delantero-pero-veremos-como-va"
+    },
+    {
+        "team": "Real Madrid",
+        "source": "https://www.marca.com/futbol/real-madrid.html",
+        "url": "https://www.marca.com/futbol/real-madrid/2025/08/20/mbappe-recupera-espiritu.html"
+    },
+    {
+        "team": "Real Madrid",
+        "source": "https://as.com/noticias/real-madrid/",
+        "url": "https://as.com/futbol/mastantuono-esta-bendecido-n/"
+    }
+]
 
     # Step 4: Check if Supabase table exists
     supabase = get_supabase_client()
@@ -260,7 +282,16 @@ def ETL_get_relevant_articles(test=False) -> dict:
     if not check_if_table_exists(supabase, "article_urls"):
         logger.warning("❌ Table 'articles' does not exist!")
     else:
-        logger.info("Table 'articles' found.")
+        logger.info("Table 'article_urls' found.")
+
+    # Step XXX: Read existing links from the database
+    # Step XXX: Compare with LLM output and filter out duplicates
+    # Step XXX: Insert new links into the database
+    try:
+        insert_rows_into_table(supabase, table_name="article_urls", rows=flat_rows)
+        logger.info(f"✅ Successfully inserted {len(flat_rows)} rows into 'article_urls'")
+    except Exception as e:
+        logger.error(f"❌ Failed to insert into Supabase: {e}")
 
     # More steps: (future) Store in Supabase or log separately
     # 4. if not, we can store the links to the database (we could make it either as a text file database or a tabular set with features such as team, source, url)
@@ -275,7 +306,7 @@ def ETL_get_relevant_articles(test=False) -> dict:
 
     logger.info("=" * 60)
     logger.info("✅ ETL pipeline completed successfully.")
-    return scraped_links_dict
+    return flat_rows
 
 
 if __name__ == "__main__":
