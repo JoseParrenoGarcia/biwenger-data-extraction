@@ -31,3 +31,7 @@
 2025-08-22 | ETL_get_relevant_articles | INFO     | ✅ Filtered Valencia: 52 links retained.
 2025-08-22 | ETL_get_relevant_articles | INFO     | LLM filtering for Real Madrid...
 2025-08-22 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-22 | ETL_get_relevant_articles | INFO     | ✅ Gemini returned a valid response.
+2025-08-22 | ETL_get_relevant_articles | INFO     | ✅ Filtered Real Madrid: 74 links retained.
+2025-08-22 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-22 | ETL_get_relevant_articles | INFO     | ✅ ETL pipeline completed successfully.
