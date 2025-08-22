@@ -212,6 +212,10 @@ def flatten_filtered_links_dict(
     Returns:
         List[dict]: Flat list of insertable rows
     """
+    # Initialize logger for this module
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
     logger.info("=" * 60)
     logger.info("FLATTENING FILTERED LINKS DICTIONARY IN PREPARATION FOR STORAGE")
     logger.info("=" * 60)
