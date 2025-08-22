@@ -197,7 +197,10 @@ def filter_links_with_llm(
     return filtered_dict
 
 
-def flatten_filtered_links_dict(filtered_links_dict: dict) -> list[dict]:
+def flatten_filtered_links_dict(
+        filtered_links_dict: dict,
+        logger: Optional[logging.Logger] = None
+) -> list[dict]:
     """
     Converts a nested dictionary of the format:
     {team: {source_url: [list of urls]}}
@@ -209,6 +212,9 @@ def flatten_filtered_links_dict(filtered_links_dict: dict) -> list[dict]:
     Returns:
         List[dict]: Flat list of insertable rows
     """
+    logger.info("=" * 60)
+    logger.info("FLATTENING FILTERED LINKS DICTIONARY IN PREPARATION FOR STORAGE")
+    logger.info("=" * 60)
     flattened = []
 
     for team, sources in filtered_links_dict.items():
@@ -222,8 +228,68 @@ def flatten_filtered_links_dict(filtered_links_dict: dict) -> list[dict]:
 
     return flattened
 
+def insert_deduplicated_articles_in_database(
+    flat_rows: List[Dict[str, str]],
+    table_name: str,
+    logger: logging.Logger
+) -> None:
+    """
+    Inserts only non-duplicate article records into Supabase.
 
-def ETL_get_relevant_articles(test=False) -> dict:
+    Args:
+        flat_rows (List[Dict]): Rows to insert (must have 'team' and 'url' keys)
+        table_name (str): Name of the Supabase table to insert into
+        logger (Logger): Logger instance for consistent tracking
+    """
+    logger.info("=" * 60)
+    logger.info("STARTING STORAGE PROCESS TO SUPABASE")
+    logger.info("=" * 60)
+
+    supabase = get_supabase_client()
+
+    if not check_if_table_exists(supabase, table_name):
+        logger.warning(f"❌ Table '{table_name}' does not exist!")
+        return
+
+    logger.info(f"✅ Table '{table_name}' found.")
+    logger.info("Fetching existing article URLs from Supabase to filter duplicates...")
+
+    try:
+        response = supabase.table(table_name).select("team, url").execute()
+    except Exception as e:
+        logger.error(f"❌ Failed to fetch existing data from '{table_name}': {e}")
+        return
+
+    # Extract existing (team, url) pairs into a set
+    existing_team_url_set = {
+        (row["team"], row["url"]) for row in response.data
+    } if response.data else set()
+
+    if existing_team_url_set:
+        logger.info(f"Found {len(existing_team_url_set)} existing records.")
+    else:
+        logger.info("No existing records found — table is empty.")
+
+    # Filter out rows already in the database
+    new_rows_to_insert = [
+        row for row in flat_rows
+        if (row["team"], row["url"]) not in existing_team_url_set
+    ]
+
+    logger.info(f"Filtered out {len(flat_rows) - len(new_rows_to_insert)} duplicates.")
+    logger.info(f"Ready to insert {len(new_rows_to_insert)} new articles.")
+
+    # Insert only new rows
+    if new_rows_to_insert:
+        try:
+            insert_rows_into_table(supabase, table_name=table_name, rows=new_rows_to_insert)
+            logger.info(f"✅ Successfully inserted {len(new_rows_to_insert)} new rows into '{table_name}'")
+        except Exception as e:
+            logger.error(f"❌ Failed to insert into Supabase: {e}")
+    else:
+        logger.info("⏩ No new articles to insert — skipping write operation.")
+
+def ETL_get_relevant_articles(test=False):
     """
     Orchestrates the full pipeline:
     1. Scrapes article URLs for each team from configured news sources.
@@ -243,74 +309,54 @@ def ETL_get_relevant_articles(test=False) -> dict:
         logger=logger
     )
 
-    # # Step 2: Filter with LLM
-    # filtered_links_dict = filter_links_with_llm(
-    #     scraped_links_dict=scraped_links_dict,
-    #     model_priority=["gemini", "openai"],
-    #     logger=logger
-    # )
-    #
-    # # Step 3: Flatten the dictionary for easier storage
-    # flat_rows = flatten_filtered_links_dict(filtered_links_dict)
-    # logger.info(f"Flattened filtered links into {flat_rows} rows for potential storage.")
-    flat_rows = [
-    {
-        "team": "Valencia",
-        "source": "https://www.superdeporte.es/valencia-cf/",
-        "url": "https://www.superdeporte.es/valencia-cf/2025/08/20/yangel-herrera-clave-llegada-sadiq-valencia-cf-120801557.html"
-    },
-    {
-        "team": "Valencia",
-        "source": "https://plazadeportiva.valenciaplaza.com/valenciacf/",
-        "url": "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/ron-gourlay-hay-muchas-vocesen-cuanto-a-la-posibilidad-de-incorporar-un-delantero-pero-veremos-como-va"
-    },
-    {
-        "team": "Real Madrid",
-        "source": "https://www.marca.com/futbol/real-madrid.html",
-        "url": "https://www.marca.com/futbol/real-madrid/2025/08/20/mbappe-recupera-espiritu.html"
-    },
-    {
-        "team": "Real Madrid",
-        "source": "https://as.com/noticias/real-madrid/",
-        "url": "https://as.com/futbol/mastantuono-esta-bendecido-n/"
-    }
-]
+    # Step 2: Filter with LLM
+    filtered_links_dict = filter_links_with_llm(
+        scraped_links_dict=scraped_links_dict,
+        model_priority=["gemini", "openai"],
+        logger=logger
+    )
 
-    # Step 4: Check if Supabase table exists
-    supabase = get_supabase_client()
+    # Step 3: Flatten the dictionary for easier storage
+    flat_rows = flatten_filtered_links_dict(filtered_links_dict, logger)
+    logger.info(f"Flattened filtered links into {flat_rows} rows for potential storage.")
+    # flat_rows = [
+    # {
+    #     "team": "Valencia",
+    #     "source": "https://www.superdeporte.es/valencia-cf/",
+    #     "url": "https://www.superdeporte.es/valencia-cf/2025/08/20/yangel-herrera-clave-llegada-sadiq-valencia-cf-120801557.html"
+    # },
+    # {
+    #     "team": "Valencia",
+    #     "source": "https://plazadeportiva.valenciaplaza.com/valenciacf/",
+    #     "url": "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/ron-gourlay-hay-muchas-vocesen-cuanto-a-la-posibilidad-de-incorporar-un-delantero-pero-veremos-como-va"
+    # },
+    # {
+    #     "team": "Real Madrid",
+    #     "source": "https://www.marca.com/futbol/real-madrid.html",
+    #     "url": "https://www.marca.com/futbol/real-madrid/2025/08/20/mbappe-recupera-espiritu.html"
+    # },
+    # {
+    #     "team": "Real Madrid",
+    #     "source": "https://as.com/noticias/real-madrid/",
+    #     "url": "https://as.com/futbol/mastantuono-esta-bendecido-n/"
+    # },
+    # {
+    #     "team": "Real Madrid",
+    #     "source": "https://as.com/noticias/real-madrid/",
+    #     "url": "otra URL"
+    # }
+# ]
 
-    if not check_if_table_exists(supabase, "article_urls"):
-        logger.warning("❌ Table 'articles' does not exist!")
-    else:
-        logger.info("Table 'article_urls' found.")
-
-    # Step XXX: Read existing links from the database
-    # Step XXX: Compare with LLM output and filter out duplicates
-    # Step XXX: Insert new links into the database
-    try:
-        insert_rows_into_table(supabase, table_name="article_urls", rows=flat_rows)
-        logger.info(f"✅ Successfully inserted {len(flat_rows)} rows into 'article_urls'")
-    except Exception as e:
-        logger.error(f"❌ Failed to insert into Supabase: {e}")
-
-    # More steps: (future) Store in Supabase or log separately
-    # 4. if not, we can store the links to the database (we could make it either as a text file database or a tabular set with features such as team, source, url)
-    # 5. if it does, then we can extract the links from the database and compare them with the LLM output, we can filter out duplicates that we already have in the database.
-    # 6. finally, append to the database new links.
-    # 1. Check the links for duplicates (ie, look the current links vs the database one, only keep new ones)
-    # 2. If database is empty them store directly. If not, then filter again for duplicates.
-    # 3. Store the filtered links in Supabase or another storage solution
-
-    # Step xxx: (future) Store in Supabase or log separately
-
+    insert_deduplicated_articles_in_database(
+        flat_rows=flat_rows,
+        table_name="article_urls",
+        logger=logger
+    )
 
     logger.info("=" * 60)
     logger.info("✅ ETL pipeline completed successfully.")
-    return flat_rows
 
 
 if __name__ == "__main__":
-    results = ETL_get_relevant_articles(test=True)
-    print("\n🧠 Final output:")
-    print(results)
+    ETL_get_relevant_articles(test=True)
 
