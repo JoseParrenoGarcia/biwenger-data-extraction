@@ -3,6 +3,9 @@ from scraping_news.scraper_utils import Website
 from scraping_news.llm_prompts import prompt_url_relevance_filter
 from llm_client.llm_orchestrator import call_llm
 from config_logging import get_logger
+from supabase_client.connection import get_supabase_client
+from supabase_client.utils import check_if_table_exists
+
 from typing import Dict, List
 import logging
 import re
@@ -204,7 +207,6 @@ def ETL_get_relevant_articles(test=False) -> dict:
         dict: Filtered dictionary {team: {source_url: [relevant_links]}}
     """
     logger = get_logger("ETL_get_relevant_articles", log_file="logs/ETL_get_relevant_articles.log")
-
     logger.info("🚀 Starting ETL pipeline for relevant articles...")
 
     # Step 1: Scrape landing pages
@@ -221,9 +223,15 @@ def ETL_get_relevant_articles(test=False) -> dict:
         logger=logger
     )
 
+    # Step 3: Check if Supabase table exists
+    supabase = get_supabase_client()
+
+    if not check_if_table_exists(supabase, "articles"):
+        logger.warning("🛠 Table 'articles' does not exist. Creating it now...")
+    else:
+        logger.info("✅ Table 'articles' found.")
+
     # More steps: (future) Store in Supabase or log separately
-    # 1. generate an account
-    # 2. generate the relevant connection points
     # 3. check if a database exists
     # 4. if not, we can store the links to the database (we could make it either as a text file database or a tabular set with features such as team, source, url)
     # 5. if it does, then we can extract the links from the database and compare them with the LLM output, we can filter out duplicates that we already have in the database.
