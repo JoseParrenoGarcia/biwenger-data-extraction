@@ -10,25 +10,17 @@ import google.generativeai as genai
 from openai import OpenAI
 
 # === Load Secrets and Configure Clients ===
-
 # Project root directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, ".."))
 
-# Load OpenAI credentials
-openai_secrets_path = os.path.join(root_dir, "secrets", "openAI.toml")
-openai_config = toml.load(openai_secrets_path)
-OPENAI_API_KEY = openai_config["openai"]["api_key"]
-OPENAI_MODEL = openai_config["openai"]["model"]
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+def load_openai_secrets():
+    secrets_path = os.path.join(root_dir, "secrets", "openAI.toml")
+    return toml.load(secrets_path)
 
-# Load Gemini credentials
-google_secrets_path = os.path.join(root_dir, "secrets", "googleAI.toml")
-google_config = toml.load(google_secrets_path)
-GEMINI_API_KEY = google_config["googleai"]["api_key"]
-GEMINI_MODEL = google_config["googleai"]["model"]
-genai.configure(api_key=GEMINI_API_KEY)
-
+def load_googleai_secrets():
+    google_secrets_path = os.path.join(root_dir, "secrets", "googleAI.toml")
+    return toml.load(google_secrets_path)
 
 def call_llm(
         system_prompt: str,
@@ -57,6 +49,11 @@ def call_llm(
     for vendor in model_priority:
         try:
             if vendor == "gemini":
+                google_config = load_googleai_secrets()
+                GEMINI_API_KEY = google_config["googleai"]["api_key"]
+                GEMINI_MODEL = google_config["googleai"]["model"]
+                genai.configure(api_key=GEMINI_API_KEY)
+
                 logger.info("🔁 Trying Gemini (Google) model...")
                 response = call_gemini_chat_model(
                     system_prompt=system_prompt,
@@ -72,6 +69,11 @@ def call_llm(
                     logger.warning("⚠️ Gemini returned an empty response.")
 
             elif vendor == "openai":
+                openai_config = load_openai_secrets()
+                OPENAI_API_KEY = openai_config["openai"]["api_key"]
+                OPENAI_MODEL = openai_config["openai"]["model"]
+                openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
                 logger.info("🔁 Trying OpenAI model...")
                 response = call_openai_chat_model(
                     system_prompt=system_prompt,
