@@ -323,33 +323,6 @@ def ETL_get_relevant_articles(test=False):
     # Step 3: Flatten the dictionary for easier storage
     flat_rows = flatten_filtered_links_dict(filtered_links_dict, logger)
     logger.info(f"Flattened filtered links into {flat_rows} rows for potential storage.")
-    # flat_rows = [
-    # {
-    #     "team": "Valencia",
-    #     "source": "https://www.superdeporte.es/valencia-cf/",
-    #     "url": "https://www.superdeporte.es/valencia-cf/2025/08/20/yangel-herrera-clave-llegada-sadiq-valencia-cf-120801557.html"
-    # },
-    # {
-    #     "team": "Valencia",
-    #     "source": "https://plazadeportiva.valenciaplaza.com/valenciacf/",
-    #     "url": "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/ron-gourlay-hay-muchas-vocesen-cuanto-a-la-posibilidad-de-incorporar-un-delantero-pero-veremos-como-va"
-    # },
-    # {
-    #     "team": "Real Madrid",
-    #     "source": "https://www.marca.com/futbol/real-madrid.html",
-    #     "url": "https://www.marca.com/futbol/real-madrid/2025/08/20/mbappe-recupera-espiritu.html"
-    # },
-    # {
-    #     "team": "Real Madrid",
-    #     "source": "https://as.com/noticias/real-madrid/",
-    #     "url": "https://as.com/futbol/mastantuono-esta-bendecido-n/"
-    # },
-    # {
-    #     "team": "Real Madrid",
-    #     "source": "https://as.com/noticias/real-madrid/",
-    #     "url": "otra URL"
-    # }
-# ]
 
     insert_deduplicated_articles_in_database(
         flat_rows=flat_rows,
