@@ -2,6 +2,9 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import json
+from datetime import datetime
+
 
 # Headers to mimic a real browser and avoid being blocked by websites
 HEADERS = {
@@ -33,6 +36,7 @@ class Website:
         self.text = ""
         self.title = ""
         self.links = []
+        self.published_at = None  # ISO 8601 string if found, else None
 
         try:
             # Fetch the webpage with custom headers to avoid blocking
@@ -51,6 +55,142 @@ class Website:
         self.body = response.content
         self._parse() # Parse the HTML content
 
+    def _extract_article_text(self, soup: BeautifulSoup) -> str:
+        """
+        Prefer <article> or common 'article body' containers.
+        Extract only ["p", "h1", "h2", "h3", "h4", "li"] text; strip typical non-content blocks.
+        Fallback: the div/section with the most <p> text.
+        """
+
+        def clean_and_join(node):
+            for t in node(["script", "style", "noscript", "aside", "figure", "figcaption", "input", "img", "nav", "header", "footer"]):
+                t.decompose()
+            parts = [el.get_text(" ", strip=True)
+                     for el in node.find_all(["p", "h1", "h2", "h3", "h4", "li"])
+                     if el.get_text(strip=True)]
+            return "\n\n".join(parts)
+
+        # 1) Direct <article>
+        article = soup.find("article")
+        if article:
+            txt = clean_and_join(article)
+            if txt:
+                return txt
+
+        # 2) Common CMS selectors
+        for sel in [
+            '[itemprop="articleBody"]',
+            ".article-body", ".article__body", ".entry-content", ".post-content",
+            ".content__article-body", ".story-body", ".article-content", ".news-content",
+            ".td-post-content", ".post-body", ".content-body", ".body-content"
+        ]:
+            node = soup.select_one(sel)
+            if node:
+                txt = clean_and_join(node)
+                if txt:
+                    return txt
+
+        # 3) Fallback: pick the container with the most <p> text
+        best_text, best_len = "", 0
+        for container in soup.find_all(["div", "section", "main"]):
+            ps = [p.get_text(" ", strip=True) for p in container.find_all("p")]
+            text = "\n\n".join([t for t in ps if t])
+            if len(text) > best_len:
+                best_text, best_len = text, len(text)
+
+        return best_text
+
+    def _maybe_parse_date(self, raw):
+        """Best-effort parse -> YYYY-MM-DD (date only)."""
+        if not raw:
+            return None
+        s = str(raw).strip()
+
+        # Normalize trailing Z to +00:00 so fromisoformat works
+        if s.endswith("Z"):
+            s = s[:-1] + "+00:00"
+
+        # Try ISO first
+        try:
+            dt = datetime.fromisoformat(s)
+            return dt.date().isoformat()  # <-- only date
+        except Exception:
+            pass
+
+        # Try a few common patterns
+        fmts = [
+            "%Y-%m-%d %H:%M:%S%z",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%dT%H:%M:%S",
+            "%d/%m/%Y %H:%M",
+            "%d/%m/%Y",
+        ]
+        for fmt in fmts:
+            try:
+                dt = datetime.strptime(s, fmt)
+                return dt.date().isoformat()  # <-- only date
+            except Exception:
+                continue
+
+        return None
+
+    def _extract_published_at(self, soup):
+        """
+        Return publication datetime as ISO 8601 string if found, else None.
+        Priority: JSON-LD -> meta tags -> <time datetime>.
+        """
+        # 1) JSON-LD blocks (NewsArticle/Article)
+        for script in soup.find_all("script", type="application/ld+json"):
+            try:
+                data = json.loads(script.string or "")
+            except Exception:
+                continue
+
+            # Handle dict, list, and @graph
+            candidates = []
+            if isinstance(data, dict):
+                candidates = [data] + (data.get("@graph") or [])
+            elif isinstance(data, list):
+                candidates = data
+
+            for obj in candidates:
+                if not isinstance(obj, dict):
+                    continue
+                typ = obj.get("@type", "")
+                if isinstance(typ, list):
+                    typ = " ".join(typ)
+                if "Article" in str(typ) or "NewsArticle" in str(typ) or "BlogPosting" in str(typ):
+                    iso = self._maybe_parse_date(obj.get("datePublished"))
+                    if iso:
+                        return iso
+
+        # 2) Meta tags
+        meta_queries = [
+            {"property": "article:published_time"},
+            {"name": "article:published_time"},
+            {"itemprop": "datePublished"},
+            {"name": "pubdate"},
+            {"name": "publication_date"},
+            {"name": "date"},
+        ]
+        for attrs in meta_queries:
+            tag = soup.find("meta", attrs=attrs)
+            if tag and tag.get("content"):
+                iso = self._maybe_parse_date(tag.get("content"))
+                if iso:
+                    return iso
+
+        # 3) <time datetime="...">
+        t = soup.find("time", attrs={"datetime": True})
+        if t:
+            iso = self._maybe_parse_date(t.get("datetime"))
+            if iso:
+                return iso
+
+        # (Optional future: site-specific heuristics)
+        return None
+
     def _parse(self):
         """
         Parse the HTML content using BeautifulSoup to extract title, text, and links.
@@ -68,17 +208,20 @@ class Website:
 
         # Extract visible text content from body
         if soup.body:
-            # Remove unwanted elements that don't contain useful text
-            for tag in soup.body(["script", "style", "img", "input"]):
+            # still prune obvious junk at body level (cheap win)
+            for tag in soup.body(["script", "style", "noscript"]):
                 tag.decompose()
-            # Get all text with newline separators and strip whitespace
-            self.text = soup.body.get_text(separator="\n", strip=True)
+            # NEW: aim at article content instead of whole body
+            extracted = self._extract_article_text(soup)
+            self.text = extracted if extracted else ""
         else:
             self.text = ""
 
         # Find all anchor tags with href attributes and normalize the links
         raw_links = soup.find_all("a", href=True)
         self.links = self._normalize_links([a.get("href") for a in raw_links])
+
+        self.published_at = self._extract_published_at(soup)
 
     def _normalize_links(self, hrefs):
         """
@@ -125,3 +268,25 @@ class Website:
             list: List of absolute URLs found on the page
         """
         return self.links
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s")
+
+    test_url = "https://www.superdeporte.es/valencia-cf/2025/08/22/hugo-guillamon-muy-cerca-emigrar-croacia-120860302.html"
+    # test_url = "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/corberan-rp-previa-osasuna"
+    # test_url = "https://www.marca.com/futbol/liga-francesa/2025/08/23/cuenta-atras-ansu-fati.html"
+    print(f"Fetching: {test_url}")
+
+    w = Website(test_url, timeout=15)
+
+    print("\n=== BASIC PAGE INFO ===")
+    print(f"Title: {w.title}")
+    print(f"Published at: {w.published_at}")
+    print(f"Links found: {len(w.links)}")
+
+    print("\n=== ARTICLE TEXT (first 800 chars) ===")
+    atxt = (w.text or "").strip()
+    print(atxt[:800] + ("..." if len(atxt) > 800 else ""))
+
+    # If you want the full payload:
+    # import pprint; pprint.pprint(w.get_article())

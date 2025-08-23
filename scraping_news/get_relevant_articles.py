@@ -1,6 +1,7 @@
 from scraping_news.config_landing_pages import TEAM_NEWS_SOURCES_test, TEAM_NEWS_SOURCES
 from scraping_news.scraper_utils import Website
 from scraping_news.llm_prompts import prompt_url_relevance_filter
+from scraping_news.utils import extract_code_block
 from llm_client.llm_orchestrator import call_llm
 from config_logging import get_logger
 from supabase_client.connection import get_supabase_client
@@ -8,7 +9,6 @@ from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 
 from typing import Dict, List
 import logging
-import re
 import ast
 from typing import Optional
 
@@ -28,27 +28,6 @@ def _validate_scraped_links_structure(data: dict) -> None:
             assert isinstance(links, list), f"Each source URL must map to a list of links. Found: {type(links)}"
             for link in links:
                 assert isinstance(link, str), f"Each link must be a string. Found: {type(link)}"
-
-def _extract_code_block(text: str) -> str:
-    """
-    Extracts a JSON-like code block from an LLM response that may be wrapped in triple backticks or triple quotes.
-
-    Supports:
-    - ```json
-    - ```python
-    - ``` (no lang)
-    - '''python
-    - ''' (no lang)
-
-    Args:
-        text (str): Raw string from LLM
-
-    Returns:
-        str: Cleaned block, or original text if no match found
-    """
-    # Matches ```json\n{...}\n```, ```python\n{...}```, '''python\n{...}''', etc.
-    match = re.search(r"(?:```|''')\s*(?:json|python)?\s*(\{.*?\})\s*(?:```|''')", text, re.DOTALL)
-    return match.group(1).strip() if match else text.strip()
 
 def scrape_landing_pages_for_url_extractions(
         test=False,
@@ -179,7 +158,7 @@ def filter_links_with_llm(
             continue
 
         # Extract the JSON-like code block from the response
-        llm_response_clean = _extract_code_block(llm_response)
+        llm_response_clean = extract_code_block(llm_response)
 
         try:
             parsed_team_result = ast.literal_eval(llm_response_clean)
@@ -323,33 +302,6 @@ def ETL_get_relevant_articles(test=False):
     # Step 3: Flatten the dictionary for easier storage
     flat_rows = flatten_filtered_links_dict(filtered_links_dict, logger)
     logger.info(f"Flattened filtered links into {flat_rows} rows for potential storage.")
-    # flat_rows = [
-    # {
-    #     "team": "Valencia",
-    #     "source": "https://www.superdeporte.es/valencia-cf/",
-    #     "url": "https://www.superdeporte.es/valencia-cf/2025/08/20/yangel-herrera-clave-llegada-sadiq-valencia-cf-120801557.html"
-    # },
-    # {
-    #     "team": "Valencia",
-    #     "source": "https://plazadeportiva.valenciaplaza.com/valenciacf/",
-    #     "url": "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/ron-gourlay-hay-muchas-vocesen-cuanto-a-la-posibilidad-de-incorporar-un-delantero-pero-veremos-como-va"
-    # },
-    # {
-    #     "team": "Real Madrid",
-    #     "source": "https://www.marca.com/futbol/real-madrid.html",
-    #     "url": "https://www.marca.com/futbol/real-madrid/2025/08/20/mbappe-recupera-espiritu.html"
-    # },
-    # {
-    #     "team": "Real Madrid",
-    #     "source": "https://as.com/noticias/real-madrid/",
-    #     "url": "https://as.com/futbol/mastantuono-esta-bendecido-n/"
-    # },
-    # {
-    #     "team": "Real Madrid",
-    #     "source": "https://as.com/noticias/real-madrid/",
-    #     "url": "otra URL"
-    # }
-# ]
 
     insert_deduplicated_articles_in_database(
         flat_rows=flat_rows,
