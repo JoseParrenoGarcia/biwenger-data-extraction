@@ -2,6 +2,9 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import json
+from datetime import datetime
+
 
 # Headers to mimic a real browser and avoid being blocked by websites
 HEADERS = {
@@ -33,6 +36,7 @@ class Website:
         self.text = ""
         self.title = ""
         self.links = []
+        self.published_at = None  # ISO 8601 string if found, else None
 
         try:
             # Fetch the webpage with custom headers to avoid blocking
@@ -96,6 +100,97 @@ class Website:
 
         return best_text
 
+    def _maybe_parse_date(self, raw):
+        """Best-effort parse -> YYYY-MM-DD (date only)."""
+        if not raw:
+            return None
+        s = str(raw).strip()
+
+        # Normalize trailing Z to +00:00 so fromisoformat works
+        if s.endswith("Z"):
+            s = s[:-1] + "+00:00"
+
+        # Try ISO first
+        try:
+            dt = datetime.fromisoformat(s)
+            return dt.date().isoformat()  # <-- only date
+        except Exception:
+            pass
+
+        # Try a few common patterns
+        fmts = [
+            "%Y-%m-%d %H:%M:%S%z",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%dT%H:%M:%S",
+            "%d/%m/%Y %H:%M",
+            "%d/%m/%Y",
+        ]
+        for fmt in fmts:
+            try:
+                dt = datetime.strptime(s, fmt)
+                return dt.date().isoformat()  # <-- only date
+            except Exception:
+                continue
+
+        return None
+
+    def _extract_published_at(self, soup):
+        """
+        Return publication datetime as ISO 8601 string if found, else None.
+        Priority: JSON-LD -> meta tags -> <time datetime>.
+        """
+        # 1) JSON-LD blocks (NewsArticle/Article)
+        for script in soup.find_all("script", type="application/ld+json"):
+            try:
+                data = json.loads(script.string or "")
+            except Exception:
+                continue
+
+            # Handle dict, list, and @graph
+            candidates = []
+            if isinstance(data, dict):
+                candidates = [data] + (data.get("@graph") or [])
+            elif isinstance(data, list):
+                candidates = data
+
+            for obj in candidates:
+                if not isinstance(obj, dict):
+                    continue
+                typ = obj.get("@type", "")
+                if isinstance(typ, list):
+                    typ = " ".join(typ)
+                if "Article" in str(typ) or "NewsArticle" in str(typ) or "BlogPosting" in str(typ):
+                    iso = self._maybe_parse_date(obj.get("datePublished"))
+                    if iso:
+                        return iso
+
+        # 2) Meta tags
+        meta_queries = [
+            {"property": "article:published_time"},
+            {"name": "article:published_time"},
+            {"itemprop": "datePublished"},
+            {"name": "pubdate"},
+            {"name": "publication_date"},
+            {"name": "date"},
+        ]
+        for attrs in meta_queries:
+            tag = soup.find("meta", attrs=attrs)
+            if tag and tag.get("content"):
+                iso = self._maybe_parse_date(tag.get("content"))
+                if iso:
+                    return iso
+
+        # 3) <time datetime="...">
+        t = soup.find("time", attrs={"datetime": True})
+        if t:
+            iso = self._maybe_parse_date(t.get("datetime"))
+            if iso:
+                return iso
+
+        # (Optional future: site-specific heuristics)
+        return None
+
     def _parse(self):
         """
         Parse the HTML content using BeautifulSoup to extract title, text, and links.
@@ -125,6 +220,8 @@ class Website:
         # Find all anchor tags with href attributes and normalize the links
         raw_links = soup.find_all("a", href=True)
         self.links = self._normalize_links([a.get("href") for a in raw_links])
+
+        self.published_at = self._extract_published_at(soup)
 
     def _normalize_links(self, hrefs):
         """
@@ -175,16 +272,16 @@ class Website:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s")
 
-    # test_url = "https://www.superdeporte.es/valencia-cf/2025/08/22/hugo-guillamon-muy-cerca-emigrar-croacia-120860302.html"
+    test_url = "https://www.superdeporte.es/valencia-cf/2025/08/22/hugo-guillamon-muy-cerca-emigrar-croacia-120860302.html"
     # test_url = "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/corberan-rp-previa-osasuna"
-    test_url = "https://www.marca.com/futbol/liga-francesa/2025/08/23/cuenta-atras-ansu-fati.html"
+    # test_url = "https://www.marca.com/futbol/liga-francesa/2025/08/23/cuenta-atras-ansu-fati.html"
     print(f"Fetching: {test_url}")
 
     w = Website(test_url, timeout=15)
 
     print("\n=== BASIC PAGE INFO ===")
     print(f"Title: {w.title}")
-    # print(f"Published at: {w.published_at}")
+    print(f"Published at: {w.published_at}")
     print(f"Links found: {len(w.links)}")
 
     print("\n=== ARTICLE TEXT (first 800 chars) ===")
