@@ -33,6 +33,7 @@ def prompt_url_relevance_filter(team: str, team_links_dict: dict) -> tuple[str, 
     - Posibles alineaciones para los próximos encuentros
     - Nuevos fichajes o salidas confirmadas
     - Ruedas de prensa del entrenador que afecten a la plantilla
+    - Noticias o articulos sobre jugadores
     - Riesgos de rotación o cambios significativos en los minutos de juego
     
     Una vez identificados, debes devolver **la misma estructura del diccionario en Python**, pero con los enlaces irrelevantes eliminados.
