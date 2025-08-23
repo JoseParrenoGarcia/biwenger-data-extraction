@@ -1,10 +1,14 @@
 from supabase_client.connection import get_supabase_client
-from supabase_client.utils import check_if_table_exists
+from supabase_client.utils import check_if_table_exists, insert_rows_into_table
+from llm_client.llm_orchestrator import call_llm
+from scraping_news.llm_prompts import prompt_article_summary_and_tags
+from scraping_news.utils import extract_code_block
 from config_logging import get_logger
 
 from typing import List, Dict
 import logging
 from scraper_utils import Website
+import ast
 
 def get_existing_article_ids(table_name: str, logger: logging.Logger) -> set:
     """
@@ -32,7 +36,7 @@ def get_existing_article_ids(table_name: str, logger: logging.Logger) -> set:
         logger.error(f"❌ Failed to fetch from '{table_name}': {e}")
         return set()
 
-def get_urls_to_scrape(logger: logging.Logger) -> List[Dict[str, str]]:
+def get_urls_to_scrape(supabase, logger: logging.Logger) -> List[Dict[str, str]]:
     """
     Fetches all article URLs from article_urls, then filters out those already in article_contents.
 
@@ -43,8 +47,6 @@ def get_urls_to_scrape(logger: logging.Logger) -> List[Dict[str, str]]:
     logger.info("=" * 60)
     logger.info("COLLECTING URLS TO SCRAPE THEIR CONTENTS")
     logger.info("=" * 60)
-
-    supabase = get_supabase_client()
 
     try:
         url_response = supabase.table("article_urls").select("id, url, team, source").execute()
@@ -62,18 +64,10 @@ def get_urls_to_scrape(logger: logging.Logger) -> List[Dict[str, str]]:
     return articles_to_scrape
 
 def scrape_and_build_article_content_row(article: dict, logger: logging.Logger) -> dict | None:
-    """
-    Scrapes an article URL and returns a row ready for insertion into article_contents.
-
-    Args:
-        article (dict): A row from article_urls with keys: id, url, team, source
-        logger (Logger): Logger instance
-
-    Returns:
-        dict or None: Row dict with scraped data or None if scrape failed
-    """
     url = article["url"]
     article_id = article["id"]
+
+    logger.info(f"🌐 Scraping content from URL: {url}")
 
     try:
         website = Website(url)
@@ -87,14 +81,53 @@ def scrape_and_build_article_content_row(article: dict, logger: logging.Logger) 
 
         return {
             "article_id": article_id,
-            "url_text": url,
-            "raw_text": raw_text,
-            "title": title,
+            "url": url,
             "published_date": published_date,
+            "raw_text": raw_text,
+            "title": title
         }
 
     except Exception as e:
         logger.error(f"❌ Failed to scrape {url}: {e}")
+        return None
+
+def enrich_row_with_llm(row: dict, logger: logging.Logger) -> dict | None:
+    """
+    Adds LLM-generated summary, tags, and named entities to a scraped article row.
+
+    Args:
+        row (dict): Must contain at least 'raw_text' and 'title'
+        logger (Logger): Logger instance
+
+    Returns:
+        dict | None: Enriched row with LLM fields or None if failure
+    """
+    system_prompt, user_prompt = prompt_article_summary_and_tags(
+        article_text=row["raw_text"],
+        article_title=row.get("title", "")
+    )
+
+    llm_response = call_llm(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        model_priority=["gemini", "openai"],
+        logger=logger
+    )
+
+    try:
+        clean_json_str = extract_code_block(llm_response)
+        parsed_output = ast.literal_eval(clean_json_str)
+
+        # Add LLM fields to the row
+        row["summary_llm"] = parsed_output.get("summary")
+        row["tags_llm"] = parsed_output.get("tags_llm", [])
+        row["recognised_teams_llm"] = parsed_output.get("recognised_teams_llm", [])
+        row["recognised_people_llm"] = parsed_output.get("recognised_people_llm", [])
+
+        return row
+
+    except Exception as e:
+        logger.error(f"❌ Failed to parse or enrich article with LLM: {e}")
         return None
 
 def ETL_get_article_contents(test: bool = False):
@@ -108,32 +141,48 @@ def ETL_get_article_contents(test: bool = False):
     logger = get_logger("ETL_get_article_contents", log_file="logs/ETL_get_article_contents.log")
     logger.info("🚀 Starting ETL pipeline for article contents...")
 
-    articles_to_scrape = get_urls_to_scrape(logger)
+    supabase = get_supabase_client()
+
+    articles_to_scrape = get_urls_to_scrape(supabase, logger)
 
     if not articles_to_scrape:
         logger.info("✅ No new articles to scrape — pipeline complete.")
         return
 
-    # # For now, just print the remaining URLs to scrape
-    # for i, row in enumerate(articles_to_scrape, 1):
-    #     print(f"{i}. [{row['team']}] {row['url']}")
-
     logger.info("Article scraping targets listed. Ready for content extraction stage.")
 
     logger.info("=" * 60)
-    logger.info("SCRAPING ARTICLE CONTENTS")
+    logger.info("SCRAPING ARTICLE CONTENTS AND ENRICHING WITH LLM")
     logger.info("=" * 60)
     rows_to_insert = []
 
     for i, article in enumerate(articles_to_scrape, 1):
         logger.info(f"🔁 ({i}/{len(articles_to_scrape)}) Processing: {article['url']}")
         row = scrape_and_build_article_content_row(article, logger)
-        if row:
-            rows_to_insert.append(row)
+        if not row:
+            continue  # Skip failed scrapes
 
-    return rows_to_insert
+        enriched_row = enrich_row_with_llm(row, logger)
+        if enriched_row:
+            rows_to_insert.append(enriched_row)
+
+    logger.info("=" * 60)
+    logger.info("WRITING SCRAPED & ENRICHED CONTENT TO DATABASE")
+    logger.info("=" * 60)
+    # Insert into Supabase
+    if rows_to_insert:
+        try:
+            insert_rows_into_table(
+                supabase=supabase,
+                table_name="article_contents",
+                rows=rows_to_insert
+            )
+            logger.info(f"✅ Successfully inserted {len(rows_to_insert)} enriched articles into 'article_contents'")
+        except Exception as e:
+            logger.error(f"❌ Failed to insert rows into 'article_contents': {e}")
+    else:
+        logger.info("📭 No articles were enriched or ready for insertion.")
 
 
 if __name__ == "__main__":
-    rows_to_insert = ETL_get_article_contents(test=False)
-    print(rows_to_insert)
+    ETL_get_article_contents(test=False)

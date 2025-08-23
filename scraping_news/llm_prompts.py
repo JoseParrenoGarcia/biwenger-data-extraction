@@ -70,3 +70,46 @@ def prompt_url_relevance_filter(team: str, team_links_dict: dict) -> tuple[str, 
     return system_prompt, user_prompt
 
 
+def prompt_article_summary_and_tags(article_text: str, article_title: str = "") -> tuple[str, str]:
+    system_prompt = \
+        """
+        Eres un asistente experto en análisis de artículos deportivos para managers de fantasy football en Biwenger.
+        Tu tarea es resumir, clasificar y extraer información estructurada de un artículo.
+    
+        Eres preciso, conciso y coherente. Devuelves siempre una estructura JSON válida y no incluyes explicaciones ni texto adicional fuera del bloque JSON.
+        """
+
+    user_prompt = f"""
+    A continuación tienes un artículo de prensa deportiva.
+    Tu trabajo consiste en devolver un bloque JSON con la siguiente información:
+
+    - "summary": Un resumen breve del contenido del artículo, en un parrafo de maximo 5 frases.
+    - "tags_llm": Una lista de etiquetas relevantes del siguiente conjunto:
+        ["cronica_partido", "previa_siguiente_partido", "lesiones_sanciones", "fichajes", "renovaciones", "rueda_prensa"]
+    - "recognised_teams_llm": Lista de equipos mencionados en el texto.
+    - "recognised_people_llm": Lista de nombres de personas mencionadas (jugadores, entrenadores, etc.).
+    
+    Contexto adicional:
+    - Cada articulo se ha hecho un scraping con beautifulsoup4 y puede contener texto no relevante (menus, publicidad, etc.). Debes centrarte en el contenido principal.
+
+    El resultado debe tener el siguiente formato:
+    {{
+        "summary": "...",
+        "tags_llm": ["...", "..."],
+        "recognised_teams_llm": ["...", "..."],
+        "recognised_people_llm": ["...", "..."]
+    }}
+
+    No incluyas explicaciones ni comentarios fuera del bloque JSON.
+
+    ### Título del artículo:
+    {article_title}
+
+    ### Contenido del artículo:
+    {article_text}
+    """
+
+    return system_prompt.strip(), user_prompt.strip()
+
+
+

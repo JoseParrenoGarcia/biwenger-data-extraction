@@ -8,9 +8,17 @@
 2025-08-23 | ETL_get_article_contents | INFO     | 🆕 2 articles still need to be scraped.
 2025-08-23 | ETL_get_article_contents | INFO     | Article scraping targets listed. Ready for content extraction stage.
 2025-08-23 | ETL_get_article_contents | INFO     | ============================================================
-2025-08-23 | ETL_get_article_contents | INFO     | SCRAPING ARTICLE CONTENTS
+2025-08-23 | ETL_get_article_contents | INFO     | SCRAPING ARTICLE CONTENTS AND ENRICHING WITH LLM
 2025-08-23 | ETL_get_article_contents | INFO     | ============================================================
 2025-08-23 | ETL_get_article_contents | INFO     | 🔁 (1/2) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/diego-lopez-no-se-entrena-con-el-valencia-por-gestion-de-esfuerzos
 2025-08-23 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/diego-lopez-no-se-entrena-con-el-valencia-por-gestion-de-esfuerzos
+2025-08-23 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-23 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
 2025-08-23 | ETL_get_article_contents | INFO     | 🔁 (2/2) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/hay-tiempo-para-reforzar-el-equipo-los-frentes-abiertos-del-valencia-cf-hasta-final-de-mercado
 2025-08-23 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/hay-tiempo-para-reforzar-el-equipo-los-frentes-abiertos-del-valencia-cf-hasta-final-de-mercado
+2025-08-23 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-23 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-23 | ETL_get_article_contents | INFO     | ============================================================
+2025-08-23 | ETL_get_article_contents | INFO     | WRITING SCRAPED & ENRICHED CONTENT TO DATABASE
+2025-08-23 | ETL_get_article_contents | INFO     | ============================================================
+2025-08-23 | ETL_get_article_contents | INFO     | ✅ Successfully inserted 2 enriched articles into 'article_contents'
