@@ -3,11 +3,11 @@ from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 from llm_client.llm_orchestrator import call_llm
 from scraping_news.llm_prompts import prompt_article_summary_and_tags
 from scraping_news.utils import extract_code_block
+from scraping_news.scraper_utils import Website
 from config_logging import get_logger
 
 from typing import List, Dict
 import logging
-from scraper_utils import Website
 import ast
 
 def get_existing_article_ids(table_name: str, logger: logging.Logger) -> set:
