@@ -301,7 +301,7 @@ def ETL_get_relevant_articles(test=False):
 
     # Step 3: Flatten the dictionary for easier storage
     flat_rows = flatten_filtered_links_dict(filtered_links_dict, logger)
-    logger.info(f"Flattened filtered links into {flat_rows} rows for potential storage.")
+    logger.info(f"Flattened filtered links into {len(flat_rows)} rows for potential storage.")
 
     insert_deduplicated_articles_in_database(
         flat_rows=flat_rows,
