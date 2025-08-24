@@ -181,3 +181,11 @@ TEAM_NEWS_SOURCES = {
         
     ],
 }
+
+# Deterministic sources that provide structured match previews
+MATCH_PREVIEW = {
+    "ALL_TEAMS": [
+        "https://www.jornadaperfecta.com/onces-posibles"
+    ]
+}
+

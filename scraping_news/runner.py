@@ -1,5 +1,6 @@
 from scraping_news.get_relevant_articles import ETL_get_relevant_articles
 from scraping_news.get_article_contents import ETL_get_article_contents
+from scraping_news.get_specialised_articles import ETL_get_specialised_articles
 from config_logging import get_logger
 import time
 
@@ -18,12 +19,19 @@ def run_full_scraping_pipeline(test: bool = False):
     step1_duration = (time.time() - step1_start) / 60
     logger.info(f"✅ ETL_get_relevant_articles completed in {step1_duration:.2f} minutes")
 
-    # Step 2: Run article scraping and LLM enrichment
-    logger.info("🧠 Running ETL_get_article_contents()...")
+    # Step 2: Run URL collection for specialised articles (e.g., match previews)
+    logger.info("🔍 Running ETL_get_specialised_articles()...")
     step2_start = time.time()
-    ETL_get_article_contents(test=test)
+    ETL_get_specialised_articles(test=test)
     step2_duration = (time.time() - step2_start) / 60
-    logger.info(f"✅ ETL_get_article_contents completed in {step2_duration:.2f} minutes")
+    logger.info(f"✅ ETL_get_specialised_articles completed in {step2_duration:.2f} minutes")
+
+    # Step 3: Run article scraping and LLM enrichment
+    logger.info("🧠 Running ETL_get_article_contents()...")
+    step3_start = time.time()
+    ETL_get_article_contents(test=test)
+    step3_duration = (time.time() - step3_start) / 60
+    logger.info(f"✅ ETL_get_article_contents completed in {step3_duration:.2f} minutes")
 
     total_duration = (time.time() - start_time) / 60
     logger.info("=" * 60)
