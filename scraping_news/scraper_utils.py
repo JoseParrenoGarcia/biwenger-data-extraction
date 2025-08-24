@@ -260,22 +260,59 @@ class Website:
         """
         return f"Webpage Title:\n{self.title}\n\nWebpage Contents:\n{self.text}\n"
 
-    def get_links(self):
+    def get_links(self, include_substring: str = None) -> list[str]:
         """
-        Get all normalized hyperlinks found on the webpage.
+        Return all normalized links, optionally filtering for links that contain a given substring.
+
+        Args:
+            include_substring (str): Only return links that contain this substring (e.g. "/partidos")
 
         Returns:
-            list: List of absolute URLs found on the page
+            List of matching links.
         """
+        if include_substring:
+            return [link for link in self.links if include_substring in link]
         return self.links
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s")
 
+    # ======
+    # print("\n=== TEST DE PERIODICOS DIGITALES ===")
     # test_url = "https://www.superdeporte.es/valencia-cf/2025/08/22/hugo-guillamon-muy-cerca-emigrar-croacia-120860302.html"
     # test_url = "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/corberan-rp-previa-osasuna"
     # test_url = "https://www.marca.com/futbol/liga-francesa/2025/08/23/cuenta-atras-ansu-fati.html"
-    test_url = "https://www.futbolfantasy.com/laliga/posibles-alineaciones"
+    # print(f"Fetching: {test_url}")
+    #
+    # w = Website(test_url, timeout=15)
+    #
+    # print("\n=== BASIC PAGE INFO ===")
+    # print(f"Title: {w.title}")
+    # print(f"Published at: {w.published_at}")
+    # print(f"Links found: {len(w.links)}")
+    #
+    # print("\n=== ARTICLE TEXT (first 800 chars) ===")
+    # atxt = (w.text or "").strip()
+    # print(atxt[:800] + ("..." if len(atxt) > 800 else ""))
+
+    # # ======
+    # print("\n=== TEST DE LANDING PAGE DE JORNADA PERFECTA PARA ONCES ===")
+    # test_url = "https://www.jornadaperfecta.com/onces-posibles"
+    # print(f"Fetching: {test_url}")
+    #
+    # w = Website(test_url, timeout=15)
+    # filtered_links = w.get_links(include_substring="/partido")
+    #
+    # print("\n=== BASIC PAGE INFO ===")
+    # print(f"Title: {w.title}")
+    # print(f"Published at: {w.published_at}")
+    # print(f"Links found: {len(w.links)}")
+    # print(f"First 20 links: {filtered_links}")
+
+    # ======
+    print("\n=== TEST DE CONTENIDO DE TEXT DE UN PARTIDO DE JORNADA PERFECTA ===")
+    test_url = "https://www.jornadaperfecta.com/partido/11993/betis-alaves/previa"
     print(f"Fetching: {test_url}")
 
     w = Website(test_url, timeout=15)
@@ -284,11 +321,8 @@ if __name__ == "__main__":
     print(f"Title: {w.title}")
     print(f"Published at: {w.published_at}")
     print(f"Links found: {len(w.links)}")
-    print(f"First 20 links: {w.links[:2000]}")
 
     print("\n=== ARTICLE TEXT (first 800 chars) ===")
     atxt = (w.text or "").strip()
     print(atxt[:800] + ("..." if len(atxt) > 800 else ""))
 
-    # If you want the full payload:
-    # import pprint; pprint.pprint(w.get_article())
