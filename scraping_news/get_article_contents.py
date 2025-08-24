@@ -10,6 +10,8 @@ from typing import List, Dict
 import logging
 import ast
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 def get_existing_article_ids(table_name: str, logger: logging.Logger) -> set:
     """
     Fetches existing article_id values from the article_contents table.
@@ -102,6 +104,9 @@ def enrich_row_with_llm(row: dict, logger: logging.Logger) -> dict | None:
     Returns:
         dict | None: Enriched row with LLM fields or None if failure
     """
+    url = row.get("url", "unknown URL")
+    logger.info(f"Summarising article via LLM: {url}")
+
     system_prompt, user_prompt = prompt_article_summary_and_tags(
         article_text=row["raw_text"],
         article_title=row.get("title", "")
@@ -133,43 +138,57 @@ def enrich_row_with_llm(row: dict, logger: logging.Logger) -> dict | None:
 def ETL_get_article_contents(test: bool = False):
     """
     Orchestrates the scraping of full article contents from URLs already marked as relevant.
-
-    1. Reads from article_urls
-    2. Checks what's already in article_contents
-    3. Returns list of URLs pending scraping
+    Now includes parallel LLM enrichment using ThreadPoolExecutor.
     """
     logger = get_logger("ETL_get_article_contents", log_file="logs/ETL_get_article_contents.log")
     logger.info("🚀 Starting ETL pipeline for article contents...")
 
     supabase = get_supabase_client()
-
     articles_to_scrape = get_urls_to_scrape(supabase, logger)
 
     if not articles_to_scrape:
         logger.info("✅ No new articles to scrape — pipeline complete.")
         return
 
-    logger.info("Article scraping targets listed. Ready for content extraction stage.")
+    logger.info(f"📋 {len(articles_to_scrape)} articles pending scraping.")
+    logger.info("=" * 60)
+    logger.info("SCRAPING ARTICLE CONTENTS")
+    logger.info("=" * 60)
+
+    scraped_rows = []
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_article = {
+            executor.submit(scrape_and_build_article_content_row, article, logger): article
+            for article in articles_to_scrape
+        }
+
+        for future in as_completed(future_to_article):
+            result = future.result()
+            if result:
+                scraped_rows.append(result)
+
+    if not scraped_rows:
+        logger.info("⚠️ No valid articles were scraped. Exiting early.")
+        return
 
     logger.info("=" * 60)
-    logger.info("SCRAPING ARTICLE CONTENTS AND ENRICHING WITH LLM")
+    logger.info("ENRICHING WITH LLM (5 threads in parallel)")
     logger.info("=" * 60)
+
     rows_to_insert = []
 
-    for i, article in enumerate(articles_to_scrape, 1):
-        logger.info(f"🔁 ({i}/{len(articles_to_scrape)}) Processing: {article['url']}")
-        row = scrape_and_build_article_content_row(article, logger)
-        if not row:
-            continue  # Skip failed scrapes
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_row = {executor.submit(enrich_row_with_llm, row, logger): row for row in scraped_rows}
 
-        enriched_row = enrich_row_with_llm(row, logger)
-        if enriched_row:
-            rows_to_insert.append(enriched_row)
+        for future in as_completed(future_to_row):
+            result = future.result()
+            if result:
+                rows_to_insert.append(result)
 
     logger.info("=" * 60)
-    logger.info("WRITING SCRAPED & ENRICHED CONTENT TO DATABASE")
+    logger.info("WRITING TO DATABASE")
     logger.info("=" * 60)
-    # Insert into Supabase
+
     if rows_to_insert:
         try:
             insert_rows_into_table(
@@ -182,7 +201,6 @@ def ETL_get_article_contents(test: bool = False):
             logger.error(f"❌ Failed to insert rows into 'article_contents': {e}")
     else:
         logger.info("📭 No articles were enriched or ready for insertion.")
-
 
 if __name__ == "__main__":
     ETL_get_article_contents(test=True)

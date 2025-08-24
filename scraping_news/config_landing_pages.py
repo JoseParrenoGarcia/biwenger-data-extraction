@@ -1,10 +1,10 @@
 TEAM_NEWS_SOURCES_test = {
     "Valencia": [
-        # "https://www.superdeporte.es/valencia-cf/",
+        "https://www.superdeporte.es/valencia-cf/",
         "https://plazadeportiva.valenciaplaza.com/valenciacf/",
     ],
     "Real Madrid": [
-        # "https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid",
+        "https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid",
         "https://as.com/noticias/real-madrid/?omnil=mod_esc",
     ]
 }
