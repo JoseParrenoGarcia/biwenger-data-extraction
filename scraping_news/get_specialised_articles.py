@@ -43,6 +43,72 @@ def insert_previews_as_articles(
     logger: logging.Logger
 ):
     """
+    Insert scraped preview links into the article_urls table under ALL_TEAMS category,
+    deduplicating against existing rows and within the new batch.
+    """
+    logger.info("=" * 60)
+    logger.info("STARTING STORAGE PROCESS TO SUPABASE (SPECIALISED MATCH PREVIEWS)")
+    logger.info("=" * 60)
+
+    supabase = get_supabase_client()
+
+    if not check_if_table_exists(supabase, table_name):
+        logger.warning(f"⚠️ Table '{table_name}' does not exist.")
+        return
+
+    logger.info(f"✅ Table '{table_name}' found.")
+    logger.info("Fetching existing article URLs from Supabase to filter duplicates...")
+
+    try:
+        response = supabase.table(table_name).select("team, url").execute()
+    except Exception as e:
+        logger.error(f"❌ Failed to fetch existing data from '{table_name}': {e}")
+        return
+
+    # Extract existing (team, url) pairs into a set
+    existing_team_url_set = {
+        (row["team"], row["url"]) for row in response.data
+    } if response.data else set()
+
+    if existing_team_url_set:
+        logger.info(f"Found {len(existing_team_url_set)} existing records.")
+    else:
+        logger.info("No existing records found — table is empty.")
+
+    # Deduplicate current batch in-memory
+    seen_urls = set()
+    flat_rows = []
+
+    for url in links:
+        if url not in seen_urls:
+            seen_urls.add(url)
+            flat_rows.append({
+                "team": "Todos",
+                "source": "www.jornadaperfecta.com",
+                "url": url
+            })
+
+    logger.info(f"Prepared {len(flat_rows)} unique preview URLs from current scrape.")
+
+    # Filter out rows already in the database
+    new_rows_to_insert = [
+        row for row in flat_rows
+        if (row["team"], row["url"]) not in existing_team_url_set
+    ]
+
+    logger.info(f"Filtered out {len(flat_rows) - len(new_rows_to_insert)} duplicates.")
+    logger.info(f"Ready to insert {len(new_rows_to_insert)} new articles.")
+
+    if new_rows_to_insert:
+        try:
+            insert_rows_into_table(supabase, table_name=table_name, rows=new_rows_to_insert)
+            logger.info(f"✅ Successfully inserted {len(new_rows_to_insert)} new preview links into '{table_name}'")
+        except Exception as e:
+            logger.error(f"❌ Failed to insert preview links into Supabase: {e}")
+    else:
+        logger.info("⏩ No new preview articles to insert — skipping write operation.")
+
+    """
     Insert scraped preview links into the article_urls table under ALL_TEAMS category.
     """
     supabase = get_supabase_client()
@@ -64,7 +130,7 @@ def insert_previews_as_articles(
     new_rows = [
         {"team": "Todos", "source": "www.jornadaperfecta.com", "url": url}
         for url in links
-        if ("ALL_TEAMS", url) not in existing
+        if ("Todos", url) not in existing
     ]
 
     if not new_rows:

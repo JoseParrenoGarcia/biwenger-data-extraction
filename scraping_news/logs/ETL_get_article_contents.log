@@ -3,21 +3,154 @@
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
 2025-08-24 | ETL_get_article_contents | INFO     | COLLECTING URLS TO SCRAPE THEIR CONTENTS
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
-2025-08-24 | ETL_get_article_contents | INFO     | Retrieved 89 total articles from article_urls.
+2025-08-24 | ETL_get_article_contents | INFO     | Retrieved 80 total articles from article_urls.
 2025-08-24 | ETL_get_article_contents | INFO     | Retrieved 45 existing article_ids from 'article_contents'
-2025-08-24 | ETL_get_article_contents | INFO     | 🆕 44 articles still need to be scraped.
+2025-08-24 | ETL_get_article_contents | INFO     | 🆕 35 articles still need to be scraped.
 2025-08-24 | ETL_get_article_contents | INFO     | Article scraping targets listed. Ready for content extraction stage.
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
 2025-08-24 | ETL_get_article_contents | INFO     | SCRAPING ARTICLE CONTENTS AND ENRICHING WITH LLM
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
-2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (1/44) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/plantilla/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (1/35) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/plantilla/
 2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/resultados/ficha/equipo/real_madrid/1/plantilla/
 2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
 2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (2/44) Processing: https://as.com/futbol/fotorrelato/jugadores-que-vistieron-la-camiseta-del-real-oviedo-y-del-real-madrid-f/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (2/35) Processing: https://as.com/futbol/fotorrelato/jugadores-que-vistieron-la-camiseta-del-real-oviedo-y-del-real-madrid-f/
 2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/fotorrelato/jugadores-que-vistieron-la-camiseta-del-real-oviedo-y-del-real-madrid-f/
 2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
 2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (3/44) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/calendario/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (3/35) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/calendario/
 2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/resultados/ficha/equipo/real_madrid/1/calendario/
 2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (4/35) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/resultados/ficha/equipo/real_madrid/1/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (5/35) Processing: https://www.jornadaperfecta.com/partido/11994/levante-barcelona/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11994/levante-barcelona/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (6/35) Processing: https://www.jornadaperfecta.com/partido/11990/atletico-elche/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11990/atletico-elche/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (7/35) Processing: https://www.jornadaperfecta.com/partido/11989/athletic-rayo-vallecano/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11989/athletic-rayo-vallecano/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (8/35) Processing: https://www.jornadaperfecta.com/partido/11991/osasuna-valencia/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11991/osasuna-valencia/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (9/35) Processing: https://www.jornadaperfecta.com/partido/11998/villarreal-girona/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11998/villarreal-girona/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (10/35) Processing: https://www.jornadaperfecta.com/partido/11992/real-oviedo-real-madrid/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11992/real-oviedo-real-madrid/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (11/35) Processing: https://www.jornadaperfecta.com/partido/11993/betis-alaves/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11993/betis-alaves/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (12/35) Processing: https://www.jornadaperfecta.com/partido/11996/real-sociedad-espanyol/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11996/real-sociedad-espanyol/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (13/35) Processing: https://www.jornadaperfecta.com/partido/11997/sevilla-getafe/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11997/sevilla-getafe/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (14/35) Processing: https://www.jornadaperfecta.com/partido/11995/mallorca-celta/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.jornadaperfecta.com/partido/11995/mallorca-celta/previa
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (15/35) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/tarrega-ha-sido-un-partido-jodido
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/tarrega-ha-sido-un-partido-jodido
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (16/35) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/este-es-el-once-del-valencia-cf-frente-al-ca-osasuna
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/este-es-el-once-del-valencia-cf-frente-al-ca-osasuna
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (17/35) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/estas-son-las-notas-del-ca-osasuna-valencia-cf
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/estas-son-las-notas-del-ca-osasuna-valencia-cf
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (18/35) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/gaya-me-duele-mi-expulsion-lo-ha-condicionado-todo
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/gaya-me-duele-mi-expulsion-lo-ha-condicionado-todo
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (19/35) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-valencia-cf-pone-la-alfombra-roja-al-debut-de-lisci-en-el-sadar
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-valencia-cf-pone-la-alfombra-roja-al-debut-de-lisci-en-el-sadar
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (20/35) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/corberan-estamos-jodidos-no-hemos-conseguido-el-empate-por-un-palmo
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/corberan-estamos-jodidos-no-hemos-conseguido-el-empate-por-un-palmo
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (21/35) Processing: https://as.com/futbol/primera/lucas-vazquez-deshoja-la-margarita-tic-tac-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/lucas-vazquez-deshoja-la-margarita-tic-tac-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (22/35) Processing: https://as.com/futbol/primera/rodrygo-mastantuono-carvajal-rudiger-y-vinicius-al-banquillo-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/rodrygo-mastantuono-carvajal-rudiger-y-vinicius-al-banquillo-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (23/35) Processing: https://as.com/futbol/primera/mercado-de-fichajes-ultima-hora-de-real-madrid-barcelona-atletico-y-ligas-internacionales-n-155/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/mercado-de-fichajes-ultima-hora-de-real-madrid-barcelona-atletico-y-ligas-internacionales-n-155/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (24/35) Processing: https://as.com/futbol/polemica-analisis-y-reacciones-del-real-oviedo-real-madrid-de-laliga-ea-sports-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/polemica-analisis-y-reacciones-del-real-oviedo-real-madrid-de-laliga-ea-sports-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (25/35) Processing: https://as.com/resultados/futbol/primera/2025_2026/directo/regular_a_2_68644b7760f7127/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/resultados/futbol/primera/2025_2026/directo/regular_a_2_68644b7760f7127/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (26/35) Processing: https://as.com/futbol/primera/oviedo-real-madrid-en-directo-laliga-ea-sports-hoy-en-vivo-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/oviedo-real-madrid-en-directo-laliga-ea-sports-hoy-en-vivo-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (27/35) Processing: https://as.com/opinion/pues-yo-soy-de-carvajal-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/opinion/pues-yo-soy-de-carvajal-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (28/35) Processing: https://as.com/futbol/primera/xabi-se-agarra-a-mbappe-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/xabi-se-agarra-a-mbappe-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (29/35) Processing: https://as.com/futbol/primera/mastantuono-tiene-sitio-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/mastantuono-tiene-sitio-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (30/35) Processing: https://as.com/futbol/videos/a-que-distancia-esta-el-madrid-del-barca-sorprendio-a-xabi-y-la-respuesta-es-para-enmarcar-v/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/videos/a-que-distancia-esta-el-madrid-del-barca-sorprendio-a-xabi-y-la-respuesta-es-para-enmarcar-v/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (31/35) Processing: https://as.com/futbol/videos/algo-inaudito-los-detalles-de-la-llamada-de-xabi-alonso-a-mastantuono-v/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/videos/algo-inaudito-los-detalles-de-la-llamada-de-xabi-alonso-a-mastantuono-v/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (32/35) Processing: https://as.com/futbol/primera/alineacion-posible-del-real-madrid-hoy-ante-el-real-oviedo-en-laliga-ea-sports-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/alineacion-posible-del-real-madrid-hoy-ante-el-real-oviedo-en-laliga-ea-sports-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (33/35) Processing: https://as.com/futbol/primera/carvajal-acepta-el-pulso-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/carvajal-acepta-el-pulso-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (34/35) Processing: https://as.com/futbol/videos/la-cara-de-vinicius-al-entrar-al-carlos-tartiere-vean-y-juzguen-ustedes-mismos-v/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/videos/la-cara-de-vinicius-al-entrar-al-carlos-tartiere-vean-y-juzguen-ustedes-mismos-v/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (35/35) Processing: https://as.com/futbol/losantos-omar-y-un-empate-que-supuso-un-descenso-el-ultimo-precedente-entre-real-oviedo-y-real-madrid-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/losantos-omar-y-un-empate-que-supuso-un-descenso-el-ultimo-precedente-entre-real-oviedo-y-real-madrid-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
+2025-08-24 | ETL_get_article_contents | INFO     | WRITING SCRAPED & ENRICHED CONTENT TO DATABASE
+2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
+2025-08-24 | ETL_get_article_contents | INFO     | ✅ Successfully inserted 35 enriched articles into 'article_contents'

@@ -185,4 +185,4 @@ def ETL_get_article_contents(test: bool = False):
 
 
 if __name__ == "__main__":
-    ETL_get_article_contents(test=False)
+    ETL_get_article_contents(test=True)

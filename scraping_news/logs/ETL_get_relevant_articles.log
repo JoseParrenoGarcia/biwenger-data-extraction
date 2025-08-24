@@ -24,23 +24,23 @@
 2025-08-24 | ETL_get_relevant_articles | INFO     | LLM filtering for Valencia...
 2025-08-24 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
 2025-08-24 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Valencia: 20 links retained.
+2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Valencia: 22 links retained.
 2025-08-24 | ETL_get_relevant_articles | INFO     | LLM filtering for Real Madrid...
 2025-08-24 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
 2025-08-24 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Real Madrid: 21 links retained.
+2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Real Madrid: 20 links retained.
 2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
 2025-08-24 | ETL_get_relevant_articles | INFO     | FLATTENING FILTERED LINKS DICTIONARY IN PREPARATION FOR STORAGE
 2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | Flattened filtered links into 41 rows for potential storage.
+2025-08-24 | ETL_get_relevant_articles | INFO     | Flattened filtered links into 42 rows for potential storage.
 2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
 2025-08-24 | ETL_get_relevant_articles | INFO     | STARTING STORAGE PROCESS TO SUPABASE
 2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
 2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ Table 'article_urls' found.
 2025-08-24 | ETL_get_relevant_articles | INFO     | Fetching existing article URLs from Supabase to filter duplicates...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Found 59 existing records.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered out 21 duplicates.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Ready to insert 20 new articles.
-2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ Successfully inserted 20 new rows into 'article_urls'
+2025-08-24 | ETL_get_relevant_articles | INFO     | Found 79 existing records.
+2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered out 41 duplicates.
+2025-08-24 | ETL_get_relevant_articles | INFO     | Ready to insert 1 new articles.
+2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ Successfully inserted 1 new rows into 'article_urls'
 2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
 2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ ETL pipeline completed successfully.
