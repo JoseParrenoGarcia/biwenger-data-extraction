@@ -272,9 +272,10 @@ class Website:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s")
 
-    test_url = "https://www.superdeporte.es/valencia-cf/2025/08/22/hugo-guillamon-muy-cerca-emigrar-croacia-120860302.html"
+    # test_url = "https://www.superdeporte.es/valencia-cf/2025/08/22/hugo-guillamon-muy-cerca-emigrar-croacia-120860302.html"
     # test_url = "https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/corberan-rp-previa-osasuna"
     # test_url = "https://www.marca.com/futbol/liga-francesa/2025/08/23/cuenta-atras-ansu-fati.html"
+    test_url = "https://www.futbolfantasy.com/laliga/posibles-alineaciones"
     print(f"Fetching: {test_url}")
 
     w = Website(test_url, timeout=15)
@@ -283,6 +284,7 @@ if __name__ == "__main__":
     print(f"Title: {w.title}")
     print(f"Published at: {w.published_at}")
     print(f"Links found: {len(w.links)}")
+    print(f"First 20 links: {w.links[:2000]}")
 
     print("\n=== ARTICLE TEXT (first 800 chars) ===")
     atxt = (w.text or "").strip()

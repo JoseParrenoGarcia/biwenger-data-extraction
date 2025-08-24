@@ -3,22 +3,30 @@
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
 2025-08-24 | ETL_get_article_contents | INFO     | COLLECTING URLS TO SCRAPE THEIR CONTENTS
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
-2025-08-24 | ETL_get_article_contents | INFO     | Retrieved 45 total articles from article_urls.
-2025-08-24 | ETL_get_article_contents | INFO     | Retrieved 43 existing article_ids from 'article_contents'
-2025-08-24 | ETL_get_article_contents | INFO     | 🆕 2 articles still need to be scraped.
+2025-08-24 | ETL_get_article_contents | INFO     | Retrieved 49 total articles from article_urls.
+2025-08-24 | ETL_get_article_contents | INFO     | Retrieved 45 existing article_ids from 'article_contents'
+2025-08-24 | ETL_get_article_contents | INFO     | 🆕 4 articles still need to be scraped.
 2025-08-24 | ETL_get_article_contents | INFO     | Article scraping targets listed. Ready for content extraction stage.
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
 2025-08-24 | ETL_get_article_contents | INFO     | SCRAPING ARTICLE CONTENTS AND ENRICHING WITH LLM
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
-2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (1/2) Processing: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/dimitrievski-le-da-el-si-quiero-al-levante-ud
-2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/dimitrievski-le-da-el-si-quiero-al-levante-ud
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (1/4) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/plantilla/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/resultados/ficha/equipo/real_madrid/1/plantilla/
 2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
 2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (2/2) Processing: https://as.com/futbol/primera/de-burgos-arbitro-del-real-oviedo-real-madrid-n/
-2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/de-burgos-arbitro-del-real-oviedo-real-madrid-n/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (2/4) Processing: https://as.com/futbol/fotorrelato/jugadores-que-vistieron-la-camiseta-del-real-oviedo-y-del-real-madrid-f/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/fotorrelato/jugadores-que-vistieron-la-camiseta-del-real-oviedo-y-del-real-madrid-f/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (3/4) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/calendario/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/resultados/ficha/equipo/real_madrid/1/calendario/
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-08-24 | ETL_get_article_contents | INFO     | 🔁 (4/4) Processing: https://as.com/resultados/ficha/equipo/real_madrid/1/
+2025-08-24 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/resultados/ficha/equipo/real_madrid/1/
 2025-08-24 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
 2025-08-24 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
 2025-08-24 | ETL_get_article_contents | INFO     | WRITING SCRAPED & ENRICHED CONTENT TO DATABASE
 2025-08-24 | ETL_get_article_contents | INFO     | ============================================================
-2025-08-24 | ETL_get_article_contents | INFO     | ✅ Successfully inserted 2 enriched articles into 'article_contents'
+2025-08-24 | ETL_get_article_contents | ERROR    | ❌ Failed to insert rows into 'article_contents': ❌ Supabase insert failed: {'message': 'null value in column "published_date" of relation "article_contents" violates not-null constraint', 'code': '23502', 'hint': None, 'details': None}
