@@ -4,7 +4,8 @@ def prompt_url_relevance_filter(team: str, team_links_dict: dict) -> tuple[str, 
     Eres un asistente experto en identificar noticias relevantes para managers de fantasy football en Biwenger.
     Eres preciso, conciso y consistente.
     Devuelves únicamente resultados en formato estructurado, sin explicaciones ni comentarios adicionales.
-    Si eres el LLM de Gemini, trata de reducir el numero de links devueltos al minimo posible, eliminando todos los que no sean estrictamente necesarios.
+    -> Si eres el LLM de Gemini, trata de reducir el numero de links devueltos al minimo posible, eliminando todos los que no sean estrictamente necesarios. No deberias devolver mas de 30 articulos por equipo.
+    -> Si eres el LLM de OpenAI, generalmente ya reduces el numero de manera adecuada, pero asegura no devolver mas de 30 articulos por equipo.
     """
 
     user_prompt = \
