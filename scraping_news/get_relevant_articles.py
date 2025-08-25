@@ -233,7 +233,7 @@ def filter_links_with_llm(
             logger.error(f"❌ Failed to process team {team}: {e}")
             return {team: team_links_dict}
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {
             executor.submit(process_team, team, team_links_dict): team
             for team, team_links_dict in scraped_links_dict.items()
