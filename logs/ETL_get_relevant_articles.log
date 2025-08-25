@@ -1,46 +1,356 @@
-2025-08-24 | ETL_get_relevant_articles | INFO     | Logger 'ETL_get_relevant_articles' initialized. Logging to: logs/ETL_get_relevant_articles.log
-2025-08-24 | ETL_get_relevant_articles | INFO     | 🚀 Starting ETL pipeline for relevant articles...
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | STARTING URL EXTRACTION PROCESS
-2025-08-24 | ETL_get_relevant_articles | INFO     | Scope: 2 teams, 2 total sources
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | Team 1/2: Valencia
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | -> Scraping: https://plazadeportiva.valenciaplaza.com/valenciacf/
-2025-08-24 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 145 before deduplication)
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | Team 2/2: Real Madrid
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
-2025-08-24 | ETL_get_relevant_articles | INFO     | --> Found 78 unique links (was 125 before deduplication)
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | Ensuring output structure is valid...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Output structure validated. 
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
-2025-08-24 | ETL_get_relevant_articles | INFO     | LLM filtering for Valencia...
-2025-08-24 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Valencia: 17 links retained.
-2025-08-24 | ETL_get_relevant_articles | INFO     | LLM filtering for Real Madrid...
-2025-08-24 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Real Madrid: 24 links retained.
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | FLATTENING FILTERED LINKS DICTIONARY IN PREPARATION FOR STORAGE
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | Flattened filtered links into [{'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/diego-lopez-no-se-entrena-con-el-valencia-por-gestion-de-esfuerzos'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-valencia-cf-se-lanza-a-por-largie-ramazani'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-valencia-cf-no-gana-una-segunda-jornada-fuera-de-casa-desde-2009'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/diego-lopez-vuelve-a-entrenar-con-el-resto-del-grupo'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/thierry-avanza-en-su-recuperacion-y-dimitrievski-vuelve-a-entrenarse'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/hay-tiempo-para-reforzar-el-equipo-los-frentes-abiertos-del-valencia-cf-hasta-final-de-mercado'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/hugo-guillamon-no-se-entrena-con-el-valencia-y-su-salida-del-club-podria-ser-inminente'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/gaya-a-un-partido-de-igualar-a-angulo-como-quinto-con-mas-partidos-de-la-liga-con-el-club'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-valencia-prepara-con-todo-el-duelo-contra-osasuna'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-valencia-sumo-un-empate-y-tres-victorias-en-las-ultimas-visitas-a-el-sadar'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-sadar-primer-examen-a-domicilio-para-el-valencia'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-posible-once-del-valencia-cf-para-enfrentarse-a-ca-osasuna'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/las-incognitas-del-valencia-en-los-ultimos-dias-de-mercado'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/hugo-guillamon-ve-una-salida-cercana-el-hajduk-split'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/cedidos-valencia-cf-iker-cordoba-expulsado-en-el-primer-minuto-de-su-debut-con-el-mirandes'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/marc-jurado-creo-que-vamos-a-llegar-a-un-buen-nivel-a-inicio-de-la-temporada'}, {'team': 'Valencia', 'source': 'https://plazadeportiva.valenciaplaza.com/valenciacf/', 'url': 'https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-valencia-busca-prolongar-su-buen-final-de-la-temporada-pasada-a-domicilio'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/mercado-de-fichajes-ultima-hora-de-real-madrid-barcelona-atletico-y-ligas-internacionales-n-154/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/rudiger-se-resetea-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/la-pieza-que-falta-en-el-puzle-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/xabi-rodrygo-las-decisiones-son-mias-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/posible-alineacion-del-real-madrid-hoy-ante-el-oviedo-en-laliga-ea-sports-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/resultados/ficha/equipo/real_madrid/1/plantilla/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/42-fichajes-para-cerrar-el-mercado-en-primera-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/a-que-hora-es-el-oviedo-real-madrid-tv-horario-y-donde-ver-laliga-ea-sports-online-hoy-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/fotorrelato/jugadores-que-vistieron-la-camiseta-del-real-oviedo-y-del-real-madrid-f/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/resultados/ficha/equipo/real_madrid/1/calendario/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/videos/la-de-mastantuono-es-algo-federativo-lo-de-bardghji-es-un-problema-de-limite-salarial-v/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/opinion/la-revalida-de-guler-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/resultados/ficha/equipo/real_madrid/1/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/ceballos-tiene-ofertas-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/de-burgos-arbitro-del-real-oviedo-real-madrid-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/xabi-alonso-en-directo-rueda-de-prensa-previa-al-real-oviedo-real-madrid-de-laliga-ea-sports-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/endrick-se-pone-las-pilas-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/veljko-paunovic-ante-el-madrid-jugaremos-con-coraje-y-alegria-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/una-lista-casi-calcada-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/posible-alineacion-del-real-oviedo-ante-el-real-madrid-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/primera/mbappe-llena-el-tartiere-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/us/futbol/real-oviedo-real-madrid-horario-tv-como-y-donde-ver-laliga-ea-sports-en-usa-n/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/videos/la-diferencia-del-real-madrid-y-barcelona-a-la-hora-de-invitar-a-salir-a-dos-de-sus-jugadores-v/'}, {'team': 'Real Madrid', 'source': 'https://as.com/noticias/real-madrid/?omnil=mod_esc', 'url': 'https://as.com/futbol/videos/un-argentino-ahonda-en-el-franco-franco-del-bernabeu-y-xabi-salio-del-embrollo-con-parsimonia-v/'}] rows for potential storage.
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | STARTING STORAGE PROCESS TO SUPABASE
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ Table 'article_urls' found.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Fetching existing article URLs from Supabase to filter duplicates...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Found 45 existing records.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered out 37 duplicates.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Ready to insert 4 new articles.
-2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ Successfully inserted 4 new rows into 'article_urls'
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ ETL pipeline completed successfully.
+2025-08-25 | ETL_get_relevant_articles | INFO     | Logger 'ETL_get_relevant_articles' initialized. Logging to: logs/ETL_get_relevant_articles.log
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🚀 Starting ETL pipeline for relevant articles...
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | STARTING URL EXTRACTION PROCESS
+2025-08-25 | ETL_get_relevant_articles | INFO     | Scope: 20 teams, 127 total sources
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 1/20: Alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.noticiasdealava.eus/alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 93 unique links (was 175 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eitb.eus/es/deportes/futbol/alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 151 unique links (was 279 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/deportivo-alaves/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 135 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.mundodeportivo.com/futbol/alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 192 unique links (was 222 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.relevo.com/futbol/equipos/deportivo-alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 253 unique links (was 369 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/deportivo-alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 71 unique links (was 124 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/alaves.html?intcmp=MENUESCU&s_kw=alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 420 unique links (was 480 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 2/20: Athletic Bilbao
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.deia.eus/athletic/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 91 unique links (was 167 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eitb.eus/es/deportes/futbol/athletic/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 161 unique links (was 293 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/athletic.html?intcmp=MENUESCU&s_kw=athletic
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 423 unique links (was 483 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/athletic/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 74 unique links (was 120 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/athletic-club-bilbao/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 182 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/athletic-club/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 133 unique links (was 214 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 3/20: Atletico Madrid
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.soycolchonero.es
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 35 unique links (was 37 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://atletimania.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 61 unique links (was 175 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://estoesatleti.es
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 64 unique links (was 169 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/atletico.html?intcmp=MENUESCU&s_kw=atletico
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 423 unique links (was 494 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/atletico-madrid/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 75 unique links (was 117 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/atletico-madrid/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 185 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/atletico-de-madrid/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 140 unique links (was 221 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 4/20: Barcelona
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.sport.es/es/barca/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 338 unique links (was 489 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.mundodeportivo.com/futbol/fc-barcelona
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 196 unique links (was 224 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.fcbarcelonanoticias.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 70 unique links (was 113 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/barcelona.html?intcmp=MENUESCU&s_kw=barcelona
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 426 unique links (was 493 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/fc-barcelona/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 73 unique links (was 110 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/barcelona/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 184 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/fc-barcelona/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 5/20: Betis
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/betis/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 190 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/real-betis/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 139 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/betis.html?intcmp=MENUESCU&s_kw=betis
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 428 unique links (was 494 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-betis/?omnil=mod_esc
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 74 unique links (was 122 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://mundobetis.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 0 unique links (was 0 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 6/20: Celta de Vigo
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.farodevigo.es/celta-de-vigo/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 163 unique links (was 276 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.lavozdegalicia.es/gradario/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 165 unique links (was 240 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/celta/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 186 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/celta-de-vigo/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 218 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-club-celta-de-vigo/?omnil=mod_esc
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 73 unique links (was 122 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/celta.html?intcmp=MENUESCU&s_kw=celta
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 423 unique links (was 478 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 7/20: Elche
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/elche.html?intcmp=MENUESCU&s_kw=elche
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 424 unique links (was 482 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/elche-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 74 unique links (was 116 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://diariofranjiverde.com/category/elchecf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 53 unique links (was 167 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://teleelx.es/category/deportes/elche-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 63 unique links (was 111 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://alicanteplaza.es/tag/elche-cf
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 117 unique links (was 246 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/elche/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 186 unique links (was 192 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/elche-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 134 unique links (was 213 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 8/20: Espanyol
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/espanyol.html?intcmp=MENUESCU&s_kw=espanyol
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 424 unique links (was 485 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/rcd-espanyol/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 71 unique links (was 119 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/rcd-espanyol/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 137 unique links (was 216 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/espanyol/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 186 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.mundodeportivo.com/futbol/rcd-espanyol
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 192 unique links (was 222 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.sport.es/es/espanyol/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 337 unique links (was 485 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.lagradaonline.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 78 unique links (was 292 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://el1900.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 133 unique links (was 240 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 9/20: Getafe
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/getafe.html?intcmp=MENUESCU&s_kw=getafe
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 423 unique links (was 482 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/getafe-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 74 unique links (was 118 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/getafe-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 136 unique links (was 215 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/getafe/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 184 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 10/20: Girona
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/girona.html?intcmp=MENUESCU&s_kw=girona
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 425 unique links (was 488 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/girona-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 73 unique links (was 122 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/girona-fc/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 136 unique links (was 215 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/girona/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 184 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.lesportiudecatalunya.cat/girona.html
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 157 unique links (was 299 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 11/20: Levante
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.superdeporte.es/levante-ud/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 171 unique links (was 284 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://plazadeportiva.valenciaplaza.com/levanteud/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 146 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.levante-emv.com/levante-ud/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 193 unique links (was 256 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.lasprovincias.es/levanteud/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 202 unique links (was 232 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/levante.html?intcmp=MENUESCU&s_kw=levante
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 411 unique links (was 469 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/levante-ud/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 73 unique links (was 115 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/levante/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 186 unique links (was 192 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/levante-ud/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 217 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 12/20: Mallorca
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.ultimahora.es/deportes/real-mallorca.html
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 213 unique links (was 373 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.diariodemallorca.es/rcd-mallorca/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 183 unique links (was 253 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.futboldesdemallorca.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 54 unique links (was 74 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/mallorca.html
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 421 unique links (was 487 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-mallorca/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 71 unique links (was 121 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/mallorca/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 185 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/rcd-mallorca/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 134 unique links (was 213 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 13/20: Osasuna
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eitb.eus/es/deportes/futbol/osasuna/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 149 unique links (was 269 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.diariodenavarra.es/noticias/deportes/futbol/osasuna/portada/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 147 unique links (was 254 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.noticiasdenavarra.com/osasuna/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 104 unique links (was 206 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.navarratelevision.es/seccion/osasuna
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 50 unique links (was 129 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/osasuna/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 70 unique links (was 115 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/osasuna.html?intcmp=MENUESCU&s_kw=osasuna
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 423 unique links (was 487 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/osasuna/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 186 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/osasuna/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 136 unique links (was 215 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 14/20: Oviedo
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.elcomercio.es/real-oviedo/?ref=https%3A%2F%2Fwww.elcomercio.es%2Freal-oviedo%2F
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 219 unique links (was 269 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.lavozdeasturias.es/temas/real-oviedo
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 62 unique links (was 63 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-oviedo/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 68 unique links (was 105 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/oviedo.html
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 421 unique links (was 484 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/oviedo/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 185 unique links (was 192 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/real-oviedo/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 217 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 15/20: Rayo Vallecano
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/rayo.html?intcmp=MENUESCU&s_kw=rayo
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 421 unique links (was 485 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/rayo-vallecano/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 72 unique links (was 118 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/rayo-vallecano/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 134 unique links (was 213 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/rayo-vallecano/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 185 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://unionrayo.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 94 unique links (was 319 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 16/20: Real Madrid
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 394 unique links (was 435 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 69 unique links (was 105 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.bernabeudigital.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 117 unique links (was 170 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://realmadridconfidencial.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 46 unique links (was 146 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://okdiario.com/diariomadridista/real-madrid/1/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 111 unique links (was 180 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/real-madrid/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 186 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/real-madrid/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 17/20: Real Sociedad
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.diariovasco.com/real-sociedad/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 201 unique links (was 239 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eitb.eus/es/deportes/futbol/real-sociedad/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 155 unique links (was 277 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-sociedad.html?intcmp=MENUESCU&s_kw=realsociedad
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 430 unique links (was 488 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-sociedad/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 71 unique links (was 122 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/real-sociedad/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 185 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/real-sociedad/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 217 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 18/20: Sevilla FC
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://orgullobiri.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 106 unique links (was 277 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.vamosmisevillafc.com
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 44 unique links (was 105 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/sevilla-fc/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 189 unique links (was 221 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/sevilla-fc/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 139 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/sevilla.html?intcmp=MENUESCU&s_kw=sevilla
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 433 unique links (was 497 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/sevilla-futbol-club/?omnil=mod_esc
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 73 unique links (was 124 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 19/20: Valencia
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.superdeporte.es/valencia-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 161 unique links (was 281 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://plazadeportiva.valenciaplaza.com/valenciacf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 144 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.levante-emv.com/valencia-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 169 unique links (was 283 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.lasprovincias.es/valenciacf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 204 unique links (was 238 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/valencia.html?intcmp=MENUESCU&s_kw=valencia,https://as.com/noticias/valencia-cf/?omnil=mod_esc
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 427 unique links (was 487 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/valencia/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 184 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/valencia-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 139 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 20/20: Villareal
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/villarreal.html?intcmp=MENUESCU&s_kw=villarreal
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 422 unique links (was 483 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/villarreal-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 70 unique links (was 121 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/villarreal/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 186 unique links (was 212 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/villarreal-cf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 136 unique links (was 215 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.elperiodicomediterraneo.com/villarrealcf/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 107 unique links (was 171 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Ensuring output structure is valid...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Output structure validated. 
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
+2025-08-25 | ETL_get_relevant_articles | INFO     | LLM filtering for Alaves...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
+2025-08-25 | ETL_get_relevant_articles | ERROR    | ❌ Failed to parse or validate LLM output for Alaves: unterminated string literal (detected at line 185) (<unknown>, line 185)
+2025-08-25 | ETL_get_relevant_articles | INFO     | LLM filtering for Athletic Bilbao...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
+2025-08-25 | ETL_get_relevant_articles | INFO     | Filtered Athletic Bilbao: 205 links retained.
+2025-08-25 | ETL_get_relevant_articles | INFO     | LLM filtering for Atletico Madrid...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
+2025-08-25 | ETL_get_relevant_articles | ERROR    | ❌ Failed to parse or validate LLM output for Atletico Madrid: unterminated string literal (detected at line 93) (<unknown>, line 93)
+2025-08-25 | ETL_get_relevant_articles | INFO     | LLM filtering for Barcelona...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-25 | ETL_get_relevant_articles | ERROR    | ❌ Gemini API call failed: Invalid operation: The `response.text` quick accessor requires the response to contain a valid `Part`, but none were returned. The candidate's [finish_reason](https://ai.google.dev/api/generate-content#finishreason) is 1.
+2025-08-25 | ETL_get_relevant_articles | WARNING  | ⚠️ Gemini returned an empty response.
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying OpenAI model...
+2025-08-25 | ETL_get_relevant_articles | INFO     | OpenAI returned a valid response.
+2025-08-25 | ETL_get_relevant_articles | INFO     | Filtered Barcelona: 49 links retained.
+2025-08-25 | ETL_get_relevant_articles | INFO     | LLM filtering for Betis...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
+2025-08-25 | ETL_get_relevant_articles | INFO     | Filtered Betis: 114 links retained.
+2025-08-25 | ETL_get_relevant_articles | INFO     | LLM filtering for Celta de Vigo...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
+2025-08-25 | ETL_get_relevant_articles | ERROR    | ❌ Failed to parse or validate LLM output for Celta de Vigo: unterminated string literal (detected at line 96) (<unknown>, line 96)
+2025-08-25 | ETL_get_relevant_articles | INFO     | LLM filtering for Elche...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
