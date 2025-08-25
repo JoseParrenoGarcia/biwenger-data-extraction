@@ -51,7 +51,6 @@ TEAM_NEWS_SOURCES = {
         "https://www.eldesmarque.com/futbol/real-betis/",
         "https://www.marca.com/futbol/betis.html?intcmp=MENUESCU&s_kw=betis",
         "https://as.com/noticias/real-betis/?omnil=mod_esc",
-        "https://mundobetis.com",
     ],
     "Celta de Vigo": [
         "https://www.farodevigo.es/celta-de-vigo/",
@@ -77,8 +76,6 @@ TEAM_NEWS_SOURCES = {
         "https://www.estadiodeportivo.com/futbol/espanyol/",
         "https://www.mundodeportivo.com/futbol/rcd-espanyol",
         "https://www.sport.es/es/espanyol/",
-        "https://www.lagradaonline.com",
-        "https://el1900.com"
     ],
     "Getafe": [
         "https://www.marca.com/futbol/getafe.html?intcmp=MENUESCU&s_kw=getafe",
@@ -135,14 +132,11 @@ TEAM_NEWS_SOURCES = {
         "https://as.com/noticias/rayo-vallecano/",
         "https://www.eldesmarque.com/futbol/rayo-vallecano/",
         "https://www.estadiodeportivo.com/futbol/rayo-vallecano/",
-        "https://unionrayo.com",
     ],
     "Real Madrid": [
         "https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid",
         "https://as.com/noticias/real-madrid/?omnil=mod_esc",
-        "https://www.bernabeudigital.com",
         "https://realmadridconfidencial.com",
-        "https://okdiario.com/diariomadridista/real-madrid/1/",
         "https://www.estadiodeportivo.com/futbol/real-madrid/",
         "https://www.eldesmarque.com/futbol/real-madrid/",
     ],
@@ -155,8 +149,6 @@ TEAM_NEWS_SOURCES = {
         "https://www.eldesmarque.com/futbol/real-sociedad/"
     ],
     "Sevilla FC": [
-        "https://orgullobiri.com",
-        "https://www.vamosmisevillafc.com",
         "https://www.estadiodeportivo.com/futbol/sevilla-fc/",
         "https://www.eldesmarque.com/futbol/sevilla-fc/",
         "https://www.marca.com/futbol/sevilla.html?intcmp=MENUESCU&s_kw=sevilla",
@@ -178,7 +170,6 @@ TEAM_NEWS_SOURCES = {
         "https://www.estadiodeportivo.com/futbol/villarreal/",
         "https://www.eldesmarque.com/futbol/villarreal-cf/",
         "https://www.elperiodicomediterraneo.com/villarrealcf/",
-        
     ],
 }
 

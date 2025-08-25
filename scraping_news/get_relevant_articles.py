@@ -12,6 +12,9 @@ import logging
 import ast
 from typing import Optional
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 def _validate_scraped_links_structure(data: dict) -> None:
     """
     Validates that the input dictionary follows the expected structure:
@@ -28,6 +31,29 @@ def _validate_scraped_links_structure(data: dict) -> None:
             assert isinstance(links, list), f"Each source URL must map to a list of links. Found: {type(links)}"
             for link in links:
                 assert isinstance(link, str), f"Each link must be a string. Found: {type(link)}"
+
+def get_existing_article_urls(logger: logging.Logger) -> set:
+    """
+    Fetches (team, url) pairs from article_urls table.
+
+    Returns:
+        Set of (team, url) tuples.
+    """
+
+    supabase = get_supabase_client()
+    table_name = "article_urls"
+
+    if not check_if_table_exists(supabase, table_name):
+        logger.warning(f"⚠️ Table '{table_name}' does not exist.")
+        return set()
+
+    try:
+        response = supabase.table(table_name).select("team, url").execute()
+        return {(row["team"], row["url"]) for row in response.data} if response.data else set()
+    except Exception as e:
+        logger.error(f"❌ Failed to fetch existing article URLs: {e}")
+        return set()
+
 
 def scrape_landing_pages_for_url_extractions(
         test=False,
@@ -107,71 +133,115 @@ def scrape_landing_pages_for_url_extractions(
 
     return results
 
-def filter_links_with_llm(
+def filter_out_existing_urls(
     scraped_links_dict: Dict[str, Dict[str, List[str]]],
-    model_priority: List[str] = ["gemini", "openai"],
+    existing_team_url_set: set,
     logger: Optional[logging.Logger] = None
 ) -> Dict[str, Dict[str, List[str]]]:
     """
-    Filters article links using an LLM to determine relevance, preserving the original structure.
+    Filters out any links that already exist in the database.
 
     Args:
-        scraped_links_dict (dict): Dictionary in the format:
-            {team: {source_url: [list_of_links]}}
-        model_priority (List[str]): Ordered list of LLMs to try (e.g. ["gemini", "openai"])
-        logger (logging.Logger): Optional logger instance.
+        scraped_links_dict: Full dict of scraped links per team
+        existing_team_url_set: Set of (team, url) pairs from DB
+        logger: Optional logger instance
 
     Returns:
-        dict: Same structure as input, but with non-relevant links removed.
+        Filtered dict in the same structure, with only new links
     """
-    # Initialize logger for this module
     if logger is None:
         logger = logging.getLogger(__name__)
 
-    # Log the start of the operation with key parameters
+    logger.info("=" * 60)
+    logger.info("FILTERING OUT EXISTING URLS IN THE DATABASE FROM SCRAPED LINKS")
+    logger.info("=" * 60)
+
+    total_input_urls = 0
+    total_filtered_urls = 0
+
+    filtered_dict = {}
+
+    for team, sources in scraped_links_dict.items():
+        filtered_dict[team] = {}
+
+        for source_url, urls in sources.items():
+            total_input_urls += len(urls)
+
+            new_urls = [
+                url for url in urls
+                if (team, url) not in existing_team_url_set
+            ]
+
+            total_filtered_urls += len(new_urls)
+
+            if new_urls:
+                filtered_dict[team][source_url] = new_urls
+
+    total_removed = total_input_urls - total_filtered_urls
+
+    logger.info(f"✅ Removed {total_removed} duplicate URLs already in the database.")
+    logger.info(f"🆕 {total_filtered_urls} new URLs remain for LLM filtering.")
+    return filtered_dict
+
+
+def filter_links_with_llm(
+    scraped_links_dict: Dict[str, Dict[str, List[str]]],
+    model_priority: List[str] = ["openai", "gemini"],
+    logger: Optional[logging.Logger] = None
+) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Filters article links using LLM in parallel, per team.
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
     logger.info("=" * 60)
     logger.info("STARTING URL FILTERING PROCESS")
     logger.info("=" * 60)
 
-    # === Validate input structure ===
     logger.info("Ensuring input structure is valid...")
     _validate_scraped_links_structure(data=scraped_links_dict)
 
-    # === Loop through teams to extract relevant articles with LLMs ===
+    logger.info("Launching parallel LLM filtering (5 threads max)...")
+
     filtered_dict = {}
 
-    for team, team_links_dict in scraped_links_dict.items():
-        logger.info(f"LLM filtering for {team}...")
+    def process_team(team: str, team_links_dict: Dict[str, List[str]]) -> Dict[str, Dict[str, List[str]]]:
+        logger.info(f"🧠 Filtering links for {team} with LLM")
         system_prompt, user_prompt = prompt_url_relevance_filter(team=team, team_links_dict=team_links_dict)
 
-        # Call LLM with fallback strategy
-        llm_response = call_llm(
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            model_priority=model_priority,
-            logger=logger,
-        )
-
-        if not llm_response:
-            logger.warning(f"⚠️ No LLM response for team: {team}. Skipping filtering operation (keeping input dictionary as it was).")
-            filtered_dict[team] = team_links_dict  # fallback: keep all
-            continue
-
-        # Extract the JSON-like code block from the response
-        llm_response_clean = extract_code_block(llm_response)
-
         try:
-            parsed_team_result = ast.literal_eval(llm_response_clean)
-            _validate_scraped_links_structure({team: parsed_team_result})
+            llm_response = call_llm(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model_priority=model_priority,
+                logger=logger,
+            )
 
-            # Assign it directly to the current team
-            filtered_dict[team] = parsed_team_result
+            if not llm_response:
+                logger.warning(f"⚠️ No LLM response for team: {team}. Using unfiltered links.")
+                return {team: team_links_dict}
 
-            logger.info(f"Filtered {team}: {sum(len(v) for v in parsed_team_result.values())} links retained.")
+            clean = extract_code_block(llm_response)
+            parsed = ast.literal_eval(clean)
+            _validate_scraped_links_structure({team: parsed})
 
-        except Exception as parse_err:
-            logger.error(f"❌ Failed to parse or validate LLM output for {team}: {parse_err}")
-            filtered_dict[team] = team_links_dict  # fallback
+            logger.info(f"✅ {team}: retained {sum(len(v) for v in parsed.values())} links after filtering.")
+            return {team: parsed}
+
+        except Exception as e:
+            logger.error(f"❌ Failed to process team {team}: {e}")
+            return {team: team_links_dict}
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            executor.submit(process_team, team, team_links_dict): team
+            for team, team_links_dict in scraped_links_dict.items()
+        }
+
+        for future in as_completed(futures):
+            result = future.result()
+            filtered_dict.update(result)
 
     return filtered_dict
 
@@ -292,14 +362,22 @@ def ETL_get_relevant_articles(test=False):
         logger=logger
     )
 
-    # Step 2: Filter with LLM
-    filtered_links_dict = filter_links_with_llm(
+    # Step 2: Filter out existing URLs from DB
+    existing_team_url_set = get_existing_article_urls(logger)
+    scraped_links_dict_filtered = filter_out_existing_urls(
         scraped_links_dict=scraped_links_dict,
-        model_priority=["gemini", "openai"],
+        existing_team_url_set=existing_team_url_set,
         logger=logger
     )
 
-    # Step 3: Flatten the dictionary for easier storage
+    # Step 3: Filter with LLM
+    filtered_links_dict = filter_links_with_llm(
+        scraped_links_dict=scraped_links_dict_filtered,
+        model_priority=["openai", "gemini"],
+        logger=logger
+    )
+
+    # Step 4: Flatten the dictionary for easier storage
     flat_rows = flatten_filtered_links_dict(filtered_links_dict, logger)
     logger.info(f"Flattened filtered links into {len(flat_rows)} rows for potential storage.")
 
@@ -314,5 +392,6 @@ def ETL_get_relevant_articles(test=False):
 
 
 if __name__ == "__main__":
-    ETL_get_relevant_articles(test=True)
+    # ETL_get_relevant_articles(test=True)
+    ETL_get_relevant_articles(test=False)
 

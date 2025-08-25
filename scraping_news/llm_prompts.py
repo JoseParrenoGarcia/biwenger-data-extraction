@@ -4,6 +4,8 @@ def prompt_url_relevance_filter(team: str, team_links_dict: dict) -> tuple[str, 
     Eres un asistente experto en identificar noticias relevantes para managers de fantasy football en Biwenger.
     Eres preciso, conciso y consistente.
     Devuelves únicamente resultados en formato estructurado, sin explicaciones ni comentarios adicionales.
+    -> Si eres el LLM de Gemini, trata de reducir el numero de links devueltos al minimo posible, eliminando todos los que no sean estrictamente necesarios. No deberias devolver mas de 30 articulos por equipo.
+    -> Si eres el LLM de OpenAI, generalmente ya reduces el numero de manera adecuada, pero asegura no devolver mas de 30 articulos por equipo.
     """
 
     user_prompt = \
@@ -38,6 +40,19 @@ def prompt_url_relevance_filter(team: str, team_links_dict: dict) -> tuple[str, 
     
     Una vez identificados, debes devolver **la misma estructura del diccionario en Python**, pero con los enlaces irrelevantes eliminados.
     No añadas explicaciones ni resúmenes. No modifiques el formato.
+    
+    Evita URLs genericas como:
+    - Portadas o secciones generales del sitio web
+    - Menus de navegación
+    - Articulos sobre otros deportes que no sean futbol
+    - Links que no sean de fuentes fiables. Evita twitter, facebook, instagram, youtube, tiktok, etc.
+    - Links sobre calendarios, clasificaciones o estadísticas generales
+    - Links generales sobre un equipo. Seguramente esto sea otro link tipo portada. Ejemplos:
+    --> una URL donde sea solamente el nombre del equipo -> [url]/[equipo] 
+    --> https://www.estadiodeportivo.com/futbol/elche/2
+    --> https://as.com/noticias/rcd-espanyol/.
+    --> https://www.sport.es/es/espanyol/pagina-2/
+    --> https://www.eldesmarque.com/futbol/real-oviedo/plantilla/ 
     
     Aquí tienes un ejemplo de entrada y salida para que entiendas el formato esperado:
     ### Entrada de ejemplo:
