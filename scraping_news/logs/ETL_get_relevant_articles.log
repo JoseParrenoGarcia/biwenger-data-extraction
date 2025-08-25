@@ -1,50 +1,38 @@
-2025-08-24 | ETL_get_relevant_articles | INFO     | Logger 'ETL_get_relevant_articles' initialized. Logging to: logs/ETL_get_relevant_articles.log
-2025-08-24 | ETL_get_relevant_articles | INFO     | 🚀 Starting ETL pipeline for relevant articles...
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | STARTING URL EXTRACTION PROCESS
-2025-08-24 | ETL_get_relevant_articles | INFO     | Scope: 2 teams, 4 total sources
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | Team 1/2: Valencia
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.superdeporte.es/valencia-cf/
-2025-08-24 | ETL_get_relevant_articles | INFO     | --> Found 161 unique links (was 279 before deduplication)
-2025-08-24 | ETL_get_relevant_articles | INFO     | -> Scraping: https://plazadeportiva.valenciaplaza.com/valenciacf/
-2025-08-24 | ETL_get_relevant_articles | INFO     | --> Found 67 unique links (was 144 before deduplication)
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | Team 2/2: Real Madrid
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid
-2025-08-24 | ETL_get_relevant_articles | INFO     | --> Found 386 unique links (was 428 before deduplication)
-2025-08-24 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
-2025-08-24 | ETL_get_relevant_articles | INFO     | --> Found 72 unique links (was 121 before deduplication)
-2025-08-24 | ETL_get_relevant_articles | INFO     | ------------------------------
-2025-08-24 | ETL_get_relevant_articles | INFO     | Ensuring output structure is valid...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Output structure validated. 
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
-2025-08-24 | ETL_get_relevant_articles | INFO     | LLM filtering for Valencia...
-2025-08-24 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Valencia: 56 links retained.
-2025-08-24 | ETL_get_relevant_articles | INFO     | LLM filtering for Real Madrid...
-2025-08-24 | ETL_get_relevant_articles | INFO     | 🔁 Trying Gemini (Google) model...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Gemini returned a valid response.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered Real Madrid: 80 links retained.
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | FLATTENING FILTERED LINKS DICTIONARY IN PREPARATION FOR STORAGE
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | Flattened filtered links into 136 rows for potential storage.
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | STARTING STORAGE PROCESS TO SUPABASE
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ Table 'article_urls' found.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Fetching existing article URLs from Supabase to filter duplicates...
-2025-08-24 | ETL_get_relevant_articles | INFO     | Found 115 existing records.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Filtered out 76 duplicates.
-2025-08-24 | ETL_get_relevant_articles | INFO     | Ready to insert 60 new articles.
-2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ Successfully inserted 60 new rows into 'article_urls'
-2025-08-24 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_relevant_articles | INFO     | ✅ ETL pipeline completed successfully.
+2025-08-25 | ETL_get_relevant_articles | INFO     | Logger 'ETL_get_relevant_articles' initialized. Logging to: logs/ETL_get_relevant_articles.log
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🚀 Starting ETL pipeline for relevant articles...
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | STARTING URL EXTRACTION PROCESS
+2025-08-25 | ETL_get_relevant_articles | INFO     | Scope: 1 teams, 7 total sources
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Team 1/1: Alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.noticiasdealava.eus/alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 93 unique links (was 175 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eitb.eus/es/deportes/futbol/alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 151 unique links (was 279 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/deportivo-alaves/
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 135 unique links (was 219 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.mundodeportivo.com/futbol/alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 197 unique links (was 226 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.relevo.com/futbol/equipos/deportivo-alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 253 unique links (was 369 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/deportivo-alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 73 unique links (was 127 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/alaves.html?intcmp=MENUESCU&s_kw=alaves
+2025-08-25 | ETL_get_relevant_articles | INFO     | --> Found 424 unique links (was 484 before deduplication)
+2025-08-25 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-25 | ETL_get_relevant_articles | INFO     | Ensuring output structure is valid...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Output structure validated. 
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | FILTERING OUT EXISTING URLS IN THE DATABASE FROM SCRAPED LINKS
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | ✅ Removed 0 duplicate URLs already in the database.
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🆕 1326 new URLs remain for LLM filtering.
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
+2025-08-25 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-08-25 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
+2025-08-25 | ETL_get_relevant_articles | INFO     | Launching parallel LLM filtering (5 threads max)...
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🧠 Filtering links for Alaves with LLM
+2025-08-25 | ETL_get_relevant_articles | INFO     | 🔁 Trying OpenAI model...

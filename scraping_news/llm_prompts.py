@@ -39,6 +39,12 @@ def prompt_url_relevance_filter(team: str, team_links_dict: dict) -> tuple[str, 
     Una vez identificados, debes devolver **la misma estructura del diccionario en Python**, pero con los enlaces irrelevantes eliminados.
     No añadas explicaciones ni resúmenes. No modifiques el formato.
     
+    Evita URLs genericas como:
+    - Portadas o secciones generales del sitio web
+    - Menus de navegación
+    - Articulos sobre otros deportes que no sean futbol
+    - Links sobre calendarios, clasificaciones o estadísticas generales
+    
     Aquí tienes un ejemplo de entrada y salida para que entiendas el formato esperado:
     ### Entrada de ejemplo:
     {{
