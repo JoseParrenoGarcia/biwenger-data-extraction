@@ -1,19 +1,19 @@
-2025-08-24 | ETL_get_specialised_articles | INFO     | Logger 'ETL_get_specialised_articles' initialized. Logging to: logs/ETL_get_specialised_articles.log
-2025-08-24 | ETL_get_specialised_articles | INFO     | 🚀 Starting specialised preview article extraction pipeline
-2025-08-24 | ETL_get_specialised_articles | INFO     | Scraping base match listing: https://www.jornadaperfecta.com/onces-posibles
-2025-08-24 | ETL_get_specialised_articles | INFO     | ➕Found 10 preview links.
-2025-08-24 | ETL_get_specialised_articles | INFO     | {'https://www.jornadaperfecta.com/partido/11991/osasuna-valencia/previa', 'https://www.jornadaperfecta.com/partido/11994/levante-barcelona/previa', 'https://www.jornadaperfecta.com/partido/11998/villarreal-girona/previa', 'https://www.jornadaperfecta.com/partido/11993/betis-alaves/previa', 'https://www.jornadaperfecta.com/partido/11989/athletic-rayo-vallecano/previa', 'https://www.jornadaperfecta.com/partido/11992/real-oviedo-real-madrid/previa', 'https://www.jornadaperfecta.com/partido/11996/real-sociedad-espanyol/previa', 'https://www.jornadaperfecta.com/partido/11995/mallorca-celta/previa', 'https://www.jornadaperfecta.com/partido/11997/sevilla-getafe/previa', 'https://www.jornadaperfecta.com/partido/11990/atletico-elche/previa'}
-2025-08-24 | ETL_get_specialised_articles | INFO     | 🔎 Scraped total of 10 match preview links
-2025-08-24 | ETL_get_specialised_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_specialised_articles | INFO     | STARTING STORAGE PROCESS TO SUPABASE (SPECIALISED MATCH PREVIEWS)
-2025-08-24 | ETL_get_specialised_articles | INFO     | ============================================================
-2025-08-24 | ETL_get_specialised_articles | INFO     | ✅ Table 'article_urls' found.
-2025-08-24 | ETL_get_specialised_articles | INFO     | Fetching existing article URLs from Supabase to filter duplicates...
-2025-08-24 | ETL_get_specialised_articles | INFO     | Found 80 existing records.
-2025-08-24 | ETL_get_specialised_articles | INFO     | Prepared 10 unique preview URLs from current scrape.
-2025-08-24 | ETL_get_specialised_articles | INFO     | Filtered out 10 duplicates.
-2025-08-24 | ETL_get_specialised_articles | INFO     | Ready to insert 0 new articles.
-2025-08-24 | ETL_get_specialised_articles | INFO     | ⏩ No new preview articles to insert — skipping write operation.
-2025-08-24 | ETL_get_specialised_articles | INFO     | Fetching existing article URLs to deduplicate...
-2025-08-24 | ETL_get_specialised_articles | INFO     | 📭 No new preview links to insert.
-2025-08-24 | ETL_get_specialised_articles | INFO     | ✅ Specialised article ETL completed
+2025-08-26 | ETL_get_specialised_articles | INFO     | Logger 'ETL_get_specialised_articles' initialized. Logging to: logs/ETL_get_specialised_articles.log
+2025-08-26 | ETL_get_specialised_articles | INFO     | 🚀 Starting specialised preview article extraction pipeline
+2025-08-26 | ETL_get_specialised_articles | INFO     | Scraping base match listing: https://www.jornadaperfecta.com/onces-posibles
+2025-08-26 | ETL_get_specialised_articles | INFO     | ➕Found 10 preview links.
+2025-08-26 | ETL_get_specialised_articles | INFO     | {'https://www.jornadaperfecta.com/partido/12007/elche-levante/previa', 'https://www.jornadaperfecta.com/partido/12006/girona-sevilla/previa', 'https://www.jornadaperfecta.com/partido/12005/rayo-vallecano-barcelona/previa', 'https://www.jornadaperfecta.com/partido/12002/celta-villarreal/previa', 'https://www.jornadaperfecta.com/partido/12001/espanyol-osasuna/previa', 'https://www.jornadaperfecta.com/partido/12008/alaves-atletico/previa', 'https://www.jornadaperfecta.com/partido/11999/valencia-getafe/previa', 'https://www.jornadaperfecta.com/partido/12003/real-madrid-mallorca/previa', 'https://www.jornadaperfecta.com/partido/12004/betis-athletic/previa', 'https://www.jornadaperfecta.com/partido/12000/real-oviedo-real-sociedad/previa'}
+2025-08-26 | ETL_get_specialised_articles | INFO     | 🔎 Scraped total of 10 match preview links
+2025-08-26 | ETL_get_specialised_articles | INFO     | ============================================================
+2025-08-26 | ETL_get_specialised_articles | INFO     | STARTING STORAGE PROCESS TO SUPABASE (SPECIALISED MATCH PREVIEWS)
+2025-08-26 | ETL_get_specialised_articles | INFO     | ============================================================
+2025-08-26 | ETL_get_specialised_articles | INFO     | ✅ Table 'article_urls' found.
+2025-08-26 | ETL_get_specialised_articles | INFO     | Fetching existing article URLs from Supabase to filter duplicates...
+2025-08-26 | ETL_get_specialised_articles | INFO     | Found 1000 existing records.
+2025-08-26 | ETL_get_specialised_articles | INFO     | Prepared 10 unique preview URLs from current scrape.
+2025-08-26 | ETL_get_specialised_articles | INFO     | Filtered out 0 duplicates.
+2025-08-26 | ETL_get_specialised_articles | INFO     | Ready to insert 10 new articles.
+2025-08-26 | ETL_get_specialised_articles | INFO     | ✅ Successfully inserted 10 new preview links into 'article_urls'
+2025-08-26 | ETL_get_specialised_articles | INFO     | Fetching existing article URLs to deduplicate...
+2025-08-26 | ETL_get_specialised_articles | INFO     | ✅ Inserted 10 preview links into 'article_urls'
+2025-08-26 | ETL_get_specialised_articles | INFO     | ✅ Specialised article ETL completed
