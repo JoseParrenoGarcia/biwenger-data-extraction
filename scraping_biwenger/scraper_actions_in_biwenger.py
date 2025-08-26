@@ -1,6 +1,11 @@
-import os
 from pathlib import Path
 import tomllib as toml
+from playwright.sync_api import sync_playwright
+import re
+from playwright.sync_api import TimeoutError as PWTimeout
+
+DEFAULT_ROOT_URL = "https://biwenger.as.com/"
+DEFAULT_APP_URL = "https://biwenger.as.com/app"
 
 def load_biwenger_credentials() -> dict:
     """
@@ -27,6 +32,98 @@ def load_biwenger_credentials() -> dict:
         raise ValueError(f"Missing 'biwenger_email' or 'biwenger_password' in {secrets_path}")
 
     return {"email": email, "password": password}
+
+def accept_cookies_if_present(page) -> bool:
+    """
+    Tries to accept the Didomi cookie banner if it appears.
+    Returns True if we clicked/accepted, False otherwise.
+    """
+    # 1) Wait briefly to see if the popup mounts
+    try:
+        page.wait_for_selector("div.didomi-popup-container", timeout=2000, state="attached")
+    except PWTimeout:
+        pass  # it's okay if it never appears
+
+    # 2) Try the most specific selectors first (fast, explicit)
+    for sel in (
+        "#didomi-notice-agree-button",
+        "button.didomi-components-button.didomi-dismiss-button.didomi-button-highlight",
+        "button[aria-label='Agree']",
+        "button:has-text('Agree')",
+        "button:has-text('Aceptar')",
+        "button:has-text('Accept all')",
+    ):
+        try:
+            page.locator(sel).first.click(timeout=1200)
+            return True
+        except Exception:
+            pass
+
+    return False
+
+# def perform_login(page, email: str, password: str):
+#     page.goto(DEFAULT_ROOT_URL)
+#     accept_cookies_if_present(page)
+#
+#     # page.get_by_role("link", name=re.compile("Play now|Jugar ahora", re.I)).click()
+#     # page.get_by_role("button", name=re.compile("Already have an account|Ya tengo cuenta", re.I)).click()
+#     # page.get_by_role("textbox", name=re.compile("Email|Correo", re.I)).fill(email)
+#     # page.get_by_role("textbox", name=re.compile("Password|Contraseña", re.I)).fill(password)
+#     # page.get_by_role("button", name=re.compile("Log in|Iniciar sesión", re.I)).click()
+#     # page.wait_for_url(re.compile(r"https://biwenger\.as\.com/app.*"), timeout=20000)
+
+def start_browser_accept_cookies(headless: bool = True):
+    """
+    Start browser, accept cookies (if present), log in, land on app page.
+    Returns (pw, browser, context, page).
+    """
+    pw = sync_playwright().start()
+    browser = pw.chromium.launch(headless=headless, args=["--disable-gpu", "--no-sandbox"])
+    context = browser.new_context()
+    page = context.new_page()
+    page.set_default_timeout(15000)
+    page.set_default_navigation_timeout(20000)
+
+    page.goto(DEFAULT_ROOT_URL)
+    accept_cookies_if_present(page)
+    return pw, browser, context, page
+
+def click_play_now(page) -> None:
+    # If the cookie popup is still around, give it a moment to detach
+    try:
+        page.wait_for_selector("div.didomi-popup-container", state="detached", timeout=3000)
+    except PWTimeout:
+        pass  # not a blocker
+
+    candidates = [
+        'a[routerlink="/login"]',
+        'a[href="/login"]',
+        'a.btn.primary.xl:has-text("Play now!")',
+        'text=/^Play now!$/',
+    ]
+
+    for sel in candidates:
+        try:
+            loc = page.locator(sel).first
+            loc.wait_for(state="visible", timeout=2000)
+            loc.scroll_into_view_if_needed()
+            loc.click()
+            page.wait_for_url("**/login", timeout=10000)
+            return
+        except Exception:
+            continue
+
+    # If we got here, surface a clear error
+    raise RuntimeError("Could not find/click the 'Play now!' login link.")
+
+def perform_login(page, email: str, password: str):
+    click_play_now(page)
+
+    page.get_by_role("button", name=re.compile("Already have an account|Ya tengo cuenta", re.I)).click()
+    page.get_by_role("textbox", name=re.compile("Email|Correo", re.I)).fill(email)
+    page.get_by_role("textbox", name=re.compile("Password|Contraseña", re.I)).fill(password)
+    page.get_by_role("button", name=re.compile("Log in|Iniciar sesión", re.I)).click()
+    page.wait_for_url(re.compile(r"https://biwenger\.as\.com/app.*"), timeout=20000)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,6 @@
+2025-08-26 | ETL_get_current_team | INFO     | Logger 'ETL_get_current_team' initialized. Logging to: logs/ETL_get_current_team.log
+2025-08-26 | ETL_get_current_team | INFO     | ======================================================================
+2025-08-26 | ETL_get_current_team | INFO     | 🚀 Starting ETL: get_current_team
+2025-08-26 | ETL_get_current_team | INFO     | ======================================================================
+2025-08-26 | ETL_get_current_team | INFO     | ✅ Credentials loaded successfully.
+2025-08-26 | ETL_get_current_team | INFO     | ✅ Logged in
