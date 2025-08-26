@@ -61,17 +61,6 @@ def accept_cookies_if_present(page) -> bool:
 
     return False
 
-# def perform_login(page, email: str, password: str):
-#     page.goto(DEFAULT_ROOT_URL)
-#     accept_cookies_if_present(page)
-#
-#     # page.get_by_role("link", name=re.compile("Play now|Jugar ahora", re.I)).click()
-#     # page.get_by_role("button", name=re.compile("Already have an account|Ya tengo cuenta", re.I)).click()
-#     # page.get_by_role("textbox", name=re.compile("Email|Correo", re.I)).fill(email)
-#     # page.get_by_role("textbox", name=re.compile("Password|Contraseña", re.I)).fill(password)
-#     # page.get_by_role("button", name=re.compile("Log in|Iniciar sesión", re.I)).click()
-#     # page.wait_for_url(re.compile(r"https://biwenger\.as\.com/app.*"), timeout=20000)
-
 def start_browser_accept_cookies(headless: bool = True):
     """
     Start browser, accept cookies (if present), log in, land on app page.
@@ -123,7 +112,31 @@ def perform_login(page, email: str, password: str):
     page.get_by_role("textbox", name=re.compile("Email|Correo", re.I)).fill(email)
     page.get_by_role("textbox", name=re.compile("Password|Contraseña", re.I)).fill(password)
     page.get_by_role("button", name=re.compile("Log in|Iniciar sesión", re.I)).click()
-    page.wait_for_url(re.compile(r"https://biwenger\.as\.com/app.*"), timeout=20000)
+
+    # 1) Wait for any known post-login landing (login-success or /), then
+    # 2) Navigate to the app explicitly.
+    try:
+        # allows either /login-success or /
+        page.wait_for_url(re.compile(r"https://biwenger\.as\.com(/login-success|/)?$"), timeout=20000)
+    except PWTimeout:
+        # sometimes the route changes client-side quickly; a load-state guard is enough
+        page.wait_for_load_state("domcontentloaded", timeout=20000)
+
+    # Now go where we actually want to be
+    page.goto(DEFAULT_APP_URL, wait_until="domcontentloaded")
+
+def click_tab_in_horizontal_main_menu(page, tab_name: str):
+    """
+    Click a horizontal menu tab by name (case-insensitive).
+    Examples: click_tab_in_horizontal_main_menu(page, "team")
+    """
+    target = tab_name.strip().lower()
+
+    # Just click by href directly
+    page.click(f'a[href="/{target}"]')
+
+    # Wait for navigation to happen
+    page.wait_for_url(f"**/{target}*", timeout=10000)
 
 
 if __name__ == "__main__":

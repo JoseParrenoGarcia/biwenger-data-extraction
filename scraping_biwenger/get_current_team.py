@@ -4,7 +4,8 @@ from config_logging import get_logger
 from scraping_biwenger.scraper_actions_in_biwenger import (
     load_biwenger_credentials,
     start_browser_accept_cookies,
-    perform_login
+    perform_login,
+    click_tab_in_horizontal_main_menu
 )
 
 
@@ -32,13 +33,12 @@ def ETL_get_current_team():
     # 3) Login
     perform_login(page, creds["email"], creds["password"])
 
+    # 4) Navigate to team page
+    click_tab_in_horizontal_main_menu(page, "team")
+
     page.pause()
 
-    # 2) [Next steps – placeholders for now]
-    # session = start_browser()                # e.g., Selenium/Playwright
-    # biwenger_login(session, creds)           # use creds safely
-    # team_df = scrape_current_team(session)   # return parsed DataFrame or dict
-    # upload_team_to_supabase(team_df)         # write to DB (dedup, etc.)
+
 
 
 if __name__ == "__main__":
