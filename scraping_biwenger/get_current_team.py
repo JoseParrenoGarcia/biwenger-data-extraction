@@ -36,6 +36,26 @@ def _to_int_money(text: str) -> int:
         return 0
     return int("".join(m)) if t.startswith("-") else int("".join(m))
 
+def _mv_change_from_increment(row) -> int:
+    """
+    <td class="tr ng-star-inserted">
+      <increment class="icon ... increment|decrement|equal" aria-label="€90,000">€90,000</increment>
+    </td>
+    Return signed int in euros.
+    """
+    inc = row.locator("td.tr increment").first
+    if inc.count() == 0:
+        return 0
+    text = (inc.get_attribute("aria-label") or inc.inner_text() or "").strip()
+    cls = (inc.get_attribute("class") or "").lower()
+    val = _to_int_money(text)
+    if "decrement" in cls:
+        return -abs(val)
+    if "increment" in cls:
+        return abs(val)
+    # class could be 'equal'
+    return 0 if val == 0 else val
+
 def scrape_basic_team_table(page) -> pd.DataFrame:
     """
     Scrapes: name, points, market_value, mv_change_eur (signed),
@@ -74,10 +94,14 @@ def scrape_basic_team_table(page) -> pd.DataFrame:
         except Exception:
             market_value = 0
 
+        # mv change (signed, in euros)
+        mv_change_eur = _mv_change_from_increment(row)
+
         data.append({
             "name": name,
             "points": points,
             "market_value": market_value,
+            "mv_change_eur": mv_change_eur,
         })
 
     df = pd.DataFrame(data)
