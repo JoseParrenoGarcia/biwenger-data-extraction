@@ -202,16 +202,82 @@ def scrape_player_status(page, timeout_ms: int = 4000) -> dict:
         "status_detail": detail if detail else None,
     }
 
+def _parse_int(text: str) -> int:
+    if not text: return 0
+    return int(re.sub(r"[^\d-]", "", text.replace("\u2212", "-")) or 0)
+
+def _parse_float(text: str) -> float:
+    if not text: return 0.0
+    return float(re.sub(r"[^\d\.-]", "", text.replace("\u2212", "-")) or 0.0)
+
+def _parse_money(text: str) -> int:
+    # "€23,020,000" -> 23020000
+    if not text: return 0
+    return int(re.sub(r"[^\d-]", "", text.replace("\u2212", "-")) or 0)
+
+def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
+    """
+    Extract key statistics from the Statistics panel on the player detail page.
+    Returns ints/floats for numeric fields.
+    """
+    stats = {
+        "points": None,
+        "value": None,
+        "min_value": None,
+        "max_value": None,
+        "matches_played": None,
+        "average": None,
+    }
+
+    try:
+        page.wait_for_selector("player-detail-stats", timeout=timeout_ms)
+    except Exception:
+        return stats
+
+    # Points
+    try:
+        pts = page.locator("player-detail-stats .stat", has_text="Points").locator("div").first.inner_text().strip()
+        stats["points"] = _parse_int(pts)
+    except Exception:
+        pass
+
+    # Value, Min, Max
+    try:
+        stats["value"] = _parse_money(page.locator("player-detail-stats tr", has_text="Value").locator("td.tr").inner_text())
+    except Exception:
+        pass
+    try:
+        stats["min_value"] = _parse_money(page.locator("player-detail-stats tr", has_text="Min").locator("td.tr").inner_text())
+    except Exception:
+        pass
+    try:
+        stats["max_value"] = _parse_money(page.locator("player-detail-stats tr", has_text="Max").locator("td.tr").inner_text())
+    except Exception:
+        pass
+
+    # Matches played
+    try:
+        mp = page.locator("player-detail-stats .stat", has_text="Matches played").locator("div").first.inner_text().strip()
+        stats["matches_played"] = _parse_int(mp)
+    except Exception:
+        pass
+
+    # Average
+    try:
+        avg = page.locator("player-detail-stats .stat", has_text="Average").locator("div").first.inner_text().strip()
+        stats["average"] = _parse_float(avg)
+    except Exception:
+        pass
+
+    return stats
 
 def scrape_player_detail(page) -> dict:
-    status = scrape_player_status(page)
-
     return {
         "player_name":     scrape_player_name(page) or "(unknown)",
         "team":            scrape_team_name(page)   or "",
         "position":        scrape_position(page)    or "",
-        "status":          status["status"],
-        "status_detail":   status["status_detail"],
+        **scrape_player_status(page),
+        **scrape_player_statistics(page)
     }
 
 def iterate_all_players_sequential(
