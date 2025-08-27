@@ -3,6 +3,7 @@ import tomllib as toml
 from playwright.sync_api import sync_playwright
 import re
 from playwright.sync_api import TimeoutError as PWTimeout
+import time
 
 DEFAULT_ROOT_URL = "https://biwenger.as.com/"
 DEFAULT_APP_URL = "https://biwenger.as.com/app"
@@ -137,6 +138,10 @@ def click_tab_in_horizontal_main_menu(page, tab_name: str):
 
     # Wait for navigation to happen
     page.wait_for_url(f"**/{target}*", timeout=10000)
+
+def scroll_into_view(page, selector, hold=0.2):
+    page.locator(selector).first.scroll_into_view_if_needed(timeout=2000)
+    time.sleep(hold)  # Let rendering catch up
 
 
 if __name__ == "__main__":
