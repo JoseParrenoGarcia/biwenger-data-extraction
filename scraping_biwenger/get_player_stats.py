@@ -142,11 +142,76 @@ def scrape_position(page, timeout_ms: int = 6000) -> str:
     except Exception:
         return ""
 
-def scrape_player_detail(page) -> dict:
+def _normalize_status_category(classes: str, text: str) -> str:
+    """
+    Map class names / text to a canonical category.
+    """
+    cls = (classes or "").lower()
+    t = (text or "").lower()
+
+    if "icon-injured" in cls or "injur" in t:
+        return "injured"
+    if "icon-doubt" in cls or "doubt" in t or "doubtful" in t:
+        return "doubtful"
+    if "icon-sanctioned" in cls or "suspend" in t or "sanction" in t or "red" in t:
+        return "suspended"
+    if "icon-discarded" in cls or "not in match squad" in t or "discard" in t:
+        return "not_in_squad"
+
+    # Some pages might render "icon-ok label success" (rare on detail); treat as fit.
+    if "icon-ok" in cls or "success" in cls or re.search(r"\bfit\b", t):
+        return "fit"
+
+    return "unknown"
+
+def scrape_player_status(page, timeout_ms: int = 4000) -> dict:
+    """
+    Returns:
+        {
+          "status": one of {"fit","injured","doubtful","suspended","not_in_squad","unknown"},
+          "status_detail": full Biwenger text if available (else None)
+        }
+    """
+    selectors = [
+        "player-detail-header h1 player-status",
+        "player-detail-info .tc player-status.with-label",
+        "player-detail-info player-status",
+    ]
+
+    status_node = None
+    for sel in selectors:
+        loc = page.locator(sel)
+        if loc.count() > 0:
+            status_node = loc.first
+            break
+
+    if not status_node:
+        return {"status": "fit", "status_detail": None}
+
+    classes = (status_node.get_attribute("class") or "").strip()
+    aria = (status_node.get_attribute("aria-label") or "").strip()
+    title = (status_node.get_attribute("title") or "").strip()
+    text = (status_node.inner_text().strip() if status_node.inner_text() else "")
+
+    detail = aria or title or text or ""
+
+    status = _normalize_status_category(classes, detail)
+
     return {
-        "player_name": scrape_player_name(page) or "(unknown)",
-        "team":        scrape_team_name(page)   or "",
-        "position":    scrape_position(page)    or "",
+        "status": status,
+        "status_detail": detail if detail else None,
+    }
+
+
+def scrape_player_detail(page) -> dict:
+    status = scrape_player_status(page)
+
+    return {
+        "player_name":     scrape_player_name(page) or "(unknown)",
+        "team":            scrape_team_name(page)   or "",
+        "position":        scrape_position(page)    or "",
+        "status":          status["status"],
+        "status_detail":   status["status_detail"],
     }
 
 def iterate_all_players_sequential(
