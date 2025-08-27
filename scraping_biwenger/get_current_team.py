@@ -10,7 +10,6 @@ from supabase_client.connection import get_supabase_client
 from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 
 import pandas as pd
-import time
 from playwright.sync_api import TimeoutError as PWTimeout
 import re
 
@@ -27,7 +26,6 @@ def _to_float_generic(text: str) -> float:
         return 0.0
     m = re.search(r"-?\d+(?:\.\d+)?", text.replace("\u2212", "-"))
     return float(m.group()) if m else 0.0
-
 
 def _to_int_money(text: str) -> int:
     """Convert '€2,370,000' -> 2370000; handles unicode minus and spaces."""
@@ -255,7 +253,6 @@ def ETL_get_current_team():
 
     # 8) Insert into Supabase
     insert_current_team(team_data, table_name="biwenger_current_team", logger=logger)
-
 
 if __name__ == "__main__":
     pd.set_option('display.max_columns', None)
