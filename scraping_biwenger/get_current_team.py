@@ -19,6 +19,22 @@ def _to_int_generic(text: str) -> int:
     m = re.search(r"-?\d+", text.replace("\u2212", "-"))
     return int(m.group()) if m else 0
 
+def _to_int_money(text: str) -> int:
+    """Convert '€2,370,000' -> 2370000; handles unicode minus and spaces."""
+    if text is None:
+        return 0
+    # normalize minus and strip currency/whitespace
+    t = (text.replace("€", "")
+              .replace("\u2212", "-")   # unicode minus
+              .replace(",", "")
+              .replace(".", "")
+              .strip())
+
+    NUM_RE = re.compile(r"[-\d]+")
+    m = NUM_RE.findall(t)
+    if not m:
+        return 0
+    return int("".join(m)) if t.startswith("-") else int("".join(m))
 
 def scrape_basic_team_table(page) -> pd.DataFrame:
     """
@@ -51,9 +67,17 @@ def scrape_basic_team_table(page) -> pd.DataFrame:
         except Exception:
             points = 0
 
+        # market value
+        try:
+            mv_text = row.locator("td.tr").first.inner_text().strip()
+            market_value = _to_int_money(mv_text)
+        except Exception:
+            market_value = 0
+
         data.append({
             "name": name,
             "points": points,
+            "market_value": market_value,
         })
 
     df = pd.DataFrame(data)
