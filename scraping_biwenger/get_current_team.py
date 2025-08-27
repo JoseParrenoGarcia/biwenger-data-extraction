@@ -218,7 +218,6 @@ def insert_current_team(df: pd.DataFrame, table_name: str, logger) -> None:
 def ETL_get_current_team():
     """
     ETL: Login to Biwenger, scrape current team stats, and (later) upload to Supabase.
-    For now, this sets up logging and loads credentials.
     """
     logger = get_logger(
         "ETL_get_current_team",

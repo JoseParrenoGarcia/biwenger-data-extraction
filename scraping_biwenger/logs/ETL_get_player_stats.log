@@ -1,0 +1,8 @@
+2025-08-27 | ETL_get_player_stats | INFO     | Logger 'ETL_get_player_stats' initialized. Logging to: logs/ETL_get_player_stats.log
+2025-08-27 | ETL_get_player_stats | INFO     | ======================================================================
+2025-08-27 | ETL_get_player_stats | INFO     | 🚀 Starting ETL: get_player_stats
+2025-08-27 | ETL_get_player_stats | INFO     | ======================================================================
+2025-08-27 | ETL_get_player_stats | INFO     | ✅ Credentials loaded successfully.
+2025-08-27 | ETL_get_player_stats | INFO     | ✅ Logged in
+2025-08-27 | ETL_get_player_stats | INFO     | Reached the last player (no Next button).
+2025-08-27 | ETL_get_player_stats | INFO     | ✅ Scraped 9 players (stub).
