@@ -6,6 +6,8 @@ from scraping_biwenger.scraper_actions_in_biwenger import (
     click_tab_in_horizontal_main_menu,
     scroll_into_view
 )
+from supabase_client.connection import get_supabase_client
+from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 
 import pandas as pd
 import time
@@ -180,7 +182,40 @@ def scrape_basic_team_table(page) -> pd.DataFrame:
         })
 
     df = pd.DataFrame(data)
+    if not df.empty:
+        df['name'] = df['name'].astype(str)
+        df["points"] = df["points"].astype(int)
+        df["market_value"] = df["market_value"].astype(int)
+        df["mv_change_eur"] = df["mv_change_eur"].astype(int)
+        df['status'] = df['status'].astype(str)
+        df["games_played"] = df["games_played"].astype(int)
+        df["average_points"] = df["average_points"].astype(float)
+        for j in range(1, 6):
+            df[f"form_t-{j}"] = df[f"form_t-{j}"].astype(int)
+
     return df
+
+def insert_current_team(df: pd.DataFrame, table_name: str, logger) -> None:
+    """
+    Inserts rows into Supabase table `table_name`.
+    Assumes table exists and has its own PK/timestamp.
+    """
+    supabase = get_supabase_client()
+
+    if not check_if_table_exists(supabase, table_name):
+        logger.error(f"❌ Table '{table_name}' does not exist. Create it first.")
+        return
+
+    if df is None or df.empty:
+        logger.warning("⚠️ No rows to insert (empty dataframe).")
+        return
+
+    rows = df.to_dict(orient="records")
+    try:
+        insert_rows_into_table(supabase, table_name=table_name, rows=rows)
+        logger.info(f"✅ Inserted {len(rows)} rows into '{table_name}'.")
+    except Exception as e:
+        logger.exception(f"❌ Failed to insert into '{table_name}': {e}")
 
 def ETL_get_current_team():
     """
@@ -217,11 +252,9 @@ def ETL_get_current_team():
 
     # 7) Extract table data
     team_data = scrape_basic_team_table(page)
-    print(team_data)
 
-    page.pause()
-
-
+    # 8) Insert into Supabase
+    insert_current_team(team_data, table_name="biwenger_current_team", logger=logger)
 
 
 if __name__ == "__main__":

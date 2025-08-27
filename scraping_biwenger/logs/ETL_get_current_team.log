@@ -4,3 +4,4 @@
 2025-08-27 | ETL_get_current_team | INFO     | ======================================================================
 2025-08-27 | ETL_get_current_team | INFO     | ✅ Credentials loaded successfully.
 2025-08-27 | ETL_get_current_team | INFO     | ✅ Logged in
+2025-08-27 | ETL_get_current_team | INFO     | ✅ Inserted 15 rows into 'biwenger_current_team'.
