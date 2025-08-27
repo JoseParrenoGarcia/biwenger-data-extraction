@@ -19,6 +19,14 @@ def _to_int_generic(text: str) -> int:
     m = re.search(r"-?\d+", text.replace("\u2212", "-"))
     return int(m.group()) if m else 0
 
+def _to_float_generic(text: str) -> float:
+    """Extract first float-like number '4.5' from text."""
+    if text is None:
+        return 0.0
+    m = re.search(r"-?\d+(?:\.\d+)?", text.replace("\u2212", "-"))
+    return float(m.group()) if m else 0.0
+
+
 def _to_int_money(text: str) -> int:
     """Convert '€2,370,000' -> 2370000; handles unicode minus and spaces."""
     if text is None:
@@ -55,6 +63,42 @@ def _mv_change_from_increment(row) -> int:
         return abs(val)
     # class could be 'equal'
     return 0 if val == 0 else val
+
+def _status_from_element(row) -> str:
+    """
+    Status is in <player-status ... aria-label="Fit" title="Fit" class="... success|danger|warning ...">
+    Prefer aria-label, then fall back to class hints.
+    """
+    el = row.locator("player-status").first
+    if el.count() == 0:
+        return "unknown"
+    try:
+        aria = el.get_attribute("aria-label") or el.get_attribute("title") or ""
+        aria = aria.strip()
+        if aria:
+            # normalize short
+            if "Fit" in aria:
+                return "fit"
+            if "Injured" in aria:
+                return "injured"
+            if "Doubt" in aria or "Doubtful" in aria or "Questionable" in aria:
+                return "doubt"
+            return aria.lower()
+    except Exception:
+        pass
+
+    try:
+        cls = el.get_attribute("class") or ""
+        cls = cls.lower()
+        if "success" in cls or "ok" in cls:
+            return "fit"
+        if "danger" in cls or "injured" in cls:
+            return "injured"
+        if "warning" in cls or "doubt" in cls or "question" in cls:
+            return "doubt"
+    except Exception:
+        pass
+    return "unknown"
 
 def scrape_basic_team_table(page) -> pd.DataFrame:
     """
@@ -97,11 +141,42 @@ def scrape_basic_team_table(page) -> pd.DataFrame:
         # mv change (signed, in euros)
         mv_change_eur = _mv_change_from_increment(row)
 
+        # status
+        status = _status_from_element(row)
+
+        # GP and Avg: take the first and second <td> after the status cell
+        try:
+            status_td = row.locator("player-status").first.locator("xpath=..")  # parent TD
+            gp_td = status_td.locator("xpath=following-sibling::td[1]")
+            avg_td = status_td.locator("xpath=following-sibling::td[2]")
+            gp = _to_int_generic(gp_td.inner_text())
+            avg = _to_float_generic(avg_td.inner_text())
+        except Exception:
+            gp, avg = 0, 0.0
+
+        # Form (up to last 5 numbers; leftmost = latest)
+        try:
+            form_cells = row.locator("player-fitness player-points")
+            form_vals = [_to_int_generic(c.inner_text()) for c in form_cells.all()]
+        except Exception:
+            form_vals = []
+
+        # Guarantee at most 5, pad right with 0s if fewer
+        form = (form_vals[:5] + [0] * 5)[:5]
+
         data.append({
             "name": name,
             "points": points,
             "market_value": market_value,
             "mv_change_eur": mv_change_eur,
+            "status": status,
+            "games_played": gp,
+            "average_points": avg,
+            "form_t-1": form[0],
+            "form_t-2": form[1],
+            "form_t-3": form[2],
+            "form_t-4": form[3],
+            "form_t-5": form[4],
         })
 
     df = pd.DataFrame(data)
@@ -143,7 +218,6 @@ def ETL_get_current_team():
     # 7) Extract table data
     team_data = scrape_basic_team_table(page)
     print(team_data)
-    print(team_data.dtypes)
 
     page.pause()
 
@@ -151,4 +225,8 @@ def ETL_get_current_team():
 
 
 if __name__ == "__main__":
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
     ETL_get_current_team()
