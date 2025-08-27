@@ -11,7 +11,7 @@ from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 
 import pandas as pd
 from playwright.sync_api import TimeoutError as PWTimeout
-from typing import Dict, Any, List, Callable
+from typing import Dict, Any, List, Callable, Tuple
 import re
 
 def click_first_player(page) -> None:
@@ -281,40 +281,50 @@ def scrape_player_detail(page) -> dict:
     }
 
 def iterate_all_players_sequential(
-    page,
-    scrape_fn: Callable[[Any], Dict[str, Any]] = scrape_player_detail,
-    max_players: int = 10000,
-    logger=None,
-) -> List[Dict[str, Any]]:
+        page,
+        max_players: int = 10000,
+        logger=None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    1) Click the first player in the table
-    2) For each player: scrape with `scrape_fn`
-    3) Click Next and wait until the player changes (URL or H1)
+    Click first player, then for each player:
+      - scrape player snapshot
+      - scrape match rows
+      - click Next until it disappears
+    Returns (player_rows, match_rows)
     """
     click_first_player(page)
 
-    out: List[Dict[str, Any]] = []
+    player_rows: List[Dict[str, Any]] = []
+    match_rows:  List[Dict[str, Any]] = []
 
     for i in range(max_players):
-        # Capture current identifiers BEFORE clicking Next
+        # capture stable identity before scraping/next
         prev_url  = page.url
-        prev_name = scrape_player_name(page)  # cheap + reliable anchor
+        prev_name = scrape_player_name(page)
 
-        # Scrape full details for the CURRENT player
-        row = scrape_fn(page)  # <-- pluggable parser
-        row["_seq"] = i + 1
-        out.append(row)
+        # --- scrape detail (1 row)
+        detail = scrape_player_detail(page)
+        detail["_seq"] = i + 1
+        player_rows.append(detail)
+
+        # # --- scrape matches (N rows)
+        # matches = scrape_player_matches(page)
+        # # enrich match rows with player identifiers for easy joins
+        # for m in matches:
+        #     m["player_name"] = detail["player_name"]
+        #     m["team"] = detail.get("team", "")
+        # match_rows.extend(matches)
 
         if logger and (i + 1) % 25 == 0:
-            logger.info(f"…scraped {i+1} players so far")
+            logger.info(f"…scraped {i+1} players so far ({len(match_rows)} match rows).")
 
-        # Try to move to the next player; wait until it actually changes
+        # advance
         if not click_next_player_if_present(page, prev_url=prev_url, prev_name=prev_name):
             if logger:
                 logger.info("Reached the last player (no Next button).")
             break
 
-    return out
+    return player_rows, match_rows
+
 
 
 def ETL_get_player_stats():
@@ -347,9 +357,12 @@ def ETL_get_player_stats():
     page.get_by_role("button", name="Table").click()
 
     # 6) Iterate over all players
-    rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
-    logger.info(f"✅ Scraped {len(rows)} players (stub).")
-    print(pd.DataFrame(rows))
+    player_rows, match_rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
+    logger.info(f"✅ Scraped {len(player_rows)} players (stub).")
+    print(pd.DataFrame(player_rows))
+
+    logger.info(f"✅ Scraped {len(match_rows)} players (stub).")
+    print(pd.DataFrame(match_rows))
 
     page.pause()
 
