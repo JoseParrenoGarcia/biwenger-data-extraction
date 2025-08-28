@@ -235,23 +235,37 @@ def ETL_get_current_team():
     pw, browser, context, page = start_browser_accept_cookies(headless=True)
     logger.info("✅ Logged in")
 
-    # 3) Login
-    perform_login(page, creds["email"], creds["password"])
+    try:
+        # 3) Login
+        perform_login(page, creds["email"], creds["password"])
 
-    # 4) Navigate to team page
-    click_tab_in_horizontal_main_menu(page, "team")
+        # 4) Navigate to team page
+        click_tab_in_horizontal_main_menu(page, "team")
 
-    # 5) Click view as list
-    page.get_by_role("button", name="Table").click()
+        # 5) Click view as list
+        page.get_by_role("button", name="Table").click()
 
-    # 6) Scroll to list section
-    scroll_into_view(page, "segmented-control button[aria-label='Squad']")
+        # 6) Scroll to list section
+        scroll_into_view(page, "segmented-control button[aria-label='Squad']")
 
-    # 7) Extract table data
-    team_data = scrape_basic_team_table(page)
+        # 7) Extract table data
+        team_data = scrape_basic_team_table(page)
 
-    # 8) Insert into Supabase
-    insert_current_team(team_data, table_name="biwenger_current_team", logger=logger)
+        # 8) Insert into Supabase
+        insert_current_team(team_data, table_name="biwenger_current_team", logger=logger)
+    finally:
+        try:
+            context.close()
+        except Exception:
+            pass
+        try:
+            browser.close()
+        except Exception:
+            pass
+        try:
+            pw.stop()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     pd.set_option('display.max_columns', None)

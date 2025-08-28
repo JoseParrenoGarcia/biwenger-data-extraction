@@ -1,0 +1,27 @@
+1. Open the ~/Library/LaunchAgents/ by typing the following command in Terminal:
+open ~/Library/LaunchAgents
+
+2. Create the plist file using a text editor like nano or vim. For example, to create a file named com.user.myapp.plist, you can use:
+nano ~/Library/LaunchAgents/com.biwenger.test.plist
+
+3. (if file is loaded already, unload it first)
+launchctl unload ~/Library/LaunchAgents/com.biwenger.test.plist 2>/dev/null
+
+4. Load the file to the agent
+launchctl load   ~/Library/LaunchAgents/com.biwenger.test.plist
+
+5. To check that the file was loaded to the LaunchAgents, you can use:
+launchctl list | grep biwenger
+
+you should see something like
+-     0     com.biwenger.test
+
+6.  Once confirmed, you can manually launch the script
+launchctl start  com.biwenger.test
+
+7. To check the logs, you can use
+launchctl list | grep biwenger
+-> Exit code column should now be 0 if it ran successfully.
+-> If it’s nonzero (e.g. 78), the plist or command still has an error.
+
+cat ~/launchd_test.log

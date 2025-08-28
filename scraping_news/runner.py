@@ -19,12 +19,12 @@ def run_full_scraping_pipeline(test: bool = False):
     step1_duration = (time.time() - step1_start) / 60
     logger.info(f"✅ ETL_get_relevant_articles completed in {step1_duration:.2f} minutes")
 
-    # Step 2: Run URL collection for specialised articles (e.g., match previews)
-    logger.info("🔍 Running ETL_get_specialised_articles()...")
-    step2_start = time.time()
-    ETL_get_specialised_articles(test=test)
-    step2_duration = (time.time() - step2_start) / 60
-    logger.info(f"✅ ETL_get_specialised_articles completed in {step2_duration:.2f} minutes")
+    # # Step 2: Run URL collection for specialised articles (e.g., match previews)
+    # logger.info("🔍 Running ETL_get_specialised_articles()...")
+    # step2_start = time.time()
+    # ETL_get_specialised_articles(test=test)
+    # step2_duration = (time.time() - step2_start) / 60
+    # logger.info(f"✅ ETL_get_specialised_articles completed in {step2_duration:.2f} minutes")
 
     # Step 3: Run article scraping and LLM enrichment
     logger.info("🧠 Running ETL_get_article_contents()...")

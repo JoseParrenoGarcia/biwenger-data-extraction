@@ -15,10 +15,12 @@ scrape-news:
 	@echo "🔁 Running full scraping pipeline..."
 	bash bash_scripts/run_scraping_news.sh
 
-.PHONY: scrape-news-test
-scrape-news-test:
-	@echo "🧪 Running scraping pipeline in test mode..."
-	bash bash_scripts/run_scraping_news.sh --test
+
+.PHONY: scrape-players
+scrape-players:
+	@echo "🔁 Running full scraping pipeline..."
+	bash bash_scripts/run_scraping_players.sh
+
 
 # ────────────────────────────────────────────────────────────────
 # DEPENDENCY MANAGEMENT

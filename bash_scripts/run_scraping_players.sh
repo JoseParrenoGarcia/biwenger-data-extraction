@@ -14,7 +14,7 @@ notify() {
 
 notify "Scraping started…"
 
-if python3 scraping_news/runner.py "$@"; then
+if python3 scraping_biwenger/runner.py "$@"; then
   notify "Scraping completed successfully."
 else
   notify "Scraping failed ❌. Check logs."
