@@ -412,9 +412,12 @@ def scrape_player_matches(page) -> list[dict]:
             "events": events_str,
         })
 
-    # remove duplicates based on season+round_label
+    # remove duplicates based on season+round_label, excluding null round_label
     unique = {}
     for r in rows:
+        # Skip rows where round_label is null/empty
+        if not r["round_label"]:
+            continue
         key = (r["season_label"], r["round_label"])
         unique[key] = r  # keeps the last occurrence
 
@@ -442,6 +445,8 @@ def iterate_all_players_sequential(
         # capture stable identity before scraping/next
         prev_url  = page.url
         prev_name = scrape_player_name(page)
+
+        logger.info(f"🔍 Scraping player {i + 1}: {prev_name}")
 
         # --- scrape detail (1 row)
         detail = scrape_player_detail(page)
@@ -502,11 +507,35 @@ def ETL_get_player_stats():
     player_rows, match_rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
     player_rows_pd = pd.DataFrame(player_rows)
     logger.info(f"✅ Scraped {player_rows_pd['player_name'].nunique()} players")
-    print(pd.DataFrame(player_rows_pd))
 
     match_rows_pd = pd.DataFrame(match_rows)
     logger.info(f"✅ Scraped {match_rows_pd['player_name'].nunique()} players")
-    print(match_rows_pd)
+    # print(match_rows_pd)
+
+    # 7) Save to Supabase
+    supabase = get_supabase_client()
+    table_name = "biwenger_player_stats"
+
+    if not check_if_table_exists(supabase, table_name):
+        logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
+    else:
+        if player_rows:
+            insert_rows_into_table(supabase, table_name=table_name, rows=player_rows)
+            logger.info(f"✅ Inserted {len(player_rows)} rows into '{table_name}'")
+        else:
+            logger.info("⏩ No player rows to insert.")
+
+    table_name = "biwenger_player_matches"
+
+    if not check_if_table_exists(supabase, table_name):
+        logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
+    else:
+        if player_rows:
+            insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
+            logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
+        else:
+            logger.info("⏩ No player rows to insert.")
+
 
     page.pause()
 

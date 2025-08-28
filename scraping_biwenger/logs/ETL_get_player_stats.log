@@ -4,3 +4,5 @@
 2025-08-28 | ETL_get_player_stats | INFO     | ======================================================================
 2025-08-28 | ETL_get_player_stats | INFO     | ✅ Credentials loaded successfully.
 2025-08-28 | ETL_get_player_stats | INFO     | ✅ Logged in
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 1: Mbappé
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 2: Lo Celso
