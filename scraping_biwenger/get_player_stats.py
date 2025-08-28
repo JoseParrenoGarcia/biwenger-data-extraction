@@ -530,7 +530,15 @@ def ETL_get_player_stats():
     if not check_if_table_exists(supabase, table_name):
         logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
     else:
-        if player_rows:
+        if match_rows:
+            # insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
+            # logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
+
+            # Delete everything first (truncate semantics)
+            supabase.table(table_name).delete().neq("id", 0).execute()
+            logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
+
+            # Insert fresh rows
             insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
             logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
         else:
