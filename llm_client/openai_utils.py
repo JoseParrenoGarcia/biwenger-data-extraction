@@ -12,8 +12,8 @@ def truncate_user_prompt(user_prompt: str, model: str, max_tokens: int) -> str:
 def call_openai_chat_model(
     system_prompt: str,
     user_prompt: str,
-    model: str = "gpt-4o-mini",
-    max_tokens: int = 128_000,
+    model: str = "gpt-5-nano",
+    max_tokens: int = 400_000,
     temperature: float = 0.3,
     logger: Optional[logging.Logger] = None,
     client=None  # Injected OpenAI client
@@ -62,7 +62,7 @@ def call_openai_chat_model(
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": truncated_user_prompt}
             ],
-            temperature=temperature
+            # temperature=temperature
         )
 
         # Extract and return the response

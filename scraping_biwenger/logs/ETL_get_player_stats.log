@@ -1,0 +1,21 @@
+2025-08-28 | ETL_get_player_stats | INFO     | Logger 'ETL_get_player_stats' initialized. Logging to: logs/ETL_get_player_stats.log
+2025-08-28 | ETL_get_player_stats | INFO     | ======================================================================
+2025-08-28 | ETL_get_player_stats | INFO     | 🚀 Starting ETL: get_player_stats
+2025-08-28 | ETL_get_player_stats | INFO     | ======================================================================
+2025-08-28 | ETL_get_player_stats | INFO     | ✅ Credentials loaded successfully.
+2025-08-28 | ETL_get_player_stats | INFO     | ✅ Logged in
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 1: Mbappé
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 2: Lo Celso
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 3: Pépé
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 4: Buchanan
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 5: Adrián Liso
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 6: Pape Gueye
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 7: Bartra
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 8: Pedri
+2025-08-28 | ETL_get_player_stats | INFO     | 🔍 Scraping player 9: Nico Williams
+2025-08-28 | ETL_get_player_stats | INFO     | Reached the last player (no Next button).
+2025-08-28 | ETL_get_player_stats | INFO     | ✅ Scraped 9 players
+2025-08-28 | ETL_get_player_stats | INFO     | ✅ Scraped 9 players
+2025-08-28 | ETL_get_player_stats | INFO     | ✅ Inserted 9 rows into 'biwenger_player_stats'
+2025-08-28 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_matches'
+2025-08-28 | ETL_get_player_stats | INFO     | ✅ Inserted 20 rows into 'biwenger_player_matches'
