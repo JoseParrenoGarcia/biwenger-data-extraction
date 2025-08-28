@@ -373,32 +373,52 @@ def scrape_player_matches(page) -> list[dict]:
     tr_list = page.locator("player-detail-points point-list table tr")
 
     season_label = _get_season_label(page)
-    # print(
-    #     "bars:",
-    #     page.locator("player-detail-points point-list table td.bar-container a.bar").count()
-    # )
 
     rows = []
-    for i in range(tr_list.count()):
+    for i in range(tr_list.count()+1):
         tr = tr_list.nth(i)
         bar = tr.locator("td.bar-container a.bar")
         if bar.count() == 0:
             continue
 
-        # ...extract round/date/teams/score/points/events...
+        # Round label (e.g., R1)
+        round_a = tr.locator('td.round a[title^="Round"]')
+        round_label = _safe_text(round_a)
+
+        # Start datetime (ISO) -> date
+        start_iso = _safe_attr(tr.locator('meta[itemprop="startDate"]'), "content")
+        match_date = _to_date_iso(start_iso) if start_iso else None
+
+        # Points & Best XI
+        best_xi = bar.first.evaluate("el => el.classList.contains('star')") if bar.count() else False
+        points = _to_int(_safe_text(bar.first))
+
+        # Events: grab span@title values, join into one string
+        ev_spans = tr.locator("td.events player-events span")
+        titles = []
+        for j in range(ev_spans.count()):
+            t = _safe_attr(ev_spans.nth(j), "title")
+            if t:
+                titles.append(t.strip())
+
+        events_str = " | ".join(titles) if titles else ""
 
         rows.append({
             "season_label": season_label,
-            # "round_label": round_label,
-            # "match_date": match_date,
-            # "home_team": home_team,
-            # "home_goals": home_goals,
-            # "away_team": away_team,
-            # "away_goals": away_goals,
-            # "points": points,
-            # "best_xi": best_xi,
-            # "events_json": events_json,
+            "round_label": round_label,
+            "match_date": match_date,
+            "points": points,
+            "best_xi": best_xi,
+            "events": events_str,
         })
+
+    # remove duplicates based on season+round_label
+    unique = {}
+    for r in rows:
+        key = (r["season_label"], r["round_label"])
+        unique[key] = r  # keeps the last occurrence
+
+    rows = list(unique.values())
 
     return rows
 
@@ -479,12 +499,14 @@ def ETL_get_player_stats():
     page.get_by_role("button", name="Table").click()
 
     # 6) Iterate over all players
-    player_rows, match_rows = iterate_all_players_sequential(page, max_players=1, logger=logger)
-    logger.info(f"✅ Scraped {len(player_rows)} players")
-    print(pd.DataFrame(player_rows))
+    player_rows, match_rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
+    player_rows_pd = pd.DataFrame(player_rows)
+    logger.info(f"✅ Scraped {player_rows_pd['player_name'].nunique()} players")
+    print(pd.DataFrame(player_rows_pd))
 
-    logger.info(f"✅ Scraped {len(match_rows)} players")
-    print(pd.DataFrame(match_rows))
+    match_rows_pd = pd.DataFrame(match_rows)
+    logger.info(f"✅ Scraped {match_rows_pd['player_name'].nunique()} players")
+    print(match_rows_pd)
 
     page.pause()
 

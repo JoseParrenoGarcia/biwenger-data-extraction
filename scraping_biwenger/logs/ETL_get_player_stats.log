@@ -4,5 +4,3 @@
 2025-08-28 | ETL_get_player_stats | INFO     | ======================================================================
 2025-08-28 | ETL_get_player_stats | INFO     | ✅ Credentials loaded successfully.
 2025-08-28 | ETL_get_player_stats | INFO     | ✅ Logged in
-2025-08-28 | ETL_get_player_stats | INFO     | ✅ Scraped 1 players
-2025-08-28 | ETL_get_player_stats | INFO     | ✅ Scraped 2 players

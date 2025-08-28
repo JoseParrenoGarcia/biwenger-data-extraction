@@ -1,13 +1,13 @@
-2025-08-26 | scraping_news_runner | INFO     | Logger 'scraping_news_runner' initialized. Logging to: logs/runner_scraping_news.log
-2025-08-26 | scraping_news_runner | INFO     | ============================================================
-2025-08-26 | scraping_news_runner | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
-2025-08-26 | scraping_news_runner | INFO     | ============================================================
-2025-08-26 | scraping_news_runner | INFO     | 🔍 Running ETL_get_relevant_articles()...
-2025-08-26 | scraping_news_runner | INFO     | ✅ ETL_get_relevant_articles completed in 6.91 minutes
-2025-08-26 | scraping_news_runner | INFO     | 🔍 Running ETL_get_specialised_articles()...
-2025-08-26 | scraping_news_runner | INFO     | ✅ ETL_get_specialised_articles completed in 0.03 minutes
-2025-08-26 | scraping_news_runner | INFO     | 🧠 Running ETL_get_article_contents()...
-2025-08-26 | scraping_news_runner | INFO     | ✅ ETL_get_article_contents completed in 22.92 minutes
-2025-08-26 | scraping_news_runner | INFO     | ============================================================
-2025-08-26 | scraping_news_runner | INFO     | ✅ FULL PIPELINE COMPLETED SUCCESSFULLY in 29.86 minutes
-2025-08-26 | scraping_news_runner | INFO     | ============================================================
+2025-08-28 | scraping_news_runner | INFO     | Logger 'scraping_news_runner' initialized. Logging to: logs/runner_scraping_news.log
+2025-08-28 | scraping_news_runner | INFO     | ============================================================
+2025-08-28 | scraping_news_runner | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
+2025-08-28 | scraping_news_runner | INFO     | ============================================================
+2025-08-28 | scraping_news_runner | INFO     | 🔍 Running ETL_get_relevant_articles()...
+2025-08-28 | scraping_news_runner | INFO     | ✅ ETL_get_relevant_articles completed in 13.04 minutes
+2025-08-28 | scraping_news_runner | INFO     | 🔍 Running ETL_get_specialised_articles()...
+2025-08-28 | scraping_news_runner | INFO     | ✅ ETL_get_specialised_articles completed in 0.02 minutes
+2025-08-28 | scraping_news_runner | INFO     | 🧠 Running ETL_get_article_contents()...
+2025-08-28 | scraping_news_runner | INFO     | ✅ ETL_get_article_contents completed in 0.52 minutes
+2025-08-28 | scraping_news_runner | INFO     | ============================================================
+2025-08-28 | scraping_news_runner | INFO     | ✅ FULL PIPELINE COMPLETED SUCCESSFULLY in 13.59 minutes
+2025-08-28 | scraping_news_runner | INFO     | ============================================================
