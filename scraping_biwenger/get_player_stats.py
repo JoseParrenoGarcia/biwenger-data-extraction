@@ -311,12 +311,14 @@ def _get_season_label(page, timeout=3000) -> str:
     # Prefer the explicit attribute in your markup
     btn = page.locator('player-detail-points .section.light button[modalmenutitle="Season"]').first
     if btn.count():
-        return (btn.inner_text(timeout=timeout) or "").strip()
+        text = (btn.inner_text(timeout=timeout) or "").strip()
+        return re.sub(r'\s*SEASON\s*', '', text, flags=re.IGNORECASE).strip()
 
-    # Fallback: any button whose accessible name contains “season”
+    # Fallback: any button whose accessible name contains "season"
     try:
         btn2 = page.get_by_role("button", name=re.compile(r"season", re.I)).first
-        return (btn2.inner_text(timeout=timeout) or "").strip()
+        text = (btn2.inner_text(timeout=timeout) or "").strip()
+        return re.sub(r'\s*SEASON\s*', '', text, flags=re.IGNORECASE).strip()
     except Exception:
         return ""
 
