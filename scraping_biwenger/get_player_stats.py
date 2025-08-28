@@ -13,6 +13,8 @@ import pandas as pd
 from playwright.sync_api import TimeoutError as PWTimeout
 from typing import Dict, Any, List, Callable, Tuple
 import re
+import json
+from datetime import date, datetime
 
 def click_first_player(page) -> None:
     first_link = page.locator("table.table.no-swipe tbody tr th.text-left a").first
@@ -280,6 +282,126 @@ def scrape_player_detail(page) -> dict:
         **scrape_player_statistics(page)
     }
 
+def _safe_text(l, timeout=2000):
+    try:
+        return l.inner_text(timeout=timeout).strip()
+    except Exception:
+        return ""
+
+def _safe_attr(l, name, timeout=2000):
+    try:
+        return l.get_attribute(name, timeout=timeout)
+    except Exception:
+        return None
+
+def _to_int(s):
+    try:
+        return int(str(s).replace("–", "-").replace("−", "-").strip())
+    except Exception:
+        return 0
+
+def _to_date_iso(date_str):
+    """Input like 2025-08-24T19:30:00.000Z -> 2025-08-24"""
+    try:
+        return datetime.fromisoformat(date_str.replace("Z", "+00:00")).date().isoformat()
+    except Exception:
+        return None
+
+def _get_season_label(page, timeout=3000) -> str:
+    # Prefer the explicit attribute in your markup
+    btn = page.locator('player-detail-points .section.light button[modalmenutitle="Season"]').first
+    if btn.count():
+        return (btn.inner_text(timeout=timeout) or "").strip()
+
+    # Fallback: any button whose accessible name contains “season”
+    try:
+        btn2 = page.get_by_role("button", name=re.compile(r"season", re.I)).first
+        return (btn2.inner_text(timeout=timeout) or "").strip()
+    except Exception:
+        return ""
+
+def open_points_tab(page, timeout=10000):
+    """
+    Ensure the right-hand 'Points' tab is active and loaded.
+    Click the tab header (not the tabpanel) and wait for the table to appear.
+    """
+    # If it's already visible, bail early
+    if page.locator("player-detail-points point-list table").first.count() > 0:
+        return
+
+    # Scroll the tab header area into view (some UIs lazy-load on scroll)
+    try:
+        page.locator("linear-tabs").first.scroll_into_view_if_needed()
+    except Exception:
+        pass
+
+    # Try clickable headers by ARIA role first
+    clicked = False
+    try:
+        page.get_by_role("tab", name=re.compile(r"^Points$", re.I)).click()
+        clicked = True
+    except Exception:
+        # Fallbacks: various header list selectors
+        for sel in (
+            "linear-tabs ul li:has-text('Points') a",
+            "linear-tabs ul li:has-text('Points')",
+            "tab[header='Points'] ~ *",  # last-ditch: click sibling header area if present
+        ):
+            loc = page.locator(sel).first
+            if loc.count():
+                try:
+                    loc.scroll_into_view_if_needed()
+                    loc.click()
+                    clicked = True
+                    break
+                except Exception:
+                    continue
+
+    # If we didn’t click anything (maybe already selected), continue to wait anyway
+    try:
+        page.wait_for_selector("player-detail-points point-list table, player-detail-points .section.light:has-text('Total')",
+                               timeout=timeout, state="visible")
+    except PWTimeout:
+        # Surface a clearer error for debugging
+        raise RuntimeError("Points tab did not load its table. Is the header click targeting the right element?")
+
+def scrape_player_matches(page) -> list[dict]:
+    open_points_tab(page)
+
+    # Wait for the table to exist; don’t assume first row has a bar
+    page.wait_for_selector("player-detail-points point-list table", timeout=10000)
+    tr_list = page.locator("player-detail-points point-list table tr")
+
+    season_label = _get_season_label(page)
+    # print(
+    #     "bars:",
+    #     page.locator("player-detail-points point-list table td.bar-container a.bar").count()
+    # )
+
+    rows = []
+    for i in range(tr_list.count()):
+        tr = tr_list.nth(i)
+        bar = tr.locator("td.bar-container a.bar")
+        if bar.count() == 0:
+            continue
+
+        # ...extract round/date/teams/score/points/events...
+
+        rows.append({
+            "season_label": season_label,
+            # "round_label": round_label,
+            # "match_date": match_date,
+            # "home_team": home_team,
+            # "home_goals": home_goals,
+            # "away_team": away_team,
+            # "away_goals": away_goals,
+            # "points": points,
+            # "best_xi": best_xi,
+            # "events_json": events_json,
+        })
+
+    return rows
+
 def iterate_all_players_sequential(
         page,
         max_players: int = 10000,
@@ -306,13 +428,13 @@ def iterate_all_players_sequential(
         detail["_seq"] = i + 1
         player_rows.append(detail)
 
-        # # --- scrape matches (N rows)
-        # matches = scrape_player_matches(page)
-        # # enrich match rows with player identifiers for easy joins
-        # for m in matches:
-        #     m["player_name"] = detail["player_name"]
-        #     m["team"] = detail.get("team", "")
-        # match_rows.extend(matches)
+        # --- scrape matches (N rows)
+        matches = scrape_player_matches(page)
+        # enrich match rows with player identifiers for easy joins
+        for m in matches:
+            m["player_name"] = detail["player_name"]
+            m["team"] = detail.get("team", "")
+        match_rows.extend(matches)
 
         if logger and (i + 1) % 25 == 0:
             logger.info(f"…scraped {i+1} players so far ({len(match_rows)} match rows).")
@@ -357,11 +479,11 @@ def ETL_get_player_stats():
     page.get_by_role("button", name="Table").click()
 
     # 6) Iterate over all players
-    player_rows, match_rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
-    logger.info(f"✅ Scraped {len(player_rows)} players (stub).")
+    player_rows, match_rows = iterate_all_players_sequential(page, max_players=1, logger=logger)
+    logger.info(f"✅ Scraped {len(player_rows)} players")
     print(pd.DataFrame(player_rows))
 
-    logger.info(f"✅ Scraped {len(match_rows)} players (stub).")
+    logger.info(f"✅ Scraped {len(match_rows)} players")
     print(pd.DataFrame(match_rows))
 
     page.pause()
