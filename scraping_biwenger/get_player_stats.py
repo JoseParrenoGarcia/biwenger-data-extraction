@@ -367,65 +367,86 @@ def open_points_tab(page, timeout=10000):
         # Surface a clearer error for debugging
         raise RuntimeError("Points tab did not load its table. Is the header click targeting the right element?")
 
-def scrape_player_matches(page) -> list[dict]:
-    open_points_tab(page)
+def scrape_player_matches(page, logger=None) -> list[dict]:
+    # Make sure the Points tab is visible, but don't blow up if it isn't
+    try:
+        open_points_tab(page)
+    except Exception as e:
+        if logger: logger.warning(f"⚠️ Points tab not available: {e}")
+        return []
 
-    # Wait for the table to exist; don’t assume first row has a bar
-    page.wait_for_selector("player-detail-points point-list table", timeout=10000)
-    tr_list = page.locator("player-detail-points point-list table tr")
+    # Try to get the table; if it's not there, just return []
+    tbl = page.locator("player-detail-points point-list table").first
+    try:
+        tbl.wait_for(state="visible", timeout=8000)
+    except Exception:
+        if logger: logger.info("ℹ️ No per-match table visible for this player; skipping matches.")
+        return []
 
     season_label = _get_season_label(page)
 
     rows = []
-    for i in range(tr_list.count()+1):
+    try:
+        tr_list = tbl.locator("tr")
+        row_count = tr_list.count()  # ✅ no off-by-one
+    except Exception:
+        row_count = 0
+
+    for i in range(row_count):
         tr = tr_list.nth(i)
-        bar = tr.locator("td.bar-container a.bar")
-        if bar.count() == 0:
+        try:
+            bar = tr.locator("td.bar-container a.bar")
+            if bar.count() == 0:
+                continue
+
+            # Round label (e.g., R1)
+            round_label = _safe_text(tr.locator('td.round a[title^="Round"]'))
+
+            # Start datetime (ISO) -> date
+            start_iso  = _safe_attr(tr.locator('meta[itemprop="startDate"]'), "content")
+            match_date = _to_date_iso(start_iso) if start_iso else None
+
+            # Points & Best XI — avoid locator.evaluate; read attributes/text safely
+            bar_first = bar.first
+            cls = (bar_first.get_attribute("class") or "")
+            best_xi = "star" in cls
+            points = _to_int(_safe_text(bar_first))
+
+            # Events (join span@title)
+            ev_spans = tr.locator("td.events player-events span")
+            try:
+                ev_count = ev_spans.count()
+            except Exception:
+                ev_count = 0
+            titles = []
+            for j in range(ev_count):
+                t = _safe_attr(ev_spans.nth(j), "title")
+                if t:
+                    titles.append(t.strip())
+            events_str = " | ".join(titles) if titles else ""
+
+            if round_label:
+                rows.append({
+                    "season_label": season_label,
+                    "round_label": round_label,
+                    "match_date": match_date,
+                    "points": points,
+                    "best_xi": best_xi,
+                    "events": events_str,
+                })
+        except Exception as e:
+            if logger: logger.debug(f"row {i} parse failed: {e}")
             continue
 
-        # Round label (e.g., R1)
-        round_a = tr.locator('td.round a[title^="Round"]')
-        round_label = _safe_text(round_a)
-
-        # Start datetime (ISO) -> date
-        start_iso = _safe_attr(tr.locator('meta[itemprop="startDate"]'), "content")
-        match_date = _to_date_iso(start_iso) if start_iso else None
-
-        # Points & Best XI
-        best_xi = bar.first.evaluate("el => el.classList.contains('star')") if bar.count() else False
-        points = _to_int(_safe_text(bar.first))
-
-        # Events: grab span@title values, join into one string
-        ev_spans = tr.locator("td.events player-events span")
-        titles = []
-        for j in range(ev_spans.count()):
-            t = _safe_attr(ev_spans.nth(j), "title")
-            if t:
-                titles.append(t.strip())
-
-        events_str = " | ".join(titles) if titles else ""
-
-        rows.append({
-            "season_label": season_label,
-            "round_label": round_label,
-            "match_date": match_date,
-            "points": points,
-            "best_xi": best_xi,
-            "events": events_str,
-        })
-
-    # remove duplicates based on season+round_label, excluding null round_label
+    # De-dup season+round
     unique = {}
     for r in rows:
-        # Skip rows where round_label is null/empty
         if not r["round_label"]:
             continue
-        key = (r["season_label"], r["round_label"])
-        unique[key] = r  # keeps the last occurrence
+        unique[(r["season_label"], r["round_label"])] = r
 
-    rows = list(unique.values())
+    return list(unique.values())
 
-    return rows
 
 def _is_on_detail(page) -> bool:
     """Heuristic: detail has player-detail-header or URL contains /players/."""
@@ -571,14 +592,25 @@ def iterate_all_players_sequential(
             player_rows.append(detail)
 
             # --- scrape matches (N rows)
-            matches = scrape_player_matches(page)
+            try:
+                # keep your current signature; this will work even if you haven’t
+                # swapped in the resilient scrape_player_matches yet
+                matches = scrape_player_matches(page)
+            except Exception as e:
+                if logger:
+                    logger.warning(
+                        f"⚠️ Failed to scrape matches for {detail.get('player_name', '(unknown)')}: {e}. Skipping matches."
+                    )
+                matches = []
+
+            # enrich & append
             for mrow in matches:
                 mrow["player_name"] = detail["player_name"]
                 mrow["team"] = detail.get("team", "")
             match_rows.extend(matches)
 
             if logger and (i + 1) % 25 == 0:
-                logger.info(f"…scraped {i+1} players so far ({len(match_rows)} match rows).")
+                logger.info(f"…scraped {i + 1} players so far ({len(match_rows)} match rows).")
 
         # Try to move to the next player within the same table page
         if click_next_player_if_present(page, prev_url=prev_url, prev_name=prev_name):
