@@ -149,6 +149,9 @@ def ETL_get_article_contents(test: bool = False):
     if not articles_to_scrape:
         logger.info("✅ No new articles to scrape — pipeline complete.")
         return
+    else:
+        print(f"📋 {len(articles_to_scrape)} articles")
+        print(articles_to_scrape)
 
     logger.info(f"📋 {len(articles_to_scrape)} articles pending scraping.")
     logger.info("=" * 60)
