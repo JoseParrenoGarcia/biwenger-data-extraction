@@ -31,9 +31,9 @@
 2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 23: Kubo (name_team:kubo|real sociedad)
 2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 24: Germán Valera (name_team:germán valera|elche)
 2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 25: Raphinha (name_team:raphinha|barcelona)
-2025-08-29 | ETL_get_player_stats | INFO     | …scraped 25 players so far (41 match rows).
+2025-08-29 | ETL_get_player_stats | INFO     | …scraped 25 players so far (55 match rows).
 2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 25 players
-2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 20 players
+2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 25 players
 2025-08-29 | ETL_get_player_stats | INFO     | ✅ Upserted 25 rows into 'biwenger_player_stats' via content_hash.
 2025-08-29 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_matches'
-2025-08-29 | ETL_get_player_stats | INFO     | ✅ Inserted 41 rows into 'biwenger_player_matches'
+2025-08-29 | ETL_get_player_stats | INFO     | ✅ Inserted 55 rows into 'biwenger_player_matches'
