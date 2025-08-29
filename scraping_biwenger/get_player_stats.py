@@ -367,116 +367,278 @@ def open_points_tab(page, timeout=10000):
         # Surface a clearer error for debugging
         raise RuntimeError("Points tab did not load its table. Is the header click targeting the right element?")
 
-def scrape_player_matches(page) -> list[dict]:
-    open_points_tab(page)
+def scrape_player_matches(page, logger=None) -> list[dict]:
+    # Make sure the Points tab is visible, but don't blow up if it isn't
+    try:
+        open_points_tab(page)
+    except Exception as e:
+        if logger: logger.warning(f"⚠️ Points tab not available: {e}")
+        return []
 
-    # Wait for the table to exist; don’t assume first row has a bar
-    page.wait_for_selector("player-detail-points point-list table", timeout=10000)
-    tr_list = page.locator("player-detail-points point-list table tr")
+    # Try to get the table; if it's not there, just return []
+    tbl = page.locator("player-detail-points point-list table").first
+    try:
+        tbl.wait_for(state="visible", timeout=8000)
+    except Exception:
+        if logger: logger.info("ℹ️ No per-match table visible for this player; skipping matches.")
+        return []
 
     season_label = _get_season_label(page)
 
     rows = []
-    for i in range(tr_list.count()+1):
+    try:
+        tr_list = tbl.locator("tr")
+        row_count = tr_list.count()  # ✅ no off-by-one
+    except Exception:
+        row_count = 0
+
+    for i in range(row_count):
         tr = tr_list.nth(i)
-        bar = tr.locator("td.bar-container a.bar")
-        if bar.count() == 0:
+        try:
+            bar = tr.locator("td.bar-container a.bar")
+            if bar.count() == 0:
+                continue
+
+            # Round label (e.g., R1)
+            round_label = _safe_text(tr.locator('td.round a[title^="Round"]'))
+
+            # Start datetime (ISO) -> date
+            start_iso  = _safe_attr(tr.locator('meta[itemprop="startDate"]'), "content")
+            match_date = _to_date_iso(start_iso) if start_iso else None
+
+            # Points & Best XI — avoid locator.evaluate; read attributes/text safely
+            bar_first = bar.first
+            cls = (bar_first.get_attribute("class") or "")
+            best_xi = "star" in cls
+            points = _to_int(_safe_text(bar_first))
+
+            # Events (join span@title)
+            ev_spans = tr.locator("td.events player-events span")
+            try:
+                ev_count = ev_spans.count()
+            except Exception:
+                ev_count = 0
+            titles = []
+            for j in range(ev_count):
+                t = _safe_attr(ev_spans.nth(j), "title")
+                if t:
+                    titles.append(t.strip())
+            events_str = " | ".join(titles) if titles else ""
+
+            if round_label:
+                rows.append({
+                    "season_label": season_label,
+                    "round_label": round_label,
+                    "match_date": match_date,
+                    "points": points,
+                    "best_xi": best_xi,
+                    "events": events_str,
+                })
+        except Exception as e:
+            if logger: logger.debug(f"row {i} parse failed: {e}")
             continue
 
-        # Round label (e.g., R1)
-        round_a = tr.locator('td.round a[title^="Round"]')
-        round_label = _safe_text(round_a)
-
-        # Start datetime (ISO) -> date
-        start_iso = _safe_attr(tr.locator('meta[itemprop="startDate"]'), "content")
-        match_date = _to_date_iso(start_iso) if start_iso else None
-
-        # Points & Best XI
-        best_xi = bar.first.evaluate("el => el.classList.contains('star')") if bar.count() else False
-        points = _to_int(_safe_text(bar.first))
-
-        # Events: grab span@title values, join into one string
-        ev_spans = tr.locator("td.events player-events span")
-        titles = []
-        for j in range(ev_spans.count()):
-            t = _safe_attr(ev_spans.nth(j), "title")
-            if t:
-                titles.append(t.strip())
-
-        events_str = " | ".join(titles) if titles else ""
-
-        rows.append({
-            "season_label": season_label,
-            "round_label": round_label,
-            "match_date": match_date,
-            "points": points,
-            "best_xi": best_xi,
-            "events": events_str,
-        })
-
-    # remove duplicates based on season+round_label, excluding null round_label
+    # De-dup season+round
     unique = {}
     for r in rows:
-        # Skip rows where round_label is null/empty
         if not r["round_label"]:
             continue
-        key = (r["season_label"], r["round_label"])
-        unique[key] = r  # keeps the last occurrence
+        unique[(r["season_label"], r["round_label"])] = r
 
-    rows = list(unique.values())
+    return list(unique.values())
 
-    return rows
+
+def _is_on_detail(page) -> bool:
+    """Heuristic: detail has player-detail-header or URL contains /players/."""
+    try:
+        if page.locator("player-detail-header h1").first.count() > 0:
+            return True
+    except Exception:
+        pass
+    return "/players/" in (page.url or "")
+
+def _wait_for_list(page, timeout_ms: int = 10000) -> None:
+    """Wait until the table view is visible."""
+    page.wait_for_selector("table.table.no-swipe tbody tr th.text-left a", state="visible", timeout=timeout_ms)
+
+def _ensure_on_list(page, timeout_ms: int = 10000) -> bool:
+    """If currently in detail, go back until the list table is visible."""
+    if not _is_on_detail(page):
+        try:
+            _wait_for_list(page, timeout_ms)
+            return True
+        except Exception:
+            return False
+
+    # we are on detail, go back once or twice (SPA sometimes pushes twice)
+    for _ in range(2):
+        try:
+            page.go_back(wait_until="domcontentloaded", timeout=timeout_ms)
+            try:
+                _wait_for_list(page, timeout_ms)
+                return True
+            except Exception:
+                # keep trying one more time
+                continue
+        except Exception:
+            break
+    return False
+
+def _get_pagination_summary(page) -> str:
+    """e.g., '1 - 9 of 504' / '10 - 18 of 504'"""
+    try:
+        return (page.locator("pagination span.summary").first.inner_text() or "").strip()
+    except Exception:
+        return ""
+
+def click_next_list_page(page, timeout_ms: int = 10000) -> bool:
+    """
+    Click the '›' (next page) control in the table pagination.
+    Returns True if the next page loads (summary text changes), else False.
+    """
+    try:
+        _wait_for_list(page, timeout_ms)  # ensure we see the list
+    except Exception:
+        return False
+
+    prev_summary = _get_pagination_summary(page)
+
+    # Find an enabled '›' button
+    next_btn = page.locator("pagination ul li:not(.disabled) a", has_text="›").first
+    if next_btn.count() == 0:
+        return False
+
+    try:
+        next_btn.scroll_into_view_if_needed()
+        next_btn.click()
+    except Exception:
+        return False
+
+    # Wait for the summary or the first row to change
+    try:
+        page.wait_for_function(
+            """prev => {
+                const s = document.querySelector('pagination span.summary');
+                return s && s.textContent.trim() !== prev;
+            }""",
+            arg=prev_summary,
+            timeout=timeout_ms
+        )
+    except Exception:
+        # as a fallback, wait for any table re-render
+        try:
+            page.wait_for_load_state("networkidle", timeout=timeout_ms)
+        except Exception:
+            pass
+
+    # Verify we actually moved
+    curr_summary = _get_pagination_summary(page)
+    return curr_summary and curr_summary != prev_summary
+
 
 def iterate_all_players_sequential(
         page,
         max_players: int = 10000,
         logger=None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    Click first player, then for each player:
+    Click first player, then:
       - scrape player snapshot
-      - scrape match rows
-      - click Next until it disappears
-    Returns (player_rows, match_rows)
+      - scrape matches
+      - click Next (detail) until it disappears
+      - when Next disappears (end of current table page), go back to the list,
+        click '›' (next table page), click first player, and continue.
     """
+    # Ensure we start from the list, then open the first player
+    if not _ensure_on_list(page):
+        raise RuntimeError("Could not reach the players list view to start iteration.")
     click_first_player(page)
 
     player_rows: List[Dict[str, Any]] = []
     match_rows:  List[Dict[str, Any]] = []
+    seen_slugs: set[str] = set()  # de-dupe safety across pages
 
     for i in range(max_players):
-        # capture stable identity before scraping/next
-        prev_url  = page.url
+        # Identify the current player robustly
+        prev_url = page.url
         prev_name = scrape_player_name(page)
+        # Try to extract slug from URL (works when detail changes the route)
+        slug = ""
+        m = re.search(r"/players/([^/?#]+)", prev_url or "")
+        if m:
+            slug = (m.group(1) or "").strip().lower()
 
-        logger.info(f"🔍 Scraping player {i + 1}: {prev_name}")
+        # Fallback identity: name + team from header
+        team_name = scrape_team_name(page)
+        name_norm = (prev_name or "").strip().lower()
+        team_norm = (team_name or "").strip().lower()
 
-        # --- scrape detail (1 row)
-        detail = scrape_player_detail(page)
-        detail["_seq"] = i + 1
-        player_rows.append(detail)
+        # Preferred key: slug; else composite (name|team)
+        identity_key = slug if slug else f"{name_norm}|{team_norm}"
 
-        # --- scrape matches (N rows)
-        matches = scrape_player_matches(page)
-        # enrich match rows with player identifiers for easy joins
-        for m in matches:
-            m["player_name"] = detail["player_name"]
-            m["team"] = detail.get("team", "")
-        match_rows.extend(matches)
-
-        if logger and (i + 1) % 25 == 0:
-            logger.info(f"…scraped {i+1} players so far ({len(match_rows)} match rows).")
-
-        # advance
-        if not click_next_player_if_present(page, prev_url=prev_url, prev_name=prev_name):
+        if identity_key in seen_slugs:
             if logger:
-                logger.info("Reached the last player (no Next button).")
+                logger.info(f"↩️ Duplicate player detected, skipping: {prev_name} "
+                            f"({'slug:' + slug if slug else f'name_team:{name_norm}|{team_norm}'})")
+            # try to advance anyway to avoid getting stuck
+        else:
+            seen_slugs.add(identity_key)
+            if logger:
+                logger.info(f"🔍 Scraping player {i + 1}: {prev_name} "
+                            f"({'slug:' + slug if slug else f'name_team:{name_norm}|{team_norm}'})")
+
+            # --- scrape detail (1 row)
+            detail = scrape_player_detail(page)
+            detail["_seq"] = i + 1
+            player_rows.append(detail)
+
+            # --- scrape matches (N rows)
+            try:
+                # keep your current signature; this will work even if you haven’t
+                # swapped in the resilient scrape_player_matches yet
+                matches = scrape_player_matches(page)
+            except Exception as e:
+                if logger:
+                    logger.warning(
+                        f"⚠️ Failed to scrape matches for {detail.get('player_name', '(unknown)')}: {e}. Skipping matches."
+                    )
+                matches = []
+
+            # enrich & append
+            for mrow in matches:
+                mrow["player_name"] = detail["player_name"]
+                mrow["team"] = detail.get("team", "")
+            match_rows.extend(matches)
+
+            if logger and (i + 1) % 25 == 0:
+                logger.info(f"…scraped {i + 1} players so far ({len(match_rows)} match rows).")
+
+        # Try to move to the next player within the same table page
+        if click_next_player_if_present(page, prev_url=prev_url, prev_name=prev_name):
+            continue  # still in the same table page, keep going
+
+        # No "Next" on detail (we're at the last row of this table page)
+        if logger:
+            logger.info("🧭 No detail 'Next' button; going back to list and clicking next table page…")
+
+        # Go back to the list, click '›' to advance the pagination
+        if not _ensure_on_list(page):
+            if logger:
+                logger.info("⚠️ Could not return to the list view. Stopping.")
             break
+
+        if not click_next_list_page(page):
+            if logger:
+                logger.info("✔️ Reached the last table page (no enabled '›'). Stopping.")
+            break
+
+        # Open the first player in the new table page and keep going
+        click_first_player(page)
 
     return player_rows, match_rows
 
 
 
-def ETL_get_player_stats():
+def ETL_get_player_stats(max_players=10_000):
     """
     ETL: Login to Biwenger, scrape player stats, and (later) upload to Supabase.
     """
@@ -507,13 +669,15 @@ def ETL_get_player_stats():
         page.get_by_role("button", name="Table").click()
 
         # 6) Iterate over all players
-        player_rows, match_rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
+        player_rows, match_rows = iterate_all_players_sequential(page, max_players=max_players, logger=logger)
         player_rows_pd = pd.DataFrame(player_rows)
         logger.info(f"✅ Scraped {player_rows_pd['player_name'].nunique()} players")
 
         match_rows_pd = pd.DataFrame(match_rows)
         logger.info(f"✅ Scraped {match_rows_pd['player_name'].nunique()} players")
         # print(match_rows_pd)
+
+        page.pause()
 
         # 7) Save to Supabase
         supabase = get_supabase_client()
