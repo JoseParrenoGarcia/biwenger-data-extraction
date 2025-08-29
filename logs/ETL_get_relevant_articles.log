@@ -57,3 +57,41 @@
 2025-08-29 | ETL_get_relevant_articles | INFO     | Team 4/20: Barcelona
 2025-08-29 | ETL_get_relevant_articles | INFO     | ------------------------------
 2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.sport.es/es/barca/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 342 unique links (was 499 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.mundodeportivo.com/futbol/fc-barcelona
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 203 unique links (was 231 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.fcbarcelonanoticias.com
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 73 unique links (was 119 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/barcelona.html?intcmp=MENUESCU&s_kw=barcelona
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 433 unique links (was 505 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/fc-barcelona/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 78 unique links (was 116 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/barcelona/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 183 unique links (was 211 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/fc-barcelona/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 140 unique links (was 219 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-29 | ETL_get_relevant_articles | INFO     | Team 5/20: Betis
+2025-08-29 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/betis/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 189 unique links (was 218 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/real-betis/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 219 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/betis.html?intcmp=MENUESCU&s_kw=betis
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 430 unique links (was 497 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-betis/?omnil=mod_esc
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 81 unique links (was 126 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-29 | ETL_get_relevant_articles | INFO     | Team 6/20: Celta de Vigo
+2025-08-29 | ETL_get_relevant_articles | INFO     | ------------------------------
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.farodevigo.es/celta-de-vigo/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 164 unique links (was 274 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.lavozdegalicia.es/gradario/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 164 unique links (was 239 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.estadiodeportivo.com/futbol/celta/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 183 unique links (was 211 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.eldesmarque.com/futbol/celta-de-vigo/
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 138 unique links (was 218 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-club-celta-de-vigo/?omnil=mod_esc
+2025-08-29 | ETL_get_relevant_articles | INFO     | --> Found 79 unique links (was 127 before deduplication)
+2025-08-29 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/celta.html?intcmp=MENUESCU&s_kw=celta
