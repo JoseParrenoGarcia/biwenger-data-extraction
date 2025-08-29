@@ -274,12 +274,15 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
     return stats
 
 def scrape_player_detail(page) -> dict:
+    season_label = _get_season_label(page)
+
     return {
         "player_name":     scrape_player_name(page) or "(unknown)",
         "team":            scrape_team_name(page)   or "",
         "position":        scrape_position(page)    or "",
         **scrape_player_status(page),
-        **scrape_player_statistics(page)
+        **scrape_player_statistics(page),
+        "season":          season_label or "",
     }
 
 def _safe_text(l, timeout=2000):
@@ -743,4 +746,4 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_player_stats()
+    ETL_get_player_stats(max_players=25)
