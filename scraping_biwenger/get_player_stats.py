@@ -7,7 +7,7 @@ from scraping_biwenger.scraper_actions_in_biwenger import (
     scroll_into_view
 )
 from supabase_client.connection import get_supabase_client
-from supabase_client.utils import check_if_table_exists, insert_rows_into_table
+from supabase_client.utils import check_if_table_exists, insert_rows_into_table, upsert_rows_into_table, compute_content_hash
 
 import pandas as pd
 from playwright.sync_api import TimeoutError as PWTimeout
@@ -523,8 +523,25 @@ def ETL_get_player_stats():
             logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
         else:
             if player_rows:
-                insert_rows_into_table(supabase, table_name=table_name, rows=player_rows)
-                logger.info(f"✅ Inserted {len(player_rows)} rows into '{table_name}'")
+                _COMPARISON_COLS = [
+                    "player_name", "team", "position", "status", "status_detail",
+                    "points", "value", "min_value", "max_value", "matches_played", "average"
+                ]
+
+                # Optional: you don't *need* to send content_hash if the DB has a generated column,
+                # but including it is fine and can help with debugging.
+                for r in player_rows:
+                    r["content_hash"] = compute_content_hash(r, _COMPARISON_COLS)
+
+                # print(pd.DataFrame(player_rows))
+
+                upsert_rows_into_table(
+                    supabase,
+                    table_name=table_name,
+                    rows=player_rows,
+                    on_conflict="content_hash"
+                )
+                logger.info(f"✅ Upserted {len(player_rows)} rows into '{table_name}' via content_hash.")
             else:
                 logger.info("⏩ No player rows to insert.")
 
@@ -534,9 +551,6 @@ def ETL_get_player_stats():
             logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
         else:
             if match_rows:
-                # insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
-                # logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
-
                 # Delete everything first (truncate semantics)
                 supabase.table(table_name).delete().neq("id", 0).execute()
                 logger.info(f"🗑️ Cleared existing rows from '{table_name}'")

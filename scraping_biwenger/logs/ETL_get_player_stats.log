@@ -16,6 +16,6 @@
 2025-08-29 | ETL_get_player_stats | INFO     | Reached the last player (no Next button).
 2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 9 players
 2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 9 players
-2025-08-29 | ETL_get_player_stats | INFO     | ✅ Inserted 9 rows into 'biwenger_player_stats'
+2025-08-29 | ETL_get_player_stats | INFO     | ✅ Upserted 9 rows into 'biwenger_player_stats' via content_hash.
 2025-08-29 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_matches'
 2025-08-29 | ETL_get_player_stats | INFO     | ✅ Inserted 20 rows into 'biwenger_player_matches'
