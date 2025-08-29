@@ -15,6 +15,8 @@ from typing import Dict, Any, List, Callable, Tuple
 import re
 import json
 from datetime import date, datetime
+import time, random
+
 
 def click_first_player(page) -> None:
     first_link = page.locator("table.table.no-swipe tbody tr th.text-left a").first
@@ -325,6 +327,50 @@ def _get_season_label(page, timeout=3000) -> str:
     except Exception:
         return ""
 
+def wait_until_player_ready(page, timeout_ms: int = 14000):
+    """
+    Wait until player header is visible and stats show real numbers (€ or digits).
+    Prevents reading skeleton/empty DOM.
+    """
+    page.wait_for_selector("player-detail-header h1", state="visible", timeout=timeout_ms)
+    page.wait_for_function(
+        """
+        () => {
+          const stats = document.querySelector('player-detail-stats');
+          if (!stats) return false;
+          const txt = (stats.textContent || '').replace(/\s+/g, ' ');
+          const hasPoints = /\bPoints?\b/i.test(txt) && /\d/.test(txt);
+          const hasMoney  = /€\s*\d/.test(txt);
+          const hasAvg    = /\bAverage\b/i.test(txt) && /\d/.test(txt);
+          return hasPoints || hasMoney || hasAvg;
+        }
+        """,
+        timeout=timeout_ms
+    )
+    time.sleep(0.25)  # small debounce
+
+def with_retries(fn, validate=lambda x: True, attempts: int = 3, base_sleep: float = 0.5, logger=None):
+    """
+    Retry `fn()` a few times with exponential backoff until `validate(result)` is True.
+    Returns the last successful result (even if it fails validation on final try), or None on exception.
+    """
+    last = None
+    last_err = None
+    for k in range(attempts):
+        try:
+            last = fn()
+            if validate(last):
+                return last
+            if logger: logger.debug(f"retry {k+1}/{attempts}: validation failed; backing off…")
+        except Exception as e:
+            last_err = e
+            if logger: logger.debug(f"retry {k+1}/{attempts}: exception {e}; backing off…")
+        time.sleep(base_sleep * (1.5 ** k) + random.random() * 0.2)
+    if logger and last_err:
+        logger.warning(f"Gave up after {attempts} attempts. Last error: {last_err}")
+    return last
+
+
 def open_points_tab(page, timeout=10000):
     """
     Ensure the right-hand 'Points' tab is active and loaded.
@@ -553,6 +599,7 @@ def iterate_all_players_sequential(
     if not _ensure_on_list(page):
         raise RuntimeError("Could not reach the players list view to start iteration.")
     click_first_player(page)
+    time.sleep(0.5)
 
     player_rows: List[Dict[str, Any]] = []
     match_rows:  List[Dict[str, Any]] = []
@@ -588,25 +635,49 @@ def iterate_all_players_sequential(
                             f"({'slug:' + slug if slug else f'name_team:{name_norm}|{team_norm}'})")
 
             # --- scrape detail (1 row)
-            detail = scrape_player_detail(page)
+            time.sleep(0.5)
+
+            # Ensure the view is hydrated before reading
+            try:
+                wait_until_player_ready(page, timeout_ms=14000)
+            except Exception as e:
+                if logger:
+                    logger.warning(f"⚠️ Player view did not fully hydrate in time: {e}. Continuing best-effort.")
+
+            # --- scrape detail (1 row) with retries + sanity check
+            def _valid_detail(d):
+                if not d: return False
+                if not (d.get("player_name") and d.get("team") and d.get("position")):
+                    return False
+                nums = [d.get("points"), d.get("value"), d.get("matches_played"), d.get("average")]
+                return any(x not in (None, 0, 0.0) for x in nums)
+
+            detail = with_retries(lambda: scrape_player_detail(page),
+                                  validate=_valid_detail,
+                                  attempts=3, base_sleep=0.6, logger=logger) or {}
+
+            # If still thin, keep what we got (don’t crash the run)
             detail["_seq"] = i + 1
             player_rows.append(detail)
 
-            # --- scrape matches (N rows)
+            # --- scrape matches (N rows) with a light retry
             try:
-                # keep your current signature; this will work even if you haven’t
-                # swapped in the resilient scrape_player_matches yet
-                matches = scrape_player_matches(page)
+                matches = with_retries(
+                    lambda: scrape_player_matches(page),
+                    # Accept rows if we actually got any; otherwise try again (helps hydration races)
+                    validate=lambda rows: rows is not None and len(rows) > 0,
+                    attempts=2, base_sleep=0.6, logger=logger
+                )
+                if matches is None:
+                    matches = []
             except Exception as e:
                 if logger:
-                    logger.warning(
-                        f"⚠️ Failed to scrape matches for {detail.get('player_name', '(unknown)')}: {e}. Skipping matches."
-                    )
+                    logger.warning(f"⚠️ Failed to scrape matches for {detail.get('player_name', '(unknown)')}: {e}. Skipping matches.")
                 matches = []
 
             # enrich & append
             for mrow in matches:
-                mrow["player_name"] = detail["player_name"]
+                mrow["player_name"] = detail.get("player_name", "")
                 mrow["team"] = detail.get("team", "")
             match_rows.extend(matches)
 
@@ -634,6 +705,7 @@ def iterate_all_players_sequential(
 
         # Open the first player in the new table page and keep going
         click_first_player(page)
+        time.sleep(0.5)
 
     return player_rows, match_rows
 
@@ -739,8 +811,5 @@ def ETL_get_player_stats(max_players=10_000):
             pass
 
 if __name__ == "__main__":
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', None)
-
-    ETL_get_player_stats(max_players=25)
+    # ETL_get_player_stats(max_players=25)
+    ETL_get_player_stats()
