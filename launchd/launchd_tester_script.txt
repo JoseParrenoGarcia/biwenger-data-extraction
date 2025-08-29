@@ -9,7 +9,7 @@
   <!-- Directly execute your script (it must be +x and have a valid shebang) -->
   <key>ProgramArguments</key>
   <array>
-    <string>/Users/joseparreno/Documents/GitHub/biwenger-data-extraction/bash_scripts/notify_test.sh</string>
+   <string>/Users/joseparreno/bin/notify_test.sh</string>
   </array>
 
   <!-- Run every 60 seconds -->

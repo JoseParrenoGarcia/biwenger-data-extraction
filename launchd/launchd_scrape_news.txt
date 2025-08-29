@@ -1,0 +1,25 @@
+<!-- ~/Library/LaunchAgents/com.biwenger.scraper.news.plist -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.biwenger.scraper.news</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/joseparreno/bin/run_scraping_news.sh</string>
+  </array>
+
+  <!-- Run once immediately after loading the agent -->
+  <key>RunAtLoad</key><true/>
+
+  <!-- Schedule: every day at 07:45 (local time) -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>7</integer>
+    <key>Minute</key><integer>45</integer>
+  </dict>
+
+  <!-- You asked to avoid logs; send both to /dev/null -->
+  <key>StandardOutPath</key><string>/dev/null</string>
+  <key>StandardErrorPath</key><string>/dev/null</string>
+</dict></plist>
