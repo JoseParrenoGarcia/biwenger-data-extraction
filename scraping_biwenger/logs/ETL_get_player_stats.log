@@ -4,18 +4,42 @@
 2025-08-29 | ETL_get_player_stats | INFO     | ======================================================================
 2025-08-29 | ETL_get_player_stats | INFO     | ✅ Credentials loaded successfully.
 2025-08-29 | ETL_get_player_stats | INFO     | ✅ Logged in
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 1: Mbappé
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 2: Lo Celso
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 3: Pépé
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 4: Buchanan
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 5: Adrián Liso
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 6: Pape Gueye
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 7: Bartra
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 8: Pedri
-2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 9: Nico Williams
-2025-08-29 | ETL_get_player_stats | INFO     | Reached the last player (no Next button).
-2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 9 players
-2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 9 players
-2025-08-29 | ETL_get_player_stats | INFO     | ✅ Upserted 9 rows into 'biwenger_player_stats' via content_hash.
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 1: Mbappé (name_team:mbappé|real madrid)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 2: Lo Celso (name_team:lo celso|betis)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 3: Pépé (name_team:pépé|villarreal)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 4: Buchanan (name_team:buchanan|villarreal)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 5: Adrián Liso (name_team:adrián liso|getafe)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 6: Pape Gueye (name_team:pape gueye|villarreal)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 7: Bartra (name_team:bartra|betis)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 8: Pedri (name_team:pedri|barcelona)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 9: Nico Williams (name_team:nico williams|athletic)
+2025-08-29 | ETL_get_player_stats | INFO     | 🧭 No detail 'Next' button; going back to list and clicking next table page…
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 10: Pere Milla (name_team:pere milla|espanyol)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 11: Yamal (name_team:yamal|barcelona)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 12: Santiago Mouriño (name_team:santiago mouriño|villarreal)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 13: Vinícius Jr (name_team:vinícius jr|real madrid)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 14: Escandell (name_team:escandell|real oviedo)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 15: Rafa Marín (name_team:rafa marín|villarreal)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 16: Sergi Altimira (name_team:sergi altimira|betis)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 17: Sotelo (name_team:sotelo|celta)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 18: Dean Huijsen (name_team:dean huijsen|real madrid)
+2025-08-29 | ETL_get_player_stats | INFO     | 🧭 No detail 'Next' button; going back to list and clicking next table page…
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 19: Expósito (name_team:expósito|espanyol)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 20: Tenaglia (name_team:tenaglia|alavés)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 21: Ruibal (name_team:ruibal|betis)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 22: Iván Romero (name_team:iván romero|levante)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 23: Kubo (name_team:kubo|real sociedad)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 24: Germán Valera (name_team:germán valera|elche)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 25: Raphinha (name_team:raphinha|barcelona)
+2025-08-29 | ETL_get_player_stats | INFO     | …scraped 25 players so far (55 match rows).
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 26: Luis Milla (name_team:luis milla|getafe)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 27: Sergi Cardona (name_team:sergi cardona|villarreal)
+2025-08-29 | ETL_get_player_stats | INFO     | 🧭 No detail 'Next' button; going back to list and clicking next table page…
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 28: De Frutos (name_team:de frutos|rayo vallecano)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 29: Fornals (name_team:fornals|betis)
+2025-08-29 | ETL_get_player_stats | INFO     | 🔍 Scraping player 30: Uche (name_team:uche|getafe)
+2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 30 players
+2025-08-29 | ETL_get_player_stats | INFO     | ✅ Scraped 30 players
+2025-08-29 | ETL_get_player_stats | INFO     | ✅ Upserted 30 rows into 'biwenger_player_stats' via content_hash.
 2025-08-29 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_matches'
-2025-08-29 | ETL_get_player_stats | INFO     | ✅ Inserted 20 rows into 'biwenger_player_matches'
+2025-08-29 | ETL_get_player_stats | INFO     | ✅ Inserted 66 rows into 'biwenger_player_matches'
