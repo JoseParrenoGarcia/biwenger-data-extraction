@@ -811,8 +811,5 @@ def ETL_get_player_stats(max_players=10_000):
             pass
 
 if __name__ == "__main__":
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', None)
-
-    ETL_get_player_stats(max_players=25)
+    # ETL_get_player_stats(max_players=25)
+    ETL_get_player_stats()
