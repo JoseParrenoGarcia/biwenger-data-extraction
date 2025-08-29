@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.biwenger.notify.test</string>
+
+  <!-- Directly execute your script (it must be +x and have a valid shebang) -->
+  <key>ProgramArguments</key>
+  <array>
+   <string>/Users/joseparreno/bin/notify_test.sh</string>
+  </array>
+
+  <!-- Run every 60 seconds -->
+  <key>StartInterval</key>
+  <integer>60</integer>
+
+  <!-- Also run immediately when loaded -->
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- Logs (helpful for debugging) -->
+  <key>StandardOutPath</key>
+  <string>/Users/joseparreno/notify_stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/joseparreno/notify_stderr.log</string>
+</dict>
+</plist>

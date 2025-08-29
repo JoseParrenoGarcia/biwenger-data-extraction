@@ -497,57 +497,68 @@ def ETL_get_player_stats():
     logger.info("✅ Logged in")
 
     # 3) Login
-    perform_login(page, creds["email"], creds["password"])
+    try:
+        perform_login(page, creds["email"], creds["password"])
 
-    # 4) Navigate to players page
-    click_tab_in_horizontal_main_menu(page, "players")
+        # 4) Navigate to players page
+        click_tab_in_horizontal_main_menu(page, "players")
 
-    # 5) Click view as list
-    page.get_by_role("button", name="Table").click()
+        # 5) Click view as list
+        page.get_by_role("button", name="Table").click()
 
-    # 6) Iterate over all players
-    player_rows, match_rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
-    player_rows_pd = pd.DataFrame(player_rows)
-    logger.info(f"✅ Scraped {player_rows_pd['player_name'].nunique()} players")
+        # 6) Iterate over all players
+        player_rows, match_rows = iterate_all_players_sequential(page, max_players=10, logger=logger)
+        player_rows_pd = pd.DataFrame(player_rows)
+        logger.info(f"✅ Scraped {player_rows_pd['player_name'].nunique()} players")
 
-    match_rows_pd = pd.DataFrame(match_rows)
-    logger.info(f"✅ Scraped {match_rows_pd['player_name'].nunique()} players")
-    # print(match_rows_pd)
+        match_rows_pd = pd.DataFrame(match_rows)
+        logger.info(f"✅ Scraped {match_rows_pd['player_name'].nunique()} players")
+        # print(match_rows_pd)
 
-    # 7) Save to Supabase
-    supabase = get_supabase_client()
-    table_name = "biwenger_player_stats"
+        # 7) Save to Supabase
+        supabase = get_supabase_client()
+        table_name = "biwenger_player_stats"
 
-    if not check_if_table_exists(supabase, table_name):
-        logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
-    else:
-        if player_rows:
-            insert_rows_into_table(supabase, table_name=table_name, rows=player_rows)
-            logger.info(f"✅ Inserted {len(player_rows)} rows into '{table_name}'")
+        if not check_if_table_exists(supabase, table_name):
+            logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
         else:
-            logger.info("⏩ No player rows to insert.")
+            if player_rows:
+                insert_rows_into_table(supabase, table_name=table_name, rows=player_rows)
+                logger.info(f"✅ Inserted {len(player_rows)} rows into '{table_name}'")
+            else:
+                logger.info("⏩ No player rows to insert.")
 
-    table_name = "biwenger_player_matches"
+        table_name = "biwenger_player_matches"
 
-    if not check_if_table_exists(supabase, table_name):
-        logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
-    else:
-        if match_rows:
-            # insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
-            # logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
-
-            # Delete everything first (truncate semantics)
-            supabase.table(table_name).delete().neq("id", 0).execute()
-            logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
-
-            # Insert fresh rows
-            insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
-            logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
+        if not check_if_table_exists(supabase, table_name):
+            logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
         else:
-            logger.info("⏩ No player rows to insert.")
+            if match_rows:
+                # insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
+                # logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
 
+                # Delete everything first (truncate semantics)
+                supabase.table(table_name).delete().neq("id", 0).execute()
+                logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
 
-    page.pause()
+                # Insert fresh rows
+                insert_rows_into_table(supabase, table_name=table_name, rows=match_rows)
+                logger.info(f"✅ Inserted {len(match_rows)} rows into '{table_name}'")
+            else:
+                logger.info("⏩ No player rows to insert.")
+    finally:
+        try:
+            context.close()
+        except Exception:
+            pass
+        try:
+            browser.close()
+        except Exception:
+            pass
+        try:
+            pw.stop()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     pd.set_option('display.max_columns', None)
