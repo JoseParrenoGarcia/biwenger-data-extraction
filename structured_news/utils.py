@@ -2,10 +2,12 @@ import logging
 from supabase_client.connection import get_supabase_client
 from supabase_client.utils import check_if_table_exists
 import pandas as pd
-from datetime import datetime, timedelta
-from typing import Iterable, Literal
+from datetime import datetime, timedelta, timezone
+from typing import Iterable, Literal, List, Dict, Optional
 import ast
 import numpy as np
+import re
+from urllib.parse import urlparse
 
 MODULE_PROFILES = {
     "lesiones": {"tags": ["lesiones_sanciones"], "days": 14},
@@ -194,3 +196,132 @@ def filter_articles_by_tag(
 
     mask = df[tags_col].apply(row_matches)
     return df[mask].reset_index(drop=True)
+
+def _collapse_ws(s: str) -> str:
+    """Collapse repeated whitespace and strip."""
+    return re.sub(r"\s+", " ", s).strip()
+
+def _truncate_smart(s: str, max_chars: int) -> str:
+    """
+    Truncate near a sentence boundary ('.', '!', '?') before max_chars.
+    Falls back to hard cut if no boundary found.
+    """
+    s = s.strip()
+    if len(s) <= max_chars:
+        return s
+    cut = s.rfind(".", 0, max_chars)
+    if cut < int(max_chars * 0.6):  # too early or not found
+        cut = s.rfind("!", 0, max_chars)
+    if cut < int(max_chars * 0.6):
+        cut = s.rfind("?", 0, max_chars)
+    if cut >= int(max_chars * 0.6):
+        return s[:cut + 1]
+    return s[:max_chars].rstrip() + "…"
+
+def _title_from_url(url: str) -> str:
+    """Fallback title from URL slug."""
+    try:
+        path = urlparse(url).path
+        slug = path.rstrip("/").split("/")[-1]
+        # Remove typical suffixes like .html
+        slug = re.sub(r"\.html?$", "", slug, flags=re.I)
+        slug = slug.replace("-", " ").strip()
+        return slug.title() if slug else "Sin título"
+    except Exception:
+        return "Sin título"
+
+def _fmt_date_ddmmyyyy(ts: pd.Timestamp) -> str:
+    """Format pandas Timestamp as DD/MM/YYYY (Spanish-friendly)."""
+    try:
+        if ts.tzinfo is None:
+            # Assume UTC if naive to avoid local-time inconsistencies
+            ts = ts.tz_localize(timezone.utc)
+        else:
+            ts = ts.tz_convert(timezone.utc)
+        return ts.strftime("%d/%m/%Y")
+    except Exception:
+        # Last resort: return ISO date only
+        return str(ts.date()) if hasattr(ts, "date") else str(ts)
+
+def build_articles_compact_payload(
+    df: pd.DataFrame,
+    logger: Optional[logging.Logger] = None,
+    max_items: int = 30,
+    max_summary_chars: int = 350,
+    prefer_raw_text: bool = True,
+) -> List[Dict[str, str]]:
+    """
+    Clean/normalize an articles DataFrame into compact dicts for LLM prompts.
+
+    Expected columns:
+        created_at, article_id, url, published_date, raw_text, title,
+        summary_llm, tags_llm, recognised_teams_llm, recognised_people_llm
+
+    Returns:
+        List of dicts with keys: title, summary, published_at, url
+        (NOTE: 'summary' now contains a cleaned/truncated slice of raw_text if available.)
+    """
+    if df is None or df.empty:
+        return []
+
+    work = df.copy()
+
+    # Parse published_date into Timestamp and sort (newest first)
+    work["published_date_ts"] = pd.to_datetime(work["published_date"], utc=True, errors="coerce")
+    work = work.sort_values("published_date_ts", ascending=False)
+
+    # Deduplicate: by url first, then by article_id
+    if "url" in work.columns:
+        work = work.drop_duplicates(subset=["url"], keep="first")
+    if "article_id" in work.columns:
+        work = work.drop_duplicates(subset=["article_id"], keep="first")
+
+    records: List[Dict[str, str]] = []
+    dropped_no_content = 0
+
+    for _, row in work.iterrows():
+        url = str(row.get("url") or "").strip()
+        title = (row.get("title") or "").strip()
+        raw_text = (row.get("raw_text") or "").strip()
+        summary_llm = (row.get("summary_llm") or "").strip()
+
+        # Fallback title from URL if needed
+        if not title:
+            title = _title_from_url(url) if url else "Sin título"
+
+        # Prefer raw_text as article content; fallback to summary_llm
+        candidate = raw_text if (prefer_raw_text and raw_text) else summary_llm
+        candidate = _collapse_ws(candidate)
+
+        # If still empty, skip
+        if not candidate:
+            dropped_no_content += 1
+            continue
+
+        # Truncate smartly
+        candidate = _truncate_smart(candidate, max_summary_chars)
+
+        # Format date
+        ts = row.get("published_date_ts")
+        try:
+            published_at = _fmt_date_ddmmyyyy(ts)
+        except Exception:
+            published_at = str(row.get("published_date") or "")
+
+        records.append({
+            "title": title,
+            "summary": candidate,       # contains cleaned/truncated RAW TEXT
+            "published_at": published_at,
+            "url": url,
+        })
+
+        if len(records) >= max_items:
+            break
+
+    if logger:
+        logger.info(
+            f"Prepared {len(records)} article snippets "
+            f"(dropped {dropped_no_content} with no usable text; limit {max_items})."
+        )
+
+    return records

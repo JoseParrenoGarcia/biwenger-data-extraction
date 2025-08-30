@@ -103,8 +103,8 @@ def prompt_article_summary_and_tags(article_text: str, article_title: str = "") 
     - "summary": Un resumen breve del contenido del artículo, en un parrafo de maximo 5 frases.
     - "tags_llm": Una lista de etiquetas relevantes del siguiente conjunto:
         ["cronica_partido", "previa_siguiente_partido", "lesiones_sanciones", "fichajes", "renovaciones", "rueda_prensa"]
-    - "recognised_teams_llm": Lista de equipos mencionados en el texto.
-    - "recognised_people_llm": Lista de nombres de personas mencionadas (jugadores, entrenadores, etc.).
+    - "recognised_teams_llm": Lista de equipos mencionados en el texto. Es importante aqui que identifiques el equipo principal del que se habla en el articulo, no que indiques cualquier equipo que se mencione.
+    - "recognised_people_llm": Lista de nombres de personas mencionadas (jugadores, entrenadores, etc.). Al igual que con los equipos, es importante que identifiques las personas principales del articulo, no que indiques cualquier persona que se mencione.
     
     Contexto adicional:
     - Cada articulo se ha hecho un scraping con beautifulsoup4 y puede contener texto no relevante (menus, publicidad, etc.). Debes centrarte en el contenido principal.

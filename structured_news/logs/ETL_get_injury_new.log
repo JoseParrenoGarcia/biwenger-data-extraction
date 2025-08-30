@@ -4,8 +4,21 @@
 2025-08-30 | ETL_get_injury_new   | INFO     | READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS
 2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
 2025-08-30 | ETL_get_injury_new   | INFO     | ✅ Retrieved 20 unique teams from 'article_urls'
-2025-08-30 | ETL_get_injury_new   | INFO     | Processing 20 teams: ['Barcelona', 'Villareal', 'Real Madrid', 'Oviedo', 'Rayo Vallecano', 'Alaves', 'Getafe', 'Valencia', 'Atletico Madrid', 'Betis', 'Sevilla FC', 'Elche', 'Girona', 'Espanyol', 'Real Sociedad', 'Osasuna', 'Mallorca', 'Celta de Vigo', 'Athletic Bilbao', 'Levante']
-2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Barcelona ---
+2025-08-30 | ETL_get_injury_new   | INFO     | Processing 20 teams: ['Barcelona', 'Atletico Madrid', 'Real Madrid', 'Betis', 'Oviedo', 'Celta de Vigo', 'Osasuna', 'Real Sociedad', 'Girona', 'Getafe', 'Levante', 'Valencia', 'Rayo Vallecano', 'Espanyol', 'Sevilla FC', 'Villareal', 'Athletic Bilbao', 'Alaves', 'Elche', 'Mallorca']
+2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
+2025-08-30 | ETL_get_injury_new   | INFO     | HANDLING INJURIES FOR TEAM: Barcelona
+2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
+2025-08-30 | ETL_get_injury_new   | INFO     | Extract all articles from the last 14 days...
 2025-08-30 | ETL_get_injury_new   | INFO     | ✅ Retrieved 777 articles from 'article_contents' (last 14 days).
-2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Barcelona ---
+2025-08-30 | ETL_get_injury_new   | INFO     | Filtering articles for team: Barcelona
+2025-08-30 | ETL_get_injury_new   | INFO     | Filtering articles with injury tags: ['lesiones_sanciones']
 2025-08-30 | ETL_get_injury_new   | INFO     | Found 26 injury-tagged articles for Barcelona
+2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
+2025-08-30 | ETL_get_injury_new   | INFO     | FORMATTING LLM OUTPUT FOR INJURY TABLE
+2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
+2025-08-30 | ETL_get_injury_new   | INFO     | Transforming the dataframe to dictionary format for LLM ingestion
+2025-08-30 | ETL_get_injury_new   | INFO     | Prepared 23 article snippets (dropped 0 with no usable text; limit 60).
+2025-08-30 | ETL_get_injury_new   | INFO     | Building system and user prompts for LLM
+2025-08-30 | ETL_get_injury_new   | INFO     | Calling LLM orchestrator
+2025-08-30 | ETL_get_injury_new   | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-30 | ETL_get_injury_new   | INFO     | Gemini returned a valid response.
