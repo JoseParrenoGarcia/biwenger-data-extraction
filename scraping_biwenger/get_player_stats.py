@@ -347,7 +347,7 @@ def wait_until_player_ready(page, timeout_ms: int = 14000):
         """,
         timeout=timeout_ms
     )
-    time.sleep(0.25)  # small debounce
+    time.sleep(random.uniform(0.25, 1))  # small debounce
 
 def with_retries(fn, validate=lambda x: True, attempts: int = 3, base_sleep: float = 0.5, logger=None):
     """
@@ -369,7 +369,6 @@ def with_retries(fn, validate=lambda x: True, attempts: int = 3, base_sleep: flo
     if logger and last_err:
         logger.warning(f"Gave up after {attempts} attempts. Last error: {last_err}")
     return last
-
 
 def open_points_tab(page, timeout=10000):
     """
@@ -599,7 +598,7 @@ def iterate_all_players_sequential(
     if not _ensure_on_list(page):
         raise RuntimeError("Could not reach the players list view to start iteration.")
     click_first_player(page)
-    time.sleep(0.5)
+    time.sleep(random.uniform(0.5, 1.5))
 
     player_rows: List[Dict[str, Any]] = []
     match_rows:  List[Dict[str, Any]] = []
@@ -635,7 +634,7 @@ def iterate_all_players_sequential(
                             f"({'slug:' + slug if slug else f'name_team:{name_norm}|{team_norm}'})")
 
             # --- scrape detail (1 row)
-            time.sleep(0.5)
+            time.sleep(random.uniform(0.5, 1.5))
 
             # Ensure the view is hydrated before reading
             try:
@@ -705,7 +704,7 @@ def iterate_all_players_sequential(
 
         # Open the first player in the new table page and keep going
         click_first_player(page)
-        time.sleep(0.5)
+        time.sleep(random.uniform(0.5, 1.5))
 
     return player_rows, match_rows
 
@@ -723,7 +722,7 @@ def ETL_get_player_stats(max_players=10_000):
     logger.info("=" * 70)
 
     # 1) Load credentials (from secrets/biwenger.toml)
-    creds = load_biwenger_credentials()
+    creds = load_biwenger_credentials(profile="biwenger_player_scraper")
     logger.info("✅ Credentials loaded successfully.")
 
     # 2) Start browser
@@ -811,5 +810,5 @@ def ETL_get_player_stats(max_players=10_000):
             pass
 
 if __name__ == "__main__":
-    # ETL_get_player_stats(max_players=25)
-    ETL_get_player_stats()
+    ETL_get_player_stats(max_players=25)
+    # ETL_get_player_stats()
