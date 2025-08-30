@@ -1,5 +1,6 @@
 from config_logging import get_logger
 from supabase_client.connection import get_supabase_client
+from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 from structured_news.utils import (
     get_unique_teams,
     get_recent_articles,
@@ -92,16 +93,24 @@ def ETL_get_injury_new():
     logger.info("🚀 Starting ETL pipeline for ETL_get_injury_new...")
 
     supabase = get_supabase_client()
+    table_name = "article_for_streamlit"
+
+    if not check_if_table_exists(supabase, table_name):
+        logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
+    else:
+        # Delete everything first (truncate semantics)
+        supabase.table(table_name).delete().neq("id", 0).execute()
+        logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
 
     logger.info("=" * 60)
     logger.info("READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS")
     logger.info("=" * 60)
 
-    teams = list(get_unique_teams("article_urls", logger))
+    teams = sorted(list(get_unique_teams("article_urls", logger)))
     injury_tags = MODULE_PROFILES["lesiones"]["tags"]  # ["lesiones_sanciones"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
-    for team in teams[:1]:
+    for team in teams:
         logger.info("=" * 60)
         logger.info(f"HANDLING INJURIES FOR TEAM: {team}")
         logger.info("=" * 60)
@@ -129,9 +138,9 @@ def ETL_get_injury_new():
         )
         logger.info(f"Found {len(tag_df)} injury-tagged articles for {team}")
 
-        logger.info("=" * 60)
+        logger.info("-" * 30)
         logger.info("FORMATTING LLM OUTPUT FOR INJURY TABLE")
-        logger.info("=" * 60)
+        logger.info("-" * 30)
         logger.info("Transforming the dataframe to dictionary format for LLM ingestion")
         articles_payload = build_articles_compact_payload(
             tag_df, logger=logger, max_items=60, max_summary_chars=35_000
@@ -146,7 +155,27 @@ def ETL_get_injury_new():
 
         logger.info("Calling LLM orchestrator")
         md = call_llm(system_prompt, user_prompt, logger=logger)
-        print(md)
+
+        records_to_write_to_supabase = [
+            {
+                "team": team,
+                "tag": injury_tags,
+                "markdown_document": md
+            }
+        ]
+
+        logger.info("-" * 30)
+        logger.info("WRITING RESULTS BACK TO SUPABASE")
+        logger.info("-" * 30)
+        if not check_if_table_exists(supabase, table_name):
+            logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
+        else:
+            if records_to_write_to_supabase:
+                # Insert fresh rows
+                insert_rows_into_table(supabase, table_name=table_name, rows=records_to_write_to_supabase)
+                logger.info(f"✅ Inserted {len(records_to_write_to_supabase)} rows into '{table_name}'")
+            else:
+                logger.info("⏩ No new rows to insert.")
 
 
 if __name__ == "__main__":
