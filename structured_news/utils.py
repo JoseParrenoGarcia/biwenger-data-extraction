@@ -3,6 +3,7 @@ from supabase_client.connection import get_supabase_client
 from supabase_client.utils import check_if_table_exists
 import pandas as pd
 from datetime import datetime, timedelta
+from typing import Iterable, Literal
 import ast
 import numpy as np
 
@@ -129,4 +130,67 @@ def filter_articles_by_team(df: pd.DataFrame, team: str) -> pd.DataFrame:
         return False
 
     mask = df["recognised_teams_llm"].apply(team_in_list)
+    return df[mask].reset_index(drop=True)
+
+def _coerce_json_list(value) -> list:
+    """
+    Coerce a value that may be a list / numpy array / JSON-like string
+    into a Python list of strings. Returns [] if it can't parse.
+    """
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, str):
+        # Try JSON/Python literal list
+        try:
+            parsed = ast.literal_eval(value)
+            if isinstance(parsed, list):
+                return parsed
+        except Exception:
+            # As a fallback, treat as comma-separated tags
+            return [t.strip() for t in value.split(",") if t.strip()]
+    return []
+
+def filter_articles_by_tag(
+    df: pd.DataFrame,
+    tags: Iterable[str],
+    tags_col: str = "tags_llm",
+    match: Literal["any", "all"] = "any",
+    case_insensitive: bool = True,
+) -> pd.DataFrame:
+    """
+    Filter rows where `tags_col` contains (any/all) of the given tags.
+
+    Args:
+        df: DataFrame with a tags column (JSON array-like).
+        tags: One or more tag strings to match.
+        tags_col: Column name that holds tags (default 'tags_llm').
+        match: 'any' (at least one tag present) or 'all' (all tags present).
+        case_insensitive: If True, compare lowercase-normalized tags.
+
+    Returns:
+        Filtered DataFrame (index reset).
+    """
+    if tags_col not in df.columns:
+        raise KeyError(f"Column '{tags_col}' not found in DataFrame")
+
+    tags = list(tags)
+    if case_insensitive:
+        tags_norm = [t.lower() for t in tags]
+    else:
+        tags_norm = tags
+
+    def row_matches(row_value) -> bool:
+        row_tags = _coerce_json_list(row_value)
+        if case_insensitive:
+            row_tags = [str(t).lower() for t in row_tags]
+        if match == "all":
+            return all(t in row_tags for t in tags_norm)
+        # default: any
+        return any(t in row_tags for t in tags_norm)
+
+    mask = df[tags_col].apply(row_matches)
     return df[mask].reset_index(drop=True)

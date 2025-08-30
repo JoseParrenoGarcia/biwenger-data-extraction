@@ -4,6 +4,8 @@
 2025-08-30 | ETL_get_injury_new   | INFO     | READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS
 2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
 2025-08-30 | ETL_get_injury_new   | INFO     | ✅ Retrieved 20 unique teams from 'article_urls'
-2025-08-30 | ETL_get_injury_new   | INFO     | Processing 20 teams: ['Mallorca', 'Alaves', 'Rayo Vallecano', 'Athletic Bilbao', 'Espanyol', 'Valencia', 'Getafe', 'Barcelona', 'Celta de Vigo', 'Villareal', 'Real Sociedad', 'Osasuna', 'Oviedo', 'Real Madrid', 'Elche', 'Betis', 'Atletico Madrid', 'Sevilla FC', 'Girona', 'Levante']
-2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Mallorca ---
+2025-08-30 | ETL_get_injury_new   | INFO     | Processing 20 teams: ['Barcelona', 'Villareal', 'Real Madrid', 'Oviedo', 'Rayo Vallecano', 'Alaves', 'Getafe', 'Valencia', 'Atletico Madrid', 'Betis', 'Sevilla FC', 'Elche', 'Girona', 'Espanyol', 'Real Sociedad', 'Osasuna', 'Mallorca', 'Celta de Vigo', 'Athletic Bilbao', 'Levante']
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Barcelona ---
 2025-08-30 | ETL_get_injury_new   | INFO     | ✅ Retrieved 777 articles from 'article_contents' (last 14 days).
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Barcelona ---
+2025-08-30 | ETL_get_injury_new   | INFO     | Found 26 injury-tagged articles for Barcelona
