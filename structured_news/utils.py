@@ -3,6 +3,8 @@ from supabase_client.connection import get_supabase_client
 from supabase_client.utils import check_if_table_exists
 import pandas as pd
 from datetime import datetime, timedelta
+import ast
+import numpy as np
 
 MODULE_PROFILES = {
     "lesiones": {"tags": ["lesiones_sanciones"], "days": 14},
@@ -85,3 +87,46 @@ def get_recent_articles(table_name: str, days: int, logger: logging.Logger) -> p
     except Exception as e:
         logger.error(f"❌ Failed to fetch recent articles from '{table_name}': {e}")
         return pd.DataFrame()
+
+def filter_articles_by_team(df: pd.DataFrame, team: str) -> pd.DataFrame:
+    """
+    Filters a DataFrame of articles to only include those where `team` is
+    present in the 'recognised_teams_llm' column (JSON array / list / ndarray).
+
+    Args:
+        df (pd.DataFrame): DataFrame with a column 'recognised_teams_llm'.
+        team (str): Team name to filter for.
+
+    Returns:
+        pd.DataFrame: Filtered DataFrame containing only rows mentioning the team.
+    """
+
+    if "recognised_teams_llm" not in df.columns:
+        raise KeyError("Column 'recognised_teams_llm' not found in DataFrame")
+
+    def team_in_list(value):
+        # Skip nulls/empties
+        if value is None:
+            return False
+
+        # Case 1: already a Python list
+        if isinstance(value, list):
+            return team in value
+
+        # Case 2: numpy array
+        if isinstance(value, np.ndarray):
+            return team in value.tolist()
+
+        # Case 3: JSON string or Python list string
+        if isinstance(value, str):
+            try:
+                parsed = ast.literal_eval(value)
+                if isinstance(parsed, list):
+                    return team in parsed
+            except Exception:
+                return False
+
+        return False
+
+    mask = df["recognised_teams_llm"].apply(team_in_list)
+    return df[mask].reset_index(drop=True)

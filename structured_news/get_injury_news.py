@@ -2,7 +2,8 @@ from config_logging import get_logger
 from supabase_client.connection import get_supabase_client
 from structured_news.utils import (
     get_unique_teams,
-    get_recent_articles
+    get_recent_articles,
+    filter_articles_by_team
 )
 import pandas as pd
 
@@ -21,8 +22,10 @@ def ETL_get_injury_new():
     for team in teams[:1]:
         logger.info(f"--- Handling injuries for team: {team} ---")
 
-        articles_df = get_recent_articles("article_contents", days=14, logger=logger)
-        print(articles_df.head())
+        all_articles_df = get_recent_articles("article_contents", days=14, logger=logger)
+        team_articles_df = filter_articles_by_team(all_articles_df, team)
+        print(team_articles_df[['tags_llm', 'recognised_teams_llm']].head())
+        print(team_articles_df.dtypes)
 
 
     # logger.info("=" * 60)

@@ -4,6 +4,6 @@
 2025-08-30 | ETL_get_injury_new   | INFO     | READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS
 2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
 2025-08-30 | ETL_get_injury_new   | INFO     | ✅ Retrieved 20 unique teams from 'article_urls'
-2025-08-30 | ETL_get_injury_new   | INFO     | Processing 20 teams: ['Sevilla FC', 'Oviedo', 'Real Sociedad', 'Betis', 'Alaves', 'Levante', 'Mallorca', 'Celta de Vigo', 'Athletic Bilbao', 'Real Madrid', 'Getafe', 'Barcelona', 'Espanyol', 'Girona', 'Rayo Vallecano', 'Valencia', 'Osasuna', 'Villareal', 'Atletico Madrid', 'Elche']
-2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Sevilla FC ---
+2025-08-30 | ETL_get_injury_new   | INFO     | Processing 20 teams: ['Mallorca', 'Alaves', 'Rayo Vallecano', 'Athletic Bilbao', 'Espanyol', 'Valencia', 'Getafe', 'Barcelona', 'Celta de Vigo', 'Villareal', 'Real Sociedad', 'Osasuna', 'Oviedo', 'Real Madrid', 'Elche', 'Betis', 'Atletico Madrid', 'Sevilla FC', 'Girona', 'Levante']
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Mallorca ---
 2025-08-30 | ETL_get_injury_new   | INFO     | ✅ Retrieved 777 articles from 'article_contents' (last 14 days).
