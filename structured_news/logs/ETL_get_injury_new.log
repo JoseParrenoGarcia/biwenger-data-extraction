@@ -1,0 +1,27 @@
+2025-08-30 | ETL_get_injury_new   | INFO     | Logger 'ETL_get_injury_new' initialized. Logging to: logs/ETL_get_injury_new.log
+2025-08-30 | ETL_get_injury_new   | INFO     | 🚀 Starting ETL pipeline for ETL_get_injury_new...
+2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
+2025-08-30 | ETL_get_injury_new   | INFO     | READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS
+2025-08-30 | ETL_get_injury_new   | INFO     | ============================================================
+2025-08-30 | ETL_get_injury_new   | INFO     | ✅ Retrieved 20 unique teams from 'article_urls'
+2025-08-30 | ETL_get_injury_new   | INFO     | Processing 20 teams: {'Villareal', 'Celta de Vigo', 'Real Madrid', 'Girona', 'Getafe', 'Oviedo', 'Alaves', 'Betis', 'Sevilla FC', 'Espanyol', 'Valencia', 'Real Sociedad', 'Elche', 'Barcelona', 'Rayo Vallecano', 'Levante', 'Athletic Bilbao', 'Osasuna', 'Atletico Madrid', 'Mallorca'}
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Villareal ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Celta de Vigo ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Real Madrid ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Girona ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Getafe ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Oviedo ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Alaves ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Betis ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Sevilla FC ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Espanyol ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Valencia ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Real Sociedad ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Elche ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Barcelona ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Rayo Vallecano ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Levante ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Athletic Bilbao ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Osasuna ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Atletico Madrid ---
+2025-08-30 | ETL_get_injury_new   | INFO     | --- Handling injuries for team: Mallorca ---
