@@ -399,3 +399,29 @@
 2025-08-31 | ETL_get_previous_match_news | INFO     | Building system and user prompts for LLM
 2025-08-31 | ETL_get_previous_match_news | INFO     | Calling LLM orchestrator
 2025-08-31 | ETL_get_previous_match_news | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-31 | ETL_get_previous_match_news | INFO     | Gemini returned a valid response.
+2025-08-31 | ETL_get_previous_match_news | INFO     | ------------------------------
+2025-08-31 | ETL_get_previous_match_news | INFO     | WRITING RESULTS BACK TO SUPABASE
+2025-08-31 | ETL_get_previous_match_news | INFO     | ------------------------------
+2025-08-31 | ETL_get_previous_match_news | INFO     | ✅ Inserted 1 rows into 'article_for_streamlit'
+2025-08-31 | ETL_get_previous_match_news | INFO     | ============================================================
+2025-08-31 | ETL_get_previous_match_news | INFO     | HANDLING TRANSFERS FOR TEAM: Villareal
+2025-08-31 | ETL_get_previous_match_news | INFO     | ============================================================
+2025-08-31 | ETL_get_previous_match_news | INFO     | Extract all articles from the last 14 days...
+2025-08-31 | ETL_get_previous_match_news | INFO     | ✅ Retrieved 770 articles from 'article_contents' (last 14 days).
+2025-08-31 | ETL_get_previous_match_news | INFO     | Filtering articles for team: Villareal
+2025-08-31 | ETL_get_previous_match_news | INFO     | Filtering articles with injury tags: ['cronica_partido']
+2025-08-31 | ETL_get_previous_match_news | INFO     | Found 11 transfer-tagged articles for Villareal
+2025-08-31 | ETL_get_previous_match_news | INFO     | ------------------------------
+2025-08-31 | ETL_get_previous_match_news | INFO     | FORMATTING LLM OUTPUT FOR TRANSFER TABLE
+2025-08-31 | ETL_get_previous_match_news | INFO     | ------------------------------
+2025-08-31 | ETL_get_previous_match_news | INFO     | Transforming the dataframe to dictionary format for LLM ingestion
+2025-08-31 | ETL_get_previous_match_news | INFO     | Prepared 11 article snippets (dropped 0 with no usable text; limit 60).
+2025-08-31 | ETL_get_previous_match_news | INFO     | Building system and user prompts for LLM
+2025-08-31 | ETL_get_previous_match_news | INFO     | Calling LLM orchestrator
+2025-08-31 | ETL_get_previous_match_news | INFO     | 🔁 Trying Gemini (Google) model...
+2025-08-31 | ETL_get_previous_match_news | INFO     | Gemini returned a valid response.
+2025-08-31 | ETL_get_previous_match_news | INFO     | ------------------------------
+2025-08-31 | ETL_get_previous_match_news | INFO     | WRITING RESULTS BACK TO SUPABASE
+2025-08-31 | ETL_get_previous_match_news | INFO     | ------------------------------
+2025-08-31 | ETL_get_previous_match_news | INFO     | ✅ Inserted 1 rows into 'article_for_streamlit'
