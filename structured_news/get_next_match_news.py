@@ -105,7 +105,7 @@ def ETL_get_next_match_news():
     next_match_days = MODULE_PROFILES["previa_siguiente_partido"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
-    for team in teams[:3]:
+    for team in teams:
         logger.info("=" * 60)
         logger.info(f"HANDLING TRANSFERS FOR TEAM: {team}")
         logger.info("=" * 60)
