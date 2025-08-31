@@ -106,6 +106,31 @@ def prompt_article_summary_and_tags(article_text: str, article_title: str = "") 
     - "recognised_teams_llm": Lista de equipos mencionados en el texto. Es importante aqui que identifiques el equipo principal del que se habla en el articulo, no que indiques cualquier equipo que se mencione.
     - "recognised_people_llm": Lista de nombres de personas mencionadas (jugadores, entrenadores, etc.). Al igual que con los equipos, es importante que identifiques las personas principales del articulo, no que indiques cualquier persona que se mencione.
     
+    **Nota importante para recognised_teams_llm**: Como cada articulo puede mencionar a equipos de diferentes formas, es importante que normalices los nombres.
+    Para ello, aqui tienes una lista de [nombres canonicos] -> [posibles variantes]. Obviamente, no tendre una lista perfecta para las posibles variantes, pero debes intentar normalizar al maximo posible.
+    El objetivo es usar los nombres canonicos en recognised_teams_llm.
+    
+    - **Alaves** → Deportivo Alavés, Alavés  
+    - **Athletic Bilbao** → Athletic Club, Athletic, Athletic Bilbao, Bilbao, Leones  
+    - **Atletico Madrid** → Atlético de Madrid, Atlético Madrid, Atlético, Atleti, Colchoneros, Rojiblancos, Indios, Pupas  
+    - **Barcelona** → FC Barcelona, Barcelona, Barça, Culés  
+    - **Betis** → Real Betis, Betis, Los Verdiblancos  
+    - **Celta de Vigo** → RC Celta, Celta, Celta Vigo, Olívicos, Celestes  
+    - **Elche** → Elche CF, Elche  
+    - **Espanyol** → RCD Espanyol, Espanyol, Periquitos  
+    - **Getafe** → Getafe CF, Getafe, Azulones  
+    - **Girona** → Girona FC, Girona  
+    - **Levante** → Levante UD, Levante, Granotas  
+    - **Mallorca** → RCD Mallorca, Mallorca  
+    - **Osasuna** → CA Osasuna, Osasuna, Rojillos 
+    - **Oviedo** → Real Oviedo, Oviedo  
+    - **Rayo Vallecano** → Rayo Vallecano, Rayo, Vallecanos  
+    - **Real Madrid** → Real Madrid, Real, Merengues, Blancos  
+    - **Real Sociedad** → Real Sociedad, Txurriurdines, Donostiarras, La Real 
+    - **Sevilla FC** → Sevilla FC, Sevilla, Rojiblancos  
+    - **Valencia** → Valencia CF, Valencia, Los Che, Naranjeros  
+    - **Villareal** → Villarreal CF, Villarreal, Villareal, Submarino Amarillo  
+
     Contexto adicional:
     - Cada articulo se ha hecho un scraping con beautifulsoup4 y puede contener texto no relevante (menus, publicidad, etc.). Debes centrarte en el contenido principal.
 
