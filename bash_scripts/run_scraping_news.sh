@@ -41,3 +41,13 @@ else
   notify "News scraping ❌ failed (exit $code)."
   exit "$code"
 fi
+
+# We call the file directly, since its __main__ triggers run_full_scraping_pipeline(test=False)
+if "$PY" "$REPO/structured_news/runner.py" "$@"; then
+  notify "Structured news generation ✅ completed."
+  exit 0
+else
+  code=$?
+  notify "Structured news generation ❌ failed (exit $code)."
+  exit "$code"
+fi
