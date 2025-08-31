@@ -252,7 +252,17 @@ def ETL_get_current_team():
         team_data = scrape_basic_team_table(page)
 
         # 8) Insert into Supabase
-        insert_current_team(team_data, table_name="biwenger_current_team", logger=logger)
+        supabase = get_supabase_client()
+        table_name = "biwenger_current_team"
+
+        if not check_if_table_exists(supabase, table_name):
+            logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
+        else:
+            # Delete everything first (truncate semantics)
+            supabase.table(table_name).delete().neq("id", 0).execute()
+            logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
+
+        insert_current_team(team_data, table_name=table_name, logger=logger)
     finally:
         try:
             context.close()
