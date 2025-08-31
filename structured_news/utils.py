@@ -14,7 +14,6 @@ MODULE_PROFILES = {
     "cronica_partido": {"tags": ["cronica_partido"], "days": 14},
     "transfers": {"tags": ["fichajes","renovaciones"], "days": 30},
     "previa_siguiente_partido": {"tags": ["previa_siguiente_partido"], "days": 7},
-    "rueda_prensa": {"tags": ["rueda_prensa"], "days": 7},
 }
 
 
