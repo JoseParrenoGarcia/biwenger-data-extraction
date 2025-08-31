@@ -103,13 +103,6 @@ def ETL_get_transfer_news():
     supabase = get_supabase_client()
     table_name = "article_for_streamlit"
 
-    # if not check_if_table_exists(supabase, table_name):
-    #     logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
-    # else:
-    #     # Delete everything first (truncate semantics)
-    #     supabase.table(table_name).delete().neq("id", 0).execute()
-    #     logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
-
     logger.info("=" * 60)
     logger.info("READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS")
     logger.info("=" * 60)

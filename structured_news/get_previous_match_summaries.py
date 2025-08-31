@@ -13,7 +13,7 @@ import pandas as pd
 from textwrap import dedent
 from llm_client.llm_orchestrator import call_llm
 
-def prompt_next_match_digest(team: str, articles_compact: list[dict]) -> tuple[str, str]:
+def prompt_previous_match_digest(team: str, articles_compact: list[dict]) -> tuple[str, str]:
     system_prompt = dedent("""
         Eres un analista de noticias experto en fútbol para Biwenger.
         Tu objetivo es generar un RESUMEN EN ESPAÑOL, en Markdown, sobre la **alineación probable del próximo partido** del equipo indicado.
@@ -82,9 +82,9 @@ def prompt_next_match_digest(team: str, articles_compact: list[dict]) -> tuple[s
     return system_prompt, user_prompt
 
 
-def ETL_get_next_match_news():
-    logger = get_logger("ETL_get_next_match_news", log_file="logs/ETL_get_next_match_news.log")
-    logger.info("🚀 Starting ETL pipeline for ETL_get_next_match_news...")
+def ETL_get_previous_match_news():
+    logger = get_logger("ETL_get_previous_match_news", log_file="logs/ETL_get_previous_match_news.log")
+    logger.info("🚀 Starting ETL pipeline for ETL_get_previous_match_news...")
 
     supabase = get_supabase_client()
     table_name = "article_for_streamlit"
@@ -94,8 +94,8 @@ def ETL_get_next_match_news():
     logger.info("=" * 60)
 
     teams = sorted(list(get_unique_teams("article_urls", logger)))
-    next_match_tags = MODULE_PROFILES["previa_siguiente_partido"]["tags"]
-    next_match_days = MODULE_PROFILES["previa_siguiente_partido"]["days"]
+    previous_match_tags = MODULE_PROFILES["previa_siguiente_partido"]["tags"]
+    previous_match_days = MODULE_PROFILES["previa_siguiente_partido"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams:
@@ -104,8 +104,8 @@ def ETL_get_next_match_news():
         logger.info("=" * 60)
 
         # Pull once for the cutoff window
-        logger.info(f"Extract all articles from the last {next_match_days} days...")
-        all_articles_df = get_recent_articles("article_contents", days=next_match_days, logger=logger)
+        logger.info(f"Extract all articles from the last {previous_match_days} days...")
+        all_articles_df = get_recent_articles("article_contents", days=previous_match_days, logger=logger)
         if all_articles_df.empty:
             logger.info("No recent articles. Exiting.")
             return
@@ -116,10 +116,10 @@ def ETL_get_next_match_news():
             logger.info(f"No articles for team {team}. Skipping.")
             continue
 
-        logger.info(f"Filtering articles with injury tags: {next_match_tags}")
+        logger.info(f"Filtering articles with injury tags: {previous_match_tags}")
         tag_df = filter_articles_by_tag(
             team_articles_df,
-            tags=next_match_tags,
+            tags=previous_match_tags,
             tags_col="tags_llm",  # change if your column name differs
             match="any",
             case_insensitive=True,
@@ -139,7 +139,7 @@ def ETL_get_next_match_news():
             continue
 
         logger.info("Building system and user prompts for LLM")
-        system_prompt, user_prompt = prompt_next_match_digest(team, articles_payload)
+        system_prompt, user_prompt = prompt_previous_match_digest(team, articles_payload)
 
         logger.info("Calling LLM orchestrator")
         md = call_llm(system_prompt, user_prompt, logger=logger)
@@ -147,7 +147,7 @@ def ETL_get_next_match_news():
         records_to_write_to_supabase = [
             {
                 "team": team,
-                "tag": next_match_tags,
+                "tag": previous_match_tags,
                 "markdown_document": md
             }
         ]
@@ -171,4 +171,4 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_next_match_news()
+    ETL_get_previous_match_news()
