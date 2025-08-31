@@ -1,7 +1,7 @@
-2025-08-29 | ETL_get_current_team | INFO     | Logger 'ETL_get_current_team' initialized. Logging to: logs/ETL_get_current_team.log
-2025-08-29 | ETL_get_current_team | INFO     | ======================================================================
-2025-08-29 | ETL_get_current_team | INFO     | 🚀 Starting ETL: get_current_team
-2025-08-29 | ETL_get_current_team | INFO     | ======================================================================
-2025-08-29 | ETL_get_current_team | INFO     | ✅ Credentials loaded successfully.
-2025-08-29 | ETL_get_current_team | INFO     | ✅ Logged in
-2025-08-29 | ETL_get_current_team | INFO     | ✅ Inserted 14 rows into 'biwenger_current_team'.
+2025-08-31 | ETL_get_current_team | INFO     | Logger 'ETL_get_current_team' initialized. Logging to: logs/ETL_get_current_team.log
+2025-08-31 | ETL_get_current_team | INFO     | ======================================================================
+2025-08-31 | ETL_get_current_team | INFO     | 🚀 Starting ETL: get_current_team
+2025-08-31 | ETL_get_current_team | INFO     | ======================================================================
+2025-08-31 | ETL_get_current_team | INFO     | ✅ Credentials loaded successfully.
+2025-08-31 | ETL_get_current_team | INFO     | ✅ Logged in
+2025-08-31 | ETL_get_current_team | INFO     | ✅ Inserted 16 rows into 'biwenger_current_team'.
