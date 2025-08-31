@@ -54,5 +54,4 @@ def run_full_scraping_pipeline():
 
 
 if __name__ == "__main__":
-    # run_full_scraping_pipeline(test=True)
     run_full_scraping_pipeline()
