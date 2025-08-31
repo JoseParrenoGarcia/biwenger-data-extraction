@@ -16,7 +16,7 @@ from llm_client.llm_orchestrator import call_llm
 def prompt_next_match_digest(team: str, articles_compact: list[dict]) -> tuple[str, str]:
     system_prompt = dedent("""
         Eres un analista de noticias experto en fútbol para Biwenger.
-        Tu objetivo es generar un RESUMEN EN ESPAÑOL, en Markdown, sobre el estado de fichajes del equipo indicado.
+        Tu objetivo es generar un RESUMEN EN ESPAÑOL, en Markdown, sobre la **alineación probable del próximo partido** del equipo indicado.
         Debe ser útil para managers de fantasy (Biwenger), con foco en disponibilidad, plazos de regreso y riesgos de rotación.
 
         Reglas IMPORTANTES:
@@ -46,49 +46,35 @@ def prompt_next_match_digest(team: str, articles_compact: list[dict]) -> tuple[s
     user_prompt = dedent(f"""
         Equipo: **{team}**
 
-        A continuación tienes artículos prefiltrados relacionados con **fichajes** del {team}.
-        Léelos y construye un **informe de mercado** en **Markdown** orientado a Biwenger.
+        A continuación tienes artículos prefiltrados relacionados con la previa del próximo partido.
+        Léelos y construye un **informe de alineaciones probables para Biwenger** en **Markdown**.
         Recuerda: NO inventes información; si hay duda, indícalo.
+        Si hay articulos sobre multiples partidos, indicalo claramente, separando alineaciones e indicando la fecha del partido (ordenado de manera cronologica).
 
         ### Artículos de contexto
         {articles_md}
 
         ### Instrucciones de salida (DEVUELVE SOLO MARKDOWN):
 
-        # Mercado de fichajes — {team}
+        # Alineaciones probables — {team} vs oponente (a rellenar por LLM) 
 
         ## Resumen ejecutivo
-        - Bullets con la foto global: altas/casi cerradas, salidas probables, prioridades del club y riesgos.
+        - 2–4 bullets con la visión general: jugadores fijos, dudas, posibles rotaciones.
 
-        ## Altas (entradas)
-        - Tabla con los movimientos hacia el {team}.
-        | Jugador | Procedencia | Estado operación | Tipo | Coste/condiciones | Rol esperado | Impacto Biwenger | ETA |
-        |---|---|---|---|---|---|---|---|
-        | Nombre Apellido | Club origen / “Libre” | **Oficial** / **Avanzada** / **Negociación** / **Rumor** | Traspaso / Cesión (con/sin compra) | (€, cláusulas si se mencionan) | **Titular** / **Rotación** / **Suplente** | ↑ / ↔ / ↓ + breve motivo | Fecha estimada / “Desconocido” |
+        ## Versiones de alineación
+        - Si varias fuentes ofrecen alineaciones diferentes, intenta combinarlas en una sola tabla poniendo diferencias en la seccion de probabilidad o motivo
+        - Por ejmplo, si muchas fuentes coinciden en que un jugador es titular, pero otras dudan, ponlo en "probabilidad" o "motivo".
 
-        ## Bajas (salidas)
-        - Tabla con los movimientos de salida del {team}.
-        | Jugador | Destino | Estado operación | Tipo | Ingreso/condiciones | Situación en destino | Impacto Biwenger | Nota liga |
-        |---|---|---|---|---|---|---|---|
-        | Nombre Apellido | Club destino | **Oficial** / **Avanzada** / **Negociación** / **Rumor** | Traspaso / Cesión | (€, variables) | **Titular** / **Rotación** / **Suplente** (si se infiere) | ↑ / ↔ / ↓ + breve motivo | “Sigue en LaLiga” / “Fuera de LaLiga” |
+        ### Table ejemplo de salda
+        | Jugador | Posición | Probabilidad | Motivo | Forma reciente |
+        |---|---|---|---|---|
+        | Nombre | Defensa | Alta | titular habitual | sólido en últimos partidos |
 
-        - **Nota liga 1** es importante: si el jugador sale **fuera de LaLiga**, suele implicar una caída fuerte de valor en Biwenger.
-        - **Nota liga 2** es importante: si el jugador va a tener un rol importante nada mas llegar o va a ser suplente tambien tiene implicaciones de valor.
-
-        ## Operaciones en seguimiento (si aplica)
-        - Lista breve de objetivos/rumores relevantes con su estado actual y cuello de botella (p. ej., negociación por fee, ficha, medical, etc.).
-
-        ## Observaciones para Biwenger
-        - 3–6 bullets prácticos: subidas/bajadas de valor esperadas, tapados, riesgos de minutos, cambios de tiradores (penaltis/faltas), efecto en posiciones colindantes.
+        ## Puntos clave para Biwenger
+        - Lista de implicaciones (ej.: "X rotará por Champions", "Y puede ser sorpresa de la jornada", "Z recupera el puesto").
 
         ## Fuentes
         - Enumera artículos usados (1 línea por fuente): **fecha** – *título (si disponible)* – enlace.
-
-        Definiciones de “Estado operación”:
-        - **Oficial**: anuncio oficial del club o registro en organismo oficial.
-        - **Avanzada**: acuerdo muy cercano (p. ej. “principio de acuerdo”, “a falta de firma/medical”).
-        - **Negociación**: conversaciones activas pero sin acuerdo.
-        - **Rumor**: especulación sin confirmaciones sólidas.
 
         (Recuerda: Solo Markdown en la salida, sin JSON ni explicaciones adicionales.)
         """)
@@ -103,20 +89,20 @@ def ETL_get_next_match_news():
     supabase = get_supabase_client()
     table_name = "article_for_streamlit"
 
-    if not check_if_table_exists(supabase, table_name):
-        logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
-    else:
-        # Delete everything first (truncate semantics)
-        supabase.table(table_name).delete().neq("id", 0).execute()
-        logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
+    # if not check_if_table_exists(supabase, table_name):
+    #     logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
+    # else:
+    #     # Delete everything first (truncate semantics)
+    #     supabase.table(table_name).delete().neq("id", 0).execute()
+    #     logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
 
     logger.info("=" * 60)
     logger.info("READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS")
     logger.info("=" * 60)
 
     teams = sorted(list(get_unique_teams("article_urls", logger)))
-    transfer_tags = MODULE_PROFILES["transfers"]["tags"]
-    transfer_days = MODULE_PROFILES["transfers"]["days"]  
+    next_match_tags = MODULE_PROFILES["previa_siguiente_partido"]["tags"]
+    next_match_days = MODULE_PROFILES["previa_siguiente_partido"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams[:3]:
@@ -125,8 +111,8 @@ def ETL_get_next_match_news():
         logger.info("=" * 60)
 
         # Pull once for the cutoff window
-        logger.info(f"Extract all articles from the last {transfer_days} days...")
-        all_articles_df = get_recent_articles("article_contents", days=transfer_days, logger=logger)
+        logger.info(f"Extract all articles from the last {next_match_days} days...")
+        all_articles_df = get_recent_articles("article_contents", days=next_match_days, logger=logger)
         if all_articles_df.empty:
             logger.info("No recent articles. Exiting.")
             return
@@ -137,10 +123,10 @@ def ETL_get_next_match_news():
             logger.info(f"No articles for team {team}. Skipping.")
             continue
 
-        logger.info(f"Filtering articles with injury tags: {transfer_tags}")
+        logger.info(f"Filtering articles with injury tags: {next_match_tags}")
         tag_df = filter_articles_by_tag(
             team_articles_df,
-            tags=transfer_tags,
+            tags=next_match_tags,
             tags_col="tags_llm",  # change if your column name differs
             match="any",
             case_insensitive=True,
@@ -168,7 +154,7 @@ def ETL_get_next_match_news():
         records_to_write_to_supabase = [
             {
                 "team": team,
-                "tag": transfer_tags,
+                "tag": next_match_tags,
                 "markdown_document": md
             }
         ]
