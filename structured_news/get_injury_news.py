@@ -88,9 +88,9 @@ def prompt_injury_digest(team: str, articles_compact: list[dict]) -> tuple[str, 
     return system_prompt, user_prompt
 
 
-def ETL_get_injury_new():
-    logger = get_logger("ETL_get_injury_new", log_file="logs/ETL_get_injury_new.log")
-    logger.info("🚀 Starting ETL pipeline for ETL_get_injury_new...")
+def ETL_get_injury_news():
+    logger = get_logger("ETL_get_injury_news", log_file="logs/ETL_get_injury_news.log")
+    logger.info("🚀 Starting ETL pipeline for ETL_get_injury_news...")
 
     supabase = get_supabase_client()
     table_name = "article_for_streamlit"
@@ -108,6 +108,7 @@ def ETL_get_injury_new():
 
     teams = sorted(list(get_unique_teams("article_urls", logger)))
     injury_tags = MODULE_PROFILES["lesiones"]["tags"]  # ["lesiones_sanciones"]
+    injury_days = MODULE_PROFILES["lesiones"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams:
@@ -116,8 +117,8 @@ def ETL_get_injury_new():
         logger.info("=" * 60)
 
         # Pull once for the cutoff window
-        logger.info(f"Extract all articles from the last 14 days...")
-        all_articles_df = get_recent_articles("article_contents", days=14, logger=logger)
+        logger.info(f"Extract all articles from the last {injury_days} days...")
+        all_articles_df = get_recent_articles("article_contents", days=injury_days, logger=logger)
         if all_articles_df.empty:
             logger.info("No recent articles. Exiting.")
             return
@@ -183,4 +184,4 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_injury_new()
+    ETL_get_injury_news()
