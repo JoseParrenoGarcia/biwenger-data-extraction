@@ -13,10 +13,10 @@ import pandas as pd
 from textwrap import dedent
 from llm_client.llm_orchestrator import call_llm
 
-def prompt_transfer_digest(team: str, articles_compact: list[dict]) -> tuple[str, str]:
+def prompt_previous_match_digest(team: str, articles_compact: list[dict]) -> tuple[str, str]:
     system_prompt = dedent("""
         Eres un analista de noticias experto en fútbol para Biwenger.
-        Tu objetivo es generar un RESUMEN EN ESPAÑOL, en Markdown, sobre el estado de fichajes del equipo indicado.
+        Tu objetivo es generar un RESUMEN EN ESPAÑOL, en Markdown, sobre la **alineación probable del próximo partido** del equipo indicado.
         Debe ser útil para managers de fantasy (Biwenger), con foco en disponibilidad, plazos de regreso y riesgos de rotación.
 
         Reglas IMPORTANTES:
@@ -46,8 +46,8 @@ def prompt_transfer_digest(team: str, articles_compact: list[dict]) -> tuple[str
     user_prompt = dedent(f"""
         Equipo: **{team}**
 
-        A continuación tienes artículos prefiltrados relacionados con **fichajes** del {team}.
-        Léelos y construye un **informe de mercado** en **Markdown** orientado a Biwenger.
+        A continuación tienes artículos prefiltrados relacionados con **crónicas de partidos previos**.
+        Léelos y construye un informe en **Markdown** centrado en actuaciones individuales relevantes para Biwenger.
         Recuerda: NO inventes información; si hay duda, indícalo.
 
         ### Artículos de contexto
@@ -55,40 +55,40 @@ def prompt_transfer_digest(team: str, articles_compact: list[dict]) -> tuple[str
 
         ### Instrucciones de salida (DEVUELVE SOLO MARKDOWN):
 
-        # Mercado de fichajes — {team}
+        # Crónicas recientes — {team}
 
-        ## Resumen ejecutivo
-        - Bullets con la foto global: altas/casi cerradas, salidas probables, prioridades del club y riesgos.
+        > Estructura: crea una **sección por partido** (2–4 partidos si hay material). 
+        Para cada partido:
+        - Encabezado con **fecha (DD/MM/AAAA)**, **competición** (si se menciona), **rival** y **resultado final**.
+        - Tabla de actuaciones individuales (una fila por jugador).
 
-        ## Altas (entradas)
-        - Tabla con los movimientos hacia el {team}.
-        | Jugador | Procedencia | Estado operación | Tipo | Coste/condiciones | Rol esperado | Impacto Biwenger | ETA |
-        |---|---|---|---|---|---|---|---|
-        | Nombre Apellido | Club origen / “Libre” | **Oficial** / **Avanzada** / **Negociación** / **Rumor** | Traspaso / Cesión (con/sin compra) | (€, cláusulas si se mencionan) | **Titular** / **Rotación** / **Suplente** | ↑ / ↔ / ↓ + breve motivo | Fecha estimada / “Desconocido” |
+        ## Partido: {team} vs Rival (DD/MM/AAAA) — Competición — Resultado: X–Y
+        - Breve contexto de 1–2 frases: lesiones/sanciones que afectaron, cambios relevantes, expulsiones si las hubo.
 
-        ## Bajas (salidas)
-        - Tabla con los movimientos de salida del {team}.
-        | Jugador | Destino | Estado operación | Tipo | Ingreso/condiciones | Situación en destino | Impacto Biwenger | Nota liga |
-        |---|---|---|---|---|---|---|---|
-        | Nombre Apellido | Club destino | **Oficial** / **Avanzada** / **Negociación** / **Rumor** | Traspaso / Cesión | (€, variables) | **Titular** / **Rotación** / **Suplente** (si se infiere) | ↑ / ↔ / ↓ + breve motivo | “Sigue en LaLiga” / “Fuera de LaLiga” |
+        | Jugador | Titular/Suplente | Minutos | Sustitución | G/A/Tarj | Paradas (si portero) | Nota (si aparece) | Descripción breve |
+        |---|---|---:|---|---|---|---|---|
+        | Nombre Apellido | Titular / Suplente | 73' | Sale 73' / Entra 17' / N/A | G:1 A:0 T:R (R/A) | 4 paradas / N/A | 6.8 / Desconocido | 2 remates, activo en banda; clave en presión |
+        | Nombre Apellido | Titular | 90' | N/A | G:0 A:1 T:N/A | N/A | Desconocido | Buen pie en salida, asistió en el 1–0 |
+        | Nombre Apellido | Suplente | 28' | Entra 62' | G:0 A:0 T:A | N/A | Desconocido | Entró para cerrar el partido; trabajo defensivo |
 
-        - **Nota liga 1** es importante: si el jugador sale **fuera de LaLiga**, suele implicar una caída fuerte de valor en Biwenger.
-        - **Nota liga 2** es importante: si el jugador va a tener un rol importante nada mas llegar o va a ser suplente tambien tiene implicaciones de valor.
-
-        ## Operaciones en seguimiento (si aplica)
-        - Lista breve de objetivos/rumores relevantes con su estado actual y cuello de botella (p. ej., negociación por fee, ficha, medical, etc.).
+        Notas:
+        - **Titular/Suplente** debe indicar condición inicial.
+        - **Minutos** en formato `90'` o rango claro si aparece (ej. `62'`).
+        - **Sustitución**: "Sale 73'", "Entra 62'", o "N/A".
+        - **G/A/Tarj**: Goles (G), Asistencias (A), Tarjetas (T:R roja / T:A amarilla / T:N/A si no aplica).
+        - **Paradas**: solo porteros; si no aplica, "N/A".
+        - **Nota**: rating del medio si lo menciona, o "Desconocido".
+        - **Descripción breve**: 8–20 palabras, concreta, sin táctica profunda (enfocada en rendimiento individual).
 
         ## Observaciones para Biwenger
-        - 3–6 bullets prácticos: subidas/bajadas de valor esperadas, tapados, riesgos de minutos, cambios de tiradores (penaltis/faltas), efecto en posiciones colindantes.
+        -> 3–6 bullets con implicaciones prácticas derivadas de estas actuaciones:
+          - jugadores que se consolidan como titulares
+          - suplentes con minutos crecientes
+          - tiradores de penaltis/faltas/córners (si se menciona)
+          - riesgos de rotación detectados
 
         ## Fuentes
         - Enumera artículos usados (1 línea por fuente): **fecha** – *título (si disponible)* – enlace.
-
-        Definiciones de “Estado operación”:
-        - **Oficial**: anuncio oficial del club o registro en organismo oficial.
-        - **Avanzada**: acuerdo muy cercano (p. ej. “principio de acuerdo”, “a falta de firma/medical”).
-        - **Negociación**: conversaciones activas pero sin acuerdo.
-        - **Rumor**: especulación sin confirmaciones sólidas.
 
         (Recuerda: Solo Markdown en la salida, sin JSON ni explicaciones adicionales.)
         """)
@@ -96,9 +96,9 @@ def prompt_transfer_digest(team: str, articles_compact: list[dict]) -> tuple[str
     return system_prompt, user_prompt
 
 
-def ETL_get_transfer_news():
-    logger = get_logger("ETL_get_transfer_news", log_file="logs/ETL_get_transfer_news.log")
-    logger.info("🚀 Starting ETL pipeline for ETL_get_transfer_news...")
+def ETL_get_previous_match_news():
+    logger = get_logger("ETL_get_previous_match_news", log_file="logs/ETL_get_previous_match_news.log")
+    logger.info("🚀 Starting ETL pipeline for ETL_get_previous_match_news...")
 
     supabase = get_supabase_client()
     table_name = "article_for_streamlit"
@@ -108,18 +108,18 @@ def ETL_get_transfer_news():
     logger.info("=" * 60)
 
     teams = sorted(list(get_unique_teams("article_urls", logger)))
-    transfer_tags = MODULE_PROFILES["transfers"]["tags"]
-    transfer_days = MODULE_PROFILES["transfers"]["days"]
+    previous_match_tags = MODULE_PROFILES["cronica_partido"]["tags"]
+    previous_match_days = MODULE_PROFILES["cronica_partido"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams:
         logger.info("=" * 60)
-        logger.info(f"HANDLING TRANSFERS FOR TEAM: {team}")
+        logger.info(f"HANDLING PREVIOUS MATCHES FOR TEAM: {team}")
         logger.info("=" * 60)
 
         # Pull once for the cutoff window
-        logger.info(f"Extract all articles from the last {transfer_days} days...")
-        all_articles_df = get_recent_articles("article_contents", days=transfer_days, logger=logger)
+        logger.info(f"Extract all articles from the last {previous_match_days} days...")
+        all_articles_df = get_recent_articles("article_contents", days=previous_match_days, logger=logger)
         if all_articles_df.empty:
             logger.info("No recent articles. Exiting.")
             return
@@ -130,10 +130,10 @@ def ETL_get_transfer_news():
             logger.info(f"No articles for team {team}. Skipping.")
             continue
 
-        logger.info(f"Filtering articles with injury tags: {transfer_tags}")
+        logger.info(f"Filtering articles with injury tags: {previous_match_tags}")
         tag_df = filter_articles_by_tag(
             team_articles_df,
-            tags=transfer_tags,
+            tags=previous_match_tags,
             tags_col="tags_llm",  # change if your column name differs
             match="any",
             case_insensitive=True,
@@ -141,7 +141,7 @@ def ETL_get_transfer_news():
         logger.info(f"Found {len(tag_df)} transfer-tagged articles for {team}")
 
         logger.info("-" * 30)
-        logger.info("FORMATTING LLM OUTPUT FOR TRANSFER TABLE")
+        logger.info("FORMATTING LLM OUTPUT FOR PREVIOUS MATCHES TABLE")
         logger.info("-" * 30)
         logger.info("Transforming the dataframe to dictionary format for LLM ingestion")
         articles_payload = build_articles_compact_payload(
@@ -153,7 +153,7 @@ def ETL_get_transfer_news():
             continue
 
         logger.info("Building system and user prompts for LLM")
-        system_prompt, user_prompt = prompt_transfer_digest(team, articles_payload)
+        system_prompt, user_prompt = prompt_previous_match_digest(team, articles_payload)
 
         logger.info("Calling LLM orchestrator")
         md = call_llm(system_prompt, user_prompt, logger=logger)
@@ -161,7 +161,7 @@ def ETL_get_transfer_news():
         records_to_write_to_supabase = [
             {
                 "team": team,
-                "tag": transfer_tags,
+                "tag": previous_match_tags,
                 "markdown_document": md
             }
         ]
@@ -185,4 +185,4 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_transfer_news()
+    ETL_get_previous_match_news()

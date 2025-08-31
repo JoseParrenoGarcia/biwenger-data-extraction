@@ -89,13 +89,6 @@ def ETL_get_next_match_news():
     supabase = get_supabase_client()
     table_name = "article_for_streamlit"
 
-    # if not check_if_table_exists(supabase, table_name):
-    #     logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
-    # else:
-    #     # Delete everything first (truncate semantics)
-    #     supabase.table(table_name).delete().neq("id", 0).execute()
-    #     logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
-
     logger.info("=" * 60)
     logger.info("READING SUPABASE TABLE AND EXTRACTING UNIQUE TEAMS")
     logger.info("=" * 60)
@@ -107,7 +100,7 @@ def ETL_get_next_match_news():
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams:
         logger.info("=" * 60)
-        logger.info(f"HANDLING TRANSFERS FOR TEAM: {team}")
+        logger.info(f"HANDLING NEXT MATCHES FOR TEAM: {team}")
         logger.info("=" * 60)
 
         # Pull once for the cutoff window
@@ -134,7 +127,7 @@ def ETL_get_next_match_news():
         logger.info(f"Found {len(tag_df)} transfer-tagged articles for {team}")
 
         logger.info("-" * 30)
-        logger.info("FORMATTING LLM OUTPUT FOR TRANSFER TABLE")
+        logger.info("FORMATTING LLM OUTPUT FOR NEXT MATCHES TABLE")
         logger.info("-" * 30)
         logger.info("Transforming the dataframe to dictionary format for LLM ingestion")
         articles_payload = build_articles_compact_payload(
