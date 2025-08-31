@@ -1,6 +1,7 @@
 from structured_news.get_injury_news import ETL_get_injury_news
 from structured_news.get_transfer_news import ETL_get_transfer_news
 from structured_news.get_next_match_news import ETL_get_next_match_news
+from structured_news.get_previous_match_summaries import ETL_get_previous_match_news
 from supabase_client.connection import get_supabase_client
 from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 
@@ -46,6 +47,13 @@ def run_full_scraping_pipeline():
     ETL_get_next_match_news()
     step1_duration = (time.time() - step1_start) / 60
     logger.info(f"✅ ETL_get_next_match_news completed in {step1_duration:.2f} minutes")
+
+    # Step 4
+    logger.info("🔍 Running ETL_get_previous_match_news()...")
+    step1_start = time.time()
+    ETL_get_previous_match_news()
+    step1_duration = (time.time() - step1_start) / 60
+    logger.info(f"✅ ETL_get_previous_match_news completed in {step1_duration:.2f} minutes")
 
     total_duration = (time.time() - start_time) / 60
     logger.info("=" * 60)

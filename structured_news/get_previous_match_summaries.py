@@ -46,32 +46,46 @@ def prompt_previous_match_digest(team: str, articles_compact: list[dict]) -> tup
     user_prompt = dedent(f"""
         Equipo: **{team}**
 
-        A continuación tienes artículos prefiltrados relacionados con la previa del próximo partido.
-        Léelos y construye un **informe de alineaciones probables para Biwenger** en **Markdown**.
+        A continuación tienes artículos prefiltrados relacionados con **crónicas de partidos previos**.
+        Léelos y construye un informe en **Markdown** centrado en actuaciones individuales relevantes para Biwenger.
         Recuerda: NO inventes información; si hay duda, indícalo.
-        Si hay articulos sobre multiples partidos, indicalo claramente, separando alineaciones e indicando la fecha del partido (ordenado de manera cronologica).
 
         ### Artículos de contexto
         {articles_md}
 
         ### Instrucciones de salida (DEVUELVE SOLO MARKDOWN):
 
-        # Alineaciones probables — {team} vs oponente (a rellenar por LLM) 
+        # Crónicas recientes — {team}
 
-        ## Resumen ejecutivo
-        - 2–4 bullets con la visión general: jugadores fijos, dudas, posibles rotaciones.
+        > Estructura: crea una **sección por partido** (2–4 partidos si hay material). 
+        Para cada partido:
+        - Encabezado con **fecha (DD/MM/AAAA)**, **competición** (si se menciona), **rival** y **resultado final**.
+        - Tabla de actuaciones individuales (una fila por jugador).
 
-        ## Versiones de alineación
-        - Si varias fuentes ofrecen alineaciones diferentes, intenta combinarlas en una sola tabla poniendo diferencias en la seccion de probabilidad o motivo
-        - Por ejmplo, si muchas fuentes coinciden en que un jugador es titular, pero otras dudan, ponlo en "probabilidad" o "motivo".
+        ## Partido: {team} vs Rival (DD/MM/AAAA) — Competición — Resultado: X–Y
+        - Breve contexto de 1–2 frases: lesiones/sanciones que afectaron, cambios relevantes, expulsiones si las hubo.
 
-        ### Table ejemplo de salda
-        | Jugador | Posición | Probabilidad | Motivo | Forma reciente |
-        |---|---|---|---|---|
-        | Nombre | Defensa | Alta | titular habitual | sólido en últimos partidos |
+        | Jugador | Titular/Suplente | Minutos | Sustitución | G/A/Tarj | Paradas (si portero) | Nota (si aparece) | Descripción breve |
+        |---|---|---:|---|---|---|---|---|
+        | Nombre Apellido | Titular / Suplente | 73' | Sale 73' / Entra 17' / N/A | G:1 A:0 T:R (R/A) | 4 paradas / N/A | 6.8 / Desconocido | 2 remates, activo en banda; clave en presión |
+        | Nombre Apellido | Titular | 90' | N/A | G:0 A:1 T:N/A | N/A | Desconocido | Buen pie en salida, asistió en el 1–0 |
+        | Nombre Apellido | Suplente | 28' | Entra 62' | G:0 A:0 T:A | N/A | Desconocido | Entró para cerrar el partido; trabajo defensivo |
 
-        ## Puntos clave para Biwenger
-        - Lista de implicaciones (ej.: "X rotará por Champions", "Y puede ser sorpresa de la jornada", "Z recupera el puesto").
+        Notas:
+        - **Titular/Suplente** debe indicar condición inicial.
+        - **Minutos** en formato `90'` o rango claro si aparece (ej. `62'`).
+        - **Sustitución**: "Sale 73'", "Entra 62'", o "N/A".
+        - **G/A/Tarj**: Goles (G), Asistencias (A), Tarjetas (T:R roja / T:A amarilla / T:N/A si no aplica).
+        - **Paradas**: solo porteros; si no aplica, "N/A".
+        - **Nota**: rating del medio si lo menciona, o "Desconocido".
+        - **Descripción breve**: 8–20 palabras, concreta, sin táctica profunda (enfocada en rendimiento individual).
+
+        ## Observaciones para Biwenger
+        -> 3–6 bullets con implicaciones prácticas derivadas de estas actuaciones:
+          - jugadores que se consolidan como titulares
+          - suplentes con minutos crecientes
+          - tiradores de penaltis/faltas/córners (si se menciona)
+          - riesgos de rotación detectados
 
         ## Fuentes
         - Enumera artículos usados (1 línea por fuente): **fecha** – *título (si disponible)* – enlace.
@@ -94,13 +108,13 @@ def ETL_get_previous_match_news():
     logger.info("=" * 60)
 
     teams = sorted(list(get_unique_teams("article_urls", logger)))
-    previous_match_tags = MODULE_PROFILES["previa_siguiente_partido"]["tags"]
-    previous_match_days = MODULE_PROFILES["previa_siguiente_partido"]["days"]
+    previous_match_tags = MODULE_PROFILES["cronica_partido"]["tags"]
+    previous_match_days = MODULE_PROFILES["cronica_partido"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams:
         logger.info("=" * 60)
-        logger.info(f"HANDLING TRANSFERS FOR TEAM: {team}")
+        logger.info(f"HANDLING PREVIOUS MATCHES FOR TEAM: {team}")
         logger.info("=" * 60)
 
         # Pull once for the cutoff window
@@ -127,7 +141,7 @@ def ETL_get_previous_match_news():
         logger.info(f"Found {len(tag_df)} transfer-tagged articles for {team}")
 
         logger.info("-" * 30)
-        logger.info("FORMATTING LLM OUTPUT FOR TRANSFER TABLE")
+        logger.info("FORMATTING LLM OUTPUT FOR PREVIOUS MATCHES TABLE")
         logger.info("-" * 30)
         logger.info("Transforming the dataframe to dictionary format for LLM ingestion")
         articles_payload = build_articles_compact_payload(

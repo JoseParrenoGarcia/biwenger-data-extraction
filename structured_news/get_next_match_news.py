@@ -100,7 +100,7 @@ def ETL_get_next_match_news():
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams:
         logger.info("=" * 60)
-        logger.info(f"HANDLING TRANSFERS FOR TEAM: {team}")
+        logger.info(f"HANDLING NEXT MATCHES FOR TEAM: {team}")
         logger.info("=" * 60)
 
         # Pull once for the cutoff window
@@ -127,7 +127,7 @@ def ETL_get_next_match_news():
         logger.info(f"Found {len(tag_df)} transfer-tagged articles for {team}")
 
         logger.info("-" * 30)
-        logger.info("FORMATTING LLM OUTPUT FOR TRANSFER TABLE")
+        logger.info("FORMATTING LLM OUTPUT FOR NEXT MATCHES TABLE")
         logger.info("-" * 30)
         logger.info("Transforming the dataframe to dictionary format for LLM ingestion")
         articles_payload = build_articles_compact_payload(
