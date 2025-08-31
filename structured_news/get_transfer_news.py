@@ -119,7 +119,7 @@ def ETL_get_transfer_news():
     transfer_days = MODULE_PROFILES["transfers"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
-    for team in teams[:3]:
+    for team in teams:
         logger.info("=" * 60)
         logger.info(f"HANDLING TRANSFERS FOR TEAM: {team}")
         logger.info("=" * 60)

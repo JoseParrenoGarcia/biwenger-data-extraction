@@ -3,9 +3,5 @@
 2025-08-31 | scraping_biwenger_logger | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
 2025-08-31 | scraping_biwenger_logger | INFO     | ============================================================
 2025-08-31 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_current_team()...
-2025-08-31 | scraping_biwenger_logger | INFO     | ✅ ETL_get_current_team completed in 0.35 minutes
+2025-08-31 | scraping_biwenger_logger | INFO     | ✅ ETL_get_current_team completed in 0.36 minutes
 2025-08-31 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_player_stats()...
-2025-08-31 | scraping_biwenger_logger | INFO     | ✅ ETL_get_player_stats completed in 27.55 minutes
-2025-08-31 | scraping_biwenger_logger | INFO     | ============================================================
-2025-08-31 | scraping_biwenger_logger | INFO     | ✅ FULL PIPELINE COMPLETED SUCCESSFULLY in 27.90 minutes
-2025-08-31 | scraping_biwenger_logger | INFO     | ============================================================

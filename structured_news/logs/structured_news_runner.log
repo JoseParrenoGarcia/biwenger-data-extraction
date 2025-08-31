@@ -1,0 +1,6 @@
+2025-08-31 | structured_news_runner | INFO     | Logger 'structured_news_runner' initialized. Logging to: logs/structured_news_runner.log
+2025-08-31 | structured_news_runner | INFO     | ============================================================
+2025-08-31 | structured_news_runner | INFO     | 🚀 STARTING ENRICHMENT PIPELINE
+2025-08-31 | structured_news_runner | INFO     | ============================================================
+2025-08-31 | structured_news_runner | INFO     | 🗑️ Cleared existing rows from 'article_for_streamlit'
+2025-08-31 | structured_news_runner | INFO     | 🔍 Running ETL_get_injury_news()...
