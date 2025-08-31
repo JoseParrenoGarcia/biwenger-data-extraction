@@ -107,7 +107,7 @@ def ETL_get_injury_news():
     logger.info("=" * 60)
 
     teams = sorted(list(get_unique_teams("article_urls", logger)))
-    injury_tags = MODULE_PROFILES["lesiones"]["tags"]  # ["lesiones_sanciones"]
+    injury_tags = MODULE_PROFILES["lesiones"]["tags"]
     injury_days = MODULE_PROFILES["lesiones"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")

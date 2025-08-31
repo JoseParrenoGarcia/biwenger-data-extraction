@@ -115,8 +115,8 @@ def ETL_get_transfer_news():
     logger.info("=" * 60)
 
     teams = sorted(list(get_unique_teams("article_urls", logger)))
-    transfer_tags = MODULE_PROFILES["transfers"]["tags"]  # ["lesiones_sanciones"]
-    transfer_days = MODULE_PROFILES["transfers"]["days"]  # ["lesiones_sanciones"]
+    transfer_tags = MODULE_PROFILES["transfers"]["tags"]
+    transfer_days = MODULE_PROFILES["transfers"]["days"]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams[:3]:
