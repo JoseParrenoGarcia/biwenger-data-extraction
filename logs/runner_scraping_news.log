@@ -2,6 +2,7 @@
 2025-09-01 | scraping_news_runner | INFO     | ============================================================
 2025-09-01 | scraping_news_runner | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
 2025-09-01 | scraping_news_runner | INFO     | ============================================================
+2025-09-01 | scraping_news_runner | INFO     | 🔍 Running ETL_get_relevant_articles()...
 2025-09-01 | scraping_news_runner | INFO     | ✅ ETL_get_relevant_articles completed in 15.34 minutes
 2025-09-01 | scraping_news_runner | INFO     | 🧠 Running ETL_get_article_contents()...
 2025-09-01 | scraping_news_runner | INFO     | ✅ ETL_get_article_contents completed in 0.51 minutes
