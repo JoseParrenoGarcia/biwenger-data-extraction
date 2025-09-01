@@ -6,21 +6,11 @@ from scraping_biwenger.scraper_actions_in_biwenger import (
     click_tab_in_horizontal_main_menu,
 )
 from scraping_biwenger.helper_extract_all_player_names import extract_all_player_names
-from scraping_biwenger.helper_search_and_open_player import open_player_via_search
 from scraping_biwenger.helper_pipeline_loop import scrape_all_players_detail
 from scraping_biwenger.utils import _rand_sleep
-import time
-import random
 import pandas as pd
 from supabase_client.connection import get_supabase_client
 from supabase_client.utils import check_if_table_exists, insert_rows_into_table, upsert_rows_into_table, compute_content_hash
-
-
-# ----------------------------------------------------------------------
-
-
-
-# ----------------------------------------------------------------------
 
 
 def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
@@ -63,20 +53,22 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             logger.warning("No players extracted; aborting search step.")
             return
 
-        # 7) Extract details for each player via search + open + scrape + back
-        player_detail_rows = scrape_all_players_detail(
-            logger, page, players_list, max_players=max_players_detail
+        # 7) Extract details (stats) + per-match rows in the same pass
+        player_detail_rows, match_rows = scrape_all_players_detail(
+            logger, page, players_list, max_players=max_players_detail, collect_matches=True
         )
+
+        # --- Stats DF (left panel) ---
         player_detail_df = (
             pd.DataFrame(player_detail_rows)
             .drop_duplicates(subset=["player_name"], keep="first")
             .drop(columns=["name", "slug", "href"], errors="ignore")
         )
 
-        # df = pd.DataFrame(detail_rows).drop_duplicates(subset=["slug"], keep="first")
-        # print(df)
-        #
-        # page.pause()
+        # --- Matches DF (right panel, 'Points' tab) ---
+        matches_df = pd.DataFrame(match_rows)
+        keep_cols = ["season_label", "round_label", "match_date", "points", "best_xi", "events", "player_name", "team"]
+        matches_df = matches_df[[c for c in keep_cols if c in matches_df.columns]].copy()
 
         # 8) Save to Supabase
         supabase = get_supabase_client()
@@ -92,6 +84,15 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             # Insert fresh rows
             insert_rows_into_table(supabase, table_name=table_name, rows=player_detail_df.to_dict(orient="records"))
             logger.info(f"✅ Inserted {len(player_detail_rows)} rows into '{table_name}'")
+
+        matches_table = "biwenger_player_matches"
+        if not check_if_table_exists(supabase, matches_table):
+            logger.error(f"❌ Table '{matches_table}' does not exist in Supabase.")
+        else:
+            supabase.table(matches_table).delete().neq("id", 0).execute()
+            logger.info(f"🗑️ Cleared existing rows from '{matches_table}'")
+            insert_rows_into_table(supabase, table_name=matches_table, rows=matches_df.to_dict(orient="records"))
+            logger.info(f"✅ Inserted {len(matches_df)} rows into '{matches_table}'")
 
     finally:
         try:
