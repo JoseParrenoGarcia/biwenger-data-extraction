@@ -8,3 +8,58 @@
 2025-09-01 | ETL_get_player_stats | INFO     | 🧾 Page 2: got 9 rows, +9 new (total 18).
 2025-09-01 | ETL_get_player_stats | INFO     | ⛔ Reached max_pages=2. Stopping early.
 2025-09-01 | ETL_get_player_stats | INFO     | ✅ Finished pagination with 18 unique players.
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [1/18] Opening player: Mbappé (mbappe)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Mbappé
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Mbappé: {'points': 37, 'value': 23240000, 'matches_played': 3, 'average': 12.3}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [2/18] Opening player: Pépé (nicolas-pepe)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pépé
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Pépé: {'points': 34, 'value': 7860000, 'matches_played': 3, 'average': 11.3}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [3/18] Opening player: Yamal (lamine-yamal)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Yamal
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Yamal: {'points': 30, 'value': 21680000, 'matches_played': 3, 'average': 10.0}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [4/18] Opening player: Vinícius Jr (vinicius-junior)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Vinícius Jr
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Vinícius Jr: {'points': 30, 'value': 15570000, 'matches_played': 3, 'average': 10.0}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [5/18] Opening player: Pape Gueye (pape-gueye)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pape Gueye
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Pape Gueye: {'points': 29, 'value': 7590000, 'matches_played': 3, 'average': 9.7}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [6/18] Opening player: Escandell (aaron-escandell)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Escandell
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Escandell: {'points': 29, 'value': 4390000, 'matches_played': 3, 'average': 9.7}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [7/18] Opening player: Buchanan (tajon-buchanan)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Buchanan
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Buchanan: {'points': 29, 'value': 4340000, 'matches_played': 3, 'average': 9.7}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [8/18] Opening player: Pedri (pedri)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pedri
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Pedri: {'points': 28, 'value': 16950000, 'matches_played': 3, 'average': 9.3}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [9/18] Opening player: Adrián Liso (adrian-liso)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Adrián Liso
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Adrián Liso: {'points': 27, 'value': 3390000, 'matches_played': 3, 'average': 9.0}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [10/18] Opening player: Nico Williams (nico-williams)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Nico Williams
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Nico Williams: {'points': 26, 'value': 13160000, 'matches_played': 3, 'average': 8.7}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [11/18] Opening player: Arda Güler (arda-guler)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Arda Güler
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Arda Güler: {'points': 26, 'value': 12230000, 'matches_played': 3, 'average': 8.7}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [12/18] Opening player: Lo Celso (g-lo-celso)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Lo Celso
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Lo Celso: {'points': 26, 'value': 10830000, 'matches_played': 4, 'average': 6.5}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [13/18] Opening player: Joan García (joan-garcia)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Joan García
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Joan García: {'points': 26, 'value': 8530000, 'matches_played': 3, 'average': 8.7}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [14/18] Opening player: Pere Milla (pere-milla)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pere Milla
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Pere Milla: {'points': 26, 'value': 3280000, 'matches_played': 3, 'average': 8.7}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [15/18] Opening player: Bartra (marc-bartra)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Bartra
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Bartra: {'points': 25, 'value': 4320000, 'matches_played': 4, 'average': 6.3}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [16/18] Opening player: Carlos Romero (carlos-romero)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Carlos Romero
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Carlos Romero: {'points': 25, 'value': 2960000, 'matches_played': 3, 'average': 8.3}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [17/18] Opening player: Sotelo (hugo-sotelo)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Sotelo
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Sotelo: {'points': 25, 'value': 1990000, 'matches_played': 4, 'average': 6.3}
+2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [18/18] Opening player: Iván Romero (ivan-romero)
+2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Iván Romero
+2025-09-01 | ETL_get_player_stats | INFO     | ✅ Scraped Iván Romero: {'points': 24, 'value': 3030000, 'matches_played': 3, 'average': 8.0}
+2025-09-01 | ETL_get_player_stats | INFO     | 🏁 Done. Processed 18 players. Returning 18 results.

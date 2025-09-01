@@ -5,18 +5,21 @@ from scraping_biwenger.scraper_actions_in_biwenger import (
     perform_login,
     click_tab_in_horizontal_main_menu,
 )
-from scraping_biwenger.helper_extract_all_player_names import (
-    extract_all_player_names
-)
+from scraping_biwenger.helper_extract_all_player_names import extract_all_player_names
+from scraping_biwenger.helper_search_and_open_player import open_player_via_search
+from scraping_biwenger.helper_pipeline_loop import scrape_all_players_detail
+from scraping_biwenger.utils import _rand_sleep
 import time
 import random
 
+# ----------------------------------------------------------------------
 
 
-def _rand_sleep(a: float = 0.25, b: float = 1.5) -> None:
-    time.sleep(random.uniform(a, b))
 
-def ETL_get_player_stats(max_pages=100):
+# ----------------------------------------------------------------------
+
+
+def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
     """
     ETL: Login to Biwenger, scrape player stats, and (later) upload to Supabase.
     """
@@ -52,7 +55,19 @@ def ETL_get_player_stats(max_pages=100):
         players_list = extract_all_player_names(logger=logger, page=page, max_pages=max_pages)
         print(players_list)
 
-        
+        if not players_list:
+            logger.warning("No players extracted; aborting search step.")
+            return
+
+        # 7) Extract details for each player via search + open + scrape + back
+        detail_rows = scrape_all_players_detail(
+            logger, page, players_list, max_players=max_players_detail
+        )
+
+        print(detail_rows)
+
+        page.pause()
+
 
     finally:
         try:
