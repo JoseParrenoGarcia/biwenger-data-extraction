@@ -809,5 +809,5 @@ def ETL_get_player_stats(max_players=10_000):
             pass
 
 if __name__ == "__main__":
-    ETL_get_player_stats(max_players=25)
-    # ETL_get_player_stats()
+    # ETL_get_player_stats(max_players=12)
+    ETL_get_player_stats()
