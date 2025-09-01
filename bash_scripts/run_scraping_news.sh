@@ -31,23 +31,30 @@ notify() {
 
 notify "News scraping started…"
 
-# ---- Run the news scraper (no output redirection; plist can capture if desired) ----
-# We call the file directly, since its __main__ triggers run_full_scraping_pipeline(test=False)
+# ---- 1) Run scraping_news ----
+code1=0
 if "$PY" "$REPO/scraping_news/runner.py" "$@"; then
   notify "News scraping ✅ completed."
-  exit 0
 else
-  code=$?
-  notify "News scraping ❌ failed (exit $code)."
-  exit "$code"
+  code1=$?
+  notify "News scraping ❌ failed (exit $code1)."
 fi
 
-# We call the file directly, since its __main__ triggers run_full_scraping_pipeline(test=False)
+# ---- 2) Run structured_news regardless of step 1 ----
+code2=0
 if "$PY" "$REPO/structured_news/runner.py" "$@"; then
   notify "Structured news generation ✅ completed."
+else
+  code2=$?
+  notify "Structured news generation ❌ failed (exit $code2)."
+fi
+
+# ---- Final summary and exit code ----
+if (( code1 == 0 && code2 == 0 )); then
+  notify "All news jobs ✅✅ done."
   exit 0
 else
-  code=$?
-  notify "Structured news generation ❌ failed (exit $code)."
-  exit "$code"
+  notify "Some jobs failed: scraping=$code1, structured=$code2."
+  # Exit non-zero so launchd knows it was not all sunshine.
+  exit 1
 fi
