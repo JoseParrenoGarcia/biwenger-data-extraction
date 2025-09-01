@@ -11,6 +11,10 @@ from scraping_biwenger.helper_pipeline_loop import scrape_all_players_detail
 from scraping_biwenger.utils import _rand_sleep
 import time
 import random
+import pandas as pd
+from supabase_client.connection import get_supabase_client
+from supabase_client.utils import check_if_table_exists, insert_rows_into_table, upsert_rows_into_table, compute_content_hash
+
 
 # ----------------------------------------------------------------------
 
@@ -60,14 +64,34 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             return
 
         # 7) Extract details for each player via search + open + scrape + back
-        detail_rows = scrape_all_players_detail(
+        player_detail_rows = scrape_all_players_detail(
             logger, page, players_list, max_players=max_players_detail
         )
+        player_detail_df = (
+            pd.DataFrame(player_detail_rows)
+            .drop_duplicates(subset=["player_name"], keep="first")
+            .drop(columns=["name", "slug", "href"], errors="ignore")
+        )
 
-        print(detail_rows)
+        # df = pd.DataFrame(detail_rows).drop_duplicates(subset=["slug"], keep="first")
+        # print(df)
+        #
+        # page.pause()
 
-        page.pause()
+        # 8) Save to Supabase
+        supabase = get_supabase_client()
+        table_name = "biwenger_player_stats"
 
+        if not check_if_table_exists(supabase, table_name):
+            logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
+        else:
+            # Delete everything first (truncate semantics)
+            supabase.table(table_name).delete().neq("id", 0).execute()
+            logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
+
+            # Insert fresh rows
+            insert_rows_into_table(supabase, table_name=table_name, rows=player_detail_df.to_dict(orient="records"))
+            logger.info(f"✅ Inserted {len(player_detail_rows)} rows into '{table_name}'")
 
     finally:
         try:
@@ -84,4 +108,8 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             pass
 
 if __name__ == "__main__":
-    ETL_get_player_stats(max_pages=2)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
+    ETL_get_player_stats(max_pages=1, max_players_detail=3)

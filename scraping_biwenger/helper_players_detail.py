@@ -241,17 +241,20 @@ def scrape_player_statistics(page: Page, timeout_ms: int = 6000) -> Dict[str, Op
 # Season label (minimal, optional)
 # -----------------------------
 
-def _get_season_label(page: Page) -> str:
-    """
-    Minimal best-effort. If not present, returns ''.
-    """
+def _get_season_label(page, timeout=3000) -> str:
+    # Prefer the explicit attribute in your markup
+    btn = page.locator('player-detail-points .section.light button[modalmenutitle="Season"]').first
+    if btn.count():
+        text = (btn.inner_text(timeout=timeout) or "").strip()
+        return re.sub(r'\s*SEASON\s*', '', text, flags=re.IGNORECASE).strip()
+
+    # Fallback: any button whose accessible name contains "season"
     try:
-        m = re.search(r"[?&]season=(20\d{2}-20\d{2})", page.url)
-        if m:
-            return m.group(1)
+        btn2 = page.get_by_role("button", name=re.compile(r"season", re.I)).first
+        text = (btn2.inner_text(timeout=timeout) or "").strip()
+        return re.sub(r'\s*SEASON\s*', '', text, flags=re.IGNORECASE).strip()
     except Exception:
-        pass
-    return ""
+        return ""
 
 # -----------------------------
 # Composer

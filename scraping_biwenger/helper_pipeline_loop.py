@@ -8,6 +8,7 @@ from helper_search_and_open_player import (
     clear_search_box_if_present,
 )
 from helper_players_detail import scrape_player_detail
+from scraping_biwenger.utils import _rand_sleep
 
 def _cooldown(min_ms=300, max_ms=900):
     time.sleep(random.uniform(min_ms / 1000, max_ms / 1000))
@@ -37,6 +38,7 @@ def scrape_all_players_detail(
 
         # Step 1: open detail
         opened = open_player_via_search(logger, page, player, base_url=base_url)
+        _rand_sleep()
         if not opened:
             logger.warning(f"Skipping {name} — could not open detail.")
             click_back_to_players_table(page)  # ensure we’re back in table
