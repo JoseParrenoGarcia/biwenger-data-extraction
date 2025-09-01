@@ -768,15 +768,14 @@ def ETL_get_player_stats(max_players=10_000):
                 for r in player_rows:
                     r["content_hash"] = compute_content_hash(r, _COMPARISON_COLS)
 
-                # print(pd.DataFrame(player_rows))
+                # Delete everything first (truncate semantics)
+                supabase.table(table_name).delete().neq("id", 0).execute()
+                logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
 
-                upsert_rows_into_table(
-                    supabase,
-                    table_name=table_name,
-                    rows=player_rows,
-                    on_conflict="content_hash"
-                )
-                logger.info(f"✅ Upserted {len(player_rows)} rows into '{table_name}' via content_hash.")
+                # Insert fresh rows
+                insert_rows_into_table(supabase, table_name=table_name, rows=player_rows)
+                logger.info(f"✅ Inserted {len(player_rows)} rows into '{table_name}'")
+
             else:
                 logger.info("⏩ No player rows to insert.")
 

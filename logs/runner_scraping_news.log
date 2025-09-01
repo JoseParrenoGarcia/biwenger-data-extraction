@@ -1,11 +1,10 @@
-2025-08-31 | scraping_news_runner | INFO     | Logger 'scraping_news_runner' initialized. Logging to: logs/runner_scraping_news.log
-2025-08-31 | scraping_news_runner | INFO     | ============================================================
-2025-08-31 | scraping_news_runner | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
-2025-08-31 | scraping_news_runner | INFO     | ============================================================
-2025-08-31 | scraping_news_runner | INFO     | 🔍 Running ETL_get_relevant_articles()...
-2025-08-31 | scraping_news_runner | INFO     | ✅ ETL_get_relevant_articles completed in 13.94 minutes
-2025-08-31 | scraping_news_runner | INFO     | 🧠 Running ETL_get_article_contents()...
-2025-08-31 | scraping_news_runner | INFO     | ✅ ETL_get_article_contents completed in 23.35 minutes
-2025-08-31 | scraping_news_runner | INFO     | ============================================================
-2025-08-31 | scraping_news_runner | INFO     | ✅ FULL PIPELINE COMPLETED SUCCESSFULLY in 37.29 minutes
-2025-08-31 | scraping_news_runner | INFO     | ============================================================
+2025-09-01 | scraping_news_runner | INFO     | Logger 'scraping_news_runner' initialized. Logging to: logs/runner_scraping_news.log
+2025-09-01 | scraping_news_runner | INFO     | ============================================================
+2025-09-01 | scraping_news_runner | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
+2025-09-01 | scraping_news_runner | INFO     | ============================================================
+2025-09-01 | scraping_news_runner | INFO     | ✅ ETL_get_relevant_articles completed in 15.34 minutes
+2025-09-01 | scraping_news_runner | INFO     | 🧠 Running ETL_get_article_contents()...
+2025-09-01 | scraping_news_runner | INFO     | ✅ ETL_get_article_contents completed in 0.51 minutes
+2025-09-01 | scraping_news_runner | INFO     | ============================================================
+2025-09-01 | scraping_news_runner | INFO     | ✅ FULL PIPELINE COMPLETED SUCCESSFULLY in 15.85 minutes
+2025-09-01 | scraping_news_runner | INFO     | ============================================================
