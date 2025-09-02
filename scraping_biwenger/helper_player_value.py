@@ -127,6 +127,6 @@ def scrape_value_history_for_player(
             df[k] = v
 
     if logger:
-        logger.info(f"💾 Value history rows: {len(df)} (e.g., {df.head(1).to_dict(orient='records')})")
+        logger.info(f"💾 Value history rows: {len(df)}")
 
     return df
