@@ -88,7 +88,7 @@ def prompt_injury_digest(team: str, articles_compact: list[dict]) -> tuple[str, 
     return system_prompt, user_prompt
 
 
-def ETL_get_injury_news():
+def ETL_get_injury_news(max_teams: int = 20):
     logger = get_logger("ETL_get_injury_news", log_file="logs/ETL_get_injury_news.log")
     logger.info("🚀 Starting ETL pipeline for ETL_get_injury_news...")
 
@@ -102,6 +102,9 @@ def ETL_get_injury_news():
     teams = sorted(list(get_unique_teams("article_urls", logger)))
     injury_tags = MODULE_PROFILES["lesiones"]["tags"]
     injury_days = MODULE_PROFILES["lesiones"]["days"]
+
+    if max_teams:
+        teams = teams[:max_teams]
 
     logger.info(f"Processing {len(teams)} teams: {teams}")
     for team in teams:
@@ -149,6 +152,14 @@ def ETL_get_injury_news():
 
         logger.info("Calling LLM orchestrator")
         md = call_llm(system_prompt, user_prompt, logger=logger)
+        # md = call_llm(
+        #     system_prompt,
+        #     user_prompt,
+        #     logger=logger,
+        #     temperature=0.3,
+        #     model_priority=["local", "gemini", "openai"],  # <-- now includes local
+        #     local_model="gemma3:27b",  # or "gpt-oss:20b", "gemma3:4b", etc.
+        # )
 
         records_to_write_to_supabase = [
             {
@@ -177,4 +188,4 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_injury_news()
+    ETL_get_injury_news(max_teams=2)
