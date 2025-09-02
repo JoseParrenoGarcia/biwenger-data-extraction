@@ -1,27 +1,23 @@
-2025-09-01 | ETL_get_player_stats | INFO     | Logger 'ETL_get_player_stats' initialized. Logging to: logs/ETL_get_player_stats.log
-2025-09-01 | ETL_get_player_stats | INFO     | ======================================================================
-2025-09-01 | ETL_get_player_stats | INFO     | 🚀 Starting ETL: get_player_stats
-2025-09-01 | ETL_get_player_stats | INFO     | ======================================================================
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Credentials loaded successfully.
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Logged in
-2025-09-01 | ETL_get_player_stats | INFO     | 🧾 Page 1: got 9 rows, +9 new (total 9).
-2025-09-01 | ETL_get_player_stats | INFO     | ⛔ Reached max_pages=1. Stopping early.
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Finished pagination with 9 unique players.
-2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [1/9] Opening player: Mbappé (mbappe)
-2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Mbappé
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Mbappé: {'points': 37, 'value': 23240000, 'matches_played': 3, 'average': 12.3}
-2025-09-01 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Mbappé: 3 rows
-2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [2/9] Opening player: Pépé (nicolas-pepe)
-2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pépé
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Pépé: {'points': 34, 'value': 7860000, 'matches_played': 3, 'average': 11.3}
-2025-09-01 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Pépé: 3 rows
-2025-09-01 | ETL_get_player_stats | INFO     | 🔎 [3/9] Opening player: Yamal (lamine-yamal)
-2025-09-01 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Yamal
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Yamal: {'points': 30, 'value': 21680000, 'matches_played': 3, 'average': 10.0}
-2025-09-01 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Yamal: 3 rows
-2025-09-01 | ETL_get_player_stats | INFO     | ⛔ Reached max_players=3. Stopping early.
-2025-09-01 | ETL_get_player_stats | INFO     | 🏁 Done. Players processed: 3. Detail rows: 3, Match rows: 9
-2025-09-01 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_stats'
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Inserted 3 rows into 'biwenger_player_stats'
-2025-09-01 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_matches'
-2025-09-01 | ETL_get_player_stats | INFO     | ✅ Inserted 9 rows into 'biwenger_player_matches'
+2025-09-02 | ETL_get_player_stats | INFO     | Logger 'ETL_get_player_stats' initialized. Logging to: logs/ETL_get_player_stats.log
+2025-09-02 | ETL_get_player_stats | INFO     | ======================================================================
+2025-09-02 | ETL_get_player_stats | INFO     | 🚀 Starting ETL: get_player_stats
+2025-09-02 | ETL_get_player_stats | INFO     | ======================================================================
+2025-09-02 | ETL_get_player_stats | INFO     | ✅ Credentials loaded successfully.
+2025-09-02 | ETL_get_player_stats | INFO     | ✅ Logged in
+2025-09-02 | ETL_get_player_stats | INFO     | 🧾 Page 1: got 9 rows, +9 new (total 9).
+2025-09-02 | ETL_get_player_stats | INFO     | ⛔ Reached max_pages=1. Stopping early.
+2025-09-02 | ETL_get_player_stats | INFO     | ✅ Finished pagination with 9 unique players.
+2025-09-02 | ETL_get_player_stats | INFO     | 🔎 [1/9] Opening player: Mbappé (mbappe)
+2025-09-02 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Mbappé
+2025-09-02 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Mbappé: {'points': 37, 'value': 23280000, 'matches_played': 3, 'average': 12.3}
+2025-09-02 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Mbappé: 3 rows
+2025-09-02 | ETL_get_player_stats | INFO     | 📈 Value history empty for Mbappé
+2025-09-02 | ETL_get_player_stats | INFO     | 🔎 [2/9] Opening player: Pépé (nicolas-pepe)
+2025-09-02 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pépé
+2025-09-02 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Pépé: {'points': 34, 'value': 8050000, 'matches_played': 3, 'average': 11.3}
+2025-09-02 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Pépé: 3 rows
+2025-09-02 | ETL_get_player_stats | INFO     | 📈 Value history empty for Pépé
+2025-09-02 | ETL_get_player_stats | INFO     | 🔎 [3/9] Opening player: Yamal (lamine-yamal)
+2025-09-02 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Yamal
+2025-09-02 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Yamal: {'points': 30, 'value': 21710000, 'matches_played': 3, 'average': 10.0}
+2025-09-02 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Yamal: 3 rows

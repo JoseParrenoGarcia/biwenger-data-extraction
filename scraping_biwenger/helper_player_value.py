@@ -107,24 +107,27 @@ def scrape_value_history_for_player(
     Enriches rows with player context if provided.
     """
     ok = open_value_tab(page, timeout=timeout)
-    if not ok:
-        if logger: logger.warning("Could not open Value tab.")
-        return pd.DataFrame(columns=["date", "market_value_eur"])
+    page.pause()
+    # if not ok:
+    #     if logger: logger.warning("Could not open Value tab.")
+    #     return pd.DataFrame(columns=["date", "market_value_eur"])
 
-    try:
-        dl = click_download_csv(page, timeout=timeout)
-    except PWTimeout:
-        if logger: logger.warning("CSV download did not start in time.")
-        return pd.DataFrame(columns=["date", "market_value_eur"])
+    # try:
+    #     dl = click_download_csv(page, timeout=timeout)
+    # except PWTimeout:
+    #     if logger: logger.warning("CSV download did not start in time.")
+    #     return pd.DataFrame(columns=["date", "market_value_eur"])
+    #
+    # df = _read_price_csv_to_df(dl)
+    #
+    # # Add optional context (player_name, team, slug, etc.)
+    # if player_ctx:
+    #     for k, v in player_ctx.items():
+    #         df[k] = v
+    #
+    # if logger:
+    #     logger.info(f"💾 Value history rows: {len(df)} (e.g., {df.head(1).to_dict(orient='records')})")
 
-    df = _read_price_csv_to_df(dl)
-
-    # Add optional context (player_name, team, slug, etc.)
-    if player_ctx:
-        for k, v in player_ctx.items():
-            df[k] = v
-
-    if logger:
-        logger.info(f"💾 Value history rows: {len(df)} (e.g., {df.head(1).to_dict(orient='records')})")
+    df = pd.DataFrame(columns=["date", "market_value_eur"])
 
     return df

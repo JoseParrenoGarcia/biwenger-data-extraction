@@ -88,7 +88,7 @@ def start_browser_accept_cookies(headless: bool = True):
     """
     pw = sync_playwright().start()
     browser = pw.chromium.launch(headless=headless, args=["--disable-gpu", "--no-sandbox"])
-    context = browser.new_context()
+    context = browser.new_context(accept_downloads=True)
     page = context.new_page()
     page.set_default_timeout(15000)
     page.set_default_navigation_timeout(20000)

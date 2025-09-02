@@ -54,7 +54,7 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             return
 
         # 7) Extract details (stats) + per-match rows in the same pass
-        player_detail_rows, match_rows = scrape_all_players_detail(
+        player_detail_rows, match_rows, value_history_rows = scrape_all_players_detail(
             logger, page, players_list, max_players=max_players_detail, collect_matches=True
         )
 
@@ -69,6 +69,10 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
         matches_df = pd.DataFrame(match_rows)
         keep_cols = ["season_label", "round_label", "match_date", "points", "best_xi", "events", "player_name", "team"]
         matches_df = matches_df[[c for c in keep_cols if c in matches_df.columns]].copy()
+
+        # --- Value DF (right panel, 'Value' tab) ---
+        value_history_df = pd.DataFrame(value_history_rows)
+        print(value_history_df)
 
         # 8) Save to Supabase
         supabase = get_supabase_client()
@@ -113,5 +117,5 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    # ETL_get_player_stats(max_pages=1, max_players_detail=3)
-    ETL_get_player_stats()
+    ETL_get_player_stats(max_pages=1, max_players_detail=3)
+    # ETL_get_player_stats()

@@ -8,6 +8,7 @@ from helper_search_and_open_player import (
     clear_search_box_if_present,
 )
 from helper_players_detail import scrape_player_detail
+from helper_player_value import open_value_tab, click_download_csv, scrape_value_history_for_player
 
 # 👇 import your existing match helpers wherever you put them
 from helper_player_matches import (
@@ -26,7 +27,7 @@ def scrape_all_players_detail(
     max_players: Optional[int] = None,
     base_url: str = "https://biwenger.as.com",
     collect_matches: bool = True,
-) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
+) -> Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
     """
     Iterate players_list → open → scrape detail (left panel) → scrape matches (Points tab) → back.
     Returns:
@@ -34,6 +35,7 @@ def scrape_all_players_detail(
     """
     player_detail_rows: List[Dict[str, str]] = []
     match_rows: List[Dict[str, str]] = []
+    value_history_rows: List[Dict[str, str]] = []
     processed = 0
 
     for idx, player in enumerate(players_list, start=1):
@@ -88,7 +90,23 @@ def scrape_all_players_detail(
             except Exception as e:
                 logger.warning(f"⚠️ Failed to scrape matches for {name}: {e}")
 
-        # 4) back to table for next player
+        # 4) Scrape value history (Value tab)
+        try:
+            vdf = scrape_value_history_for_player(
+                page,
+                logger=logger,
+                player_ctx={"player_name": name, "team": detail.get("team", ""), "slug": slug},
+                timeout=7000,
+            )
+            if not vdf.empty:
+                value_history_rows.extend(vdf.to_dict(orient="records"))
+                logger.info(f"📈 Value history captured for {name}: {len(vdf)} rows")
+            else:
+                logger.info(f"📈 Value history empty for {name}")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to scrape value history for {name}: {e}")
+
+        # 5) back to table for next player
         if not click_back_to_players_table(page):
             logger.warning("Back-to-table failed; forcing go_back() and clearing search.")
             try:
@@ -103,4 +121,5 @@ def scrape_all_players_detail(
 
     logger.info(f"🏁 Done. Players processed: {processed}. "
                 f"Detail rows: {len(player_detail_rows)}, Match rows: {len(match_rows)}")
-    return player_detail_rows, match_rows
+
+    return player_detail_rows, match_rows, value_history_rows
