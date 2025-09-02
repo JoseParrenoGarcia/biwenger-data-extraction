@@ -1,364 +1,365 @@
-2025-09-01 | ETL_get_article_contents | INFO     | Logger 'ETL_get_article_contents' initialized. Logging to: logs/ETL_get_article_contents.log
-2025-09-01 | ETL_get_article_contents | INFO     | 🚀 Starting ETL pipeline for article contents...
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | COLLECTING URLS TO SCRAPE THEIR CONTENTS
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | Retrieved 1000 total articles from article_urls.
-2025-09-01 | ETL_get_article_contents | INFO     | Retrieved 832 existing article_ids from 'article_contents'
-2025-09-01 | ETL_get_article_contents | INFO     | 🆕 168 articles still need to be scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 📋 168 articles pending scraping.
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | SCRAPING ARTICLE CONTENTS
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-atletico-de-madrid-para-2025-2026-es-uruguayo-20250318-8948.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el-atletico-de-madrid-fichara-a-alex-baena-del-villarreal-este-verano-20250321-8956.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/angel-correa-abandonara-el-atletico-de-madrid-este-verano-el-adios-a-un-angel-20250324-8965.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://atletimania.com/2025/08/21/espanyol-atletico-previa-convocatoria-alineaciones-probables-horario-canal-y-donde-ver-en-en-vivo-por-tv-hoy-el-partido-de-la-jornada-1-de-primera-division/
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/athletic/2025/08/25/athletic-rayo-vallecano-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/athletic/2025/08/25/athletic-rayo-vallecano-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/12/alaves-quiere-repetir-operacion-panichelli-fichaje-albarracin.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-atletico-de-madrid-para-2025-2026-es-uruguayo-20250318-8948.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-registrarse-primera-previa-analisis-pronostico-prediccion.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/12/alaves-quiere-repetir-operacion-panichelli-fichaje-albarracin.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/betis/antony-aeropuerto-manchester-listo-para-viajar-betis-20250827-509469.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://atletimania.com/2025/08/21/espanyol-atletico-previa-convocatoria-alineaciones-probables-horario-canal-y-donde-ver-en-en-vivo-por-tv-hoy-el-partido-de-la-jornada-1-de-primera-division/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/betis/2025/08/27/celta-betis-anulan-balaidos.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/angel-correa-abandonara-el-atletico-de-madrid-este-verano-el-adios-a-un-angel-20250324-8965.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.lavozdegalicia.es/noticia/gradario/2025/08/27/giraldez-equipo-mejorar-individualidades-120967900.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el-atletico-de-madrid-fichara-a-alex-baena-del-villarreal-este-verano-20250321-8956.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/2025/08/24/elche-rompe-maldicion-tenian-50-anos.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-registrarse-primera-previa-analisis-pronostico-prediccion.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/elche/2025/08/23/rafa-mir-da-muestras-resurgir-elche.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/betis/antony-aeropuerto-manchester-listo-para-viajar-betis-20250827-509469.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/elche/2025/08/17/rafa-mir-andre-silva-nuevos-delanteros-elche.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/betis/2025/08/27/celta-betis-anulan-balaidos.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/21/atletico-elche-horario-y-donde-ver-hoy-en-tv-y-canal-del-partido-de-laliga-ea-sports.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.lavozdegalicia.es/noticia/gradario/2025/08/27/giraldez-equipo-mejorar-individualidades-120967900.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/alineacion-atletico-elche-hoy-partido-laliga-ea-sports.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/2025/08/24/elche-rompe-maldicion-tenian-50-anos.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://teleelx.es/2025/08/28/elche-busca-la-cesion-de-tyrell-malacia/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/21/atletico-elche-horario-y-donde-ver-hoy-en-tv-y-canal-del-partido-de-laliga-ea-sports.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/elche-cf/20250825/elche-cierra-fichaje-inaki-pena-20250825-509194.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250828/1002521689/urko-esta-barcelona-firmar-espanyol.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/uche-quiere-frenar-su-salida-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/alineacion-atletico-elche-hoy-partido-laliga-ea-sports.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/getafe/bordalas-sobre-inscritos-logica-preocupacion-20250823-508923.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://teleelx.es/2025/08/28/elche-busca-la-cesion-de-tyrell-malacia/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/alex-moreno-una-alegria-girona-2025/08/22-508869.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/alex-moreno-una-alegria-girona-2025/08/22-508869.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/traspaso-ounahi-cerrado-2025-08-28-509534.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/getafe/bordalas-sobre-inscritos-logica-preocupacion-20250823-508923.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/oferta-para-cerrar-llegada-vladyslav-vanat-2025-08-25-509127.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250828/1002521689/urko-esta-barcelona-firmar-espanyol.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/portu-david-lopez-cargan-duramente-contra-sus-companeros-2025-08-26-509350.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/elche-cf/20250825/elche-cierra-fichaje-inaki-pena-20250825-509194.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/cerrada-salida-krejci-2025-08-26-509252.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/oferta-para-cerrar-llegada-vladyslav-vanat-2025-08-25-509127.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/mallorca/20250823/alineaciones-mallorca-celta-alineacion-posible-mallorca-celta-partido-laliga-20250823-508886.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/traspaso-ounahi-cerrado-2025-08-28-509534.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/mallorca-celta-en-directo-laliga-ea-sports-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/uche-quiere-frenar-su-salida-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/ryan-hambre-todavia-ayudar-levante-permanencia-120955863.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/portu-david-lopez-cargan-duramente-contra-sus-companeros-2025-08-26-509350.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-levante-fichaje-oficial_300742053.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/cerrada-salida-krejci-2025-08-26-509252.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508944.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/mallorca/20250823/alineaciones-mallorca-celta-alineacion-posible-mallorca-celta-partido-laliga-20250823-508886.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/levante-ud/2025/08/26/mathew-ryan-incorporacion-inminente-20250826-509246.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508944.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/levante/2025/08/23/levante-barcelona-hora-canal-ver-hoy-tv-partido-laliga-ea-sports.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/levante-ud/2025/08/26/mathew-ryan-incorporacion-inminente-20250826-509246.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/levante/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-levante-fichaje-oficial_300742053.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.diariodenavarra.es/noticias/deportes/futbol/osasuna/portada/osasuna-descarta-el-fichaje-st-juste-658430-1027.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/mallorca-celta-en-directo-laliga-ea-sports-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.noticiasdenavarra.com/osasuna/2025/08/29/enfria-el-tercer-refuerzo-osasuna-658527-1027.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/ryan-hambre-todavia-ayudar-levante-permanencia-120955863.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/osasuna/2025/08/24/osasuna-valencia-test-carga-muralla-rojilla-previa-analisis-pronostico-prediccion.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/levante/2025/08/23/levante-barcelona-hora-canal-ver-hoy-tv-partido-laliga-ea-sports.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/levante/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/osasuna/osasuna-adios-opcion-juste-20250824-509053.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/osasuna/2025/08/24/osasuna-valencia-test-carga-muralla-rojilla-previa-analisis-pronostico-prediccion.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera-division/alineacion-posible-de-osasuna-contra-el-valencia-en-laliga-ea-sports-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/osasuna/osasuna-adios-opcion-juste-20250824-509053.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.noticiasdenavarra.com/osasuna/2025/08/29/enfria-el-tercer-refuerzo-osasuna-658527-1027.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: 
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping  — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.elcomercio.es/real-oviedo/real-oviedo-mercado-fichajes-real-oviedo-paciencia-20250826211724-nt.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.diariodenavarra.es/noticias/deportes/futbol/osasuna/portada/osasuna-descarta-el-fichaje-st-juste-658430-1027.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/oviedo/encarrila-fichaje-20250827-509477.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/real-madrid/2025/08/28/lujo-suerte-madrid-ausencias-llamativas-desafio-unico-chelsea.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/real-madrid/alineaciones-real-oviedo-real-madrid-alineaciones-probables-oviedo-real-madrid-segunda-jornada-laliga-202526-20250824-508781.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/oviedo/encarrila-fichaje-20250827-509477.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/2025/08/25/sancet-vuelve-rayo.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.elcomercio.es/real-oviedo/real-oviedo-mercado-fichajes-real-oviedo-paciencia-20250826211724-nt.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/conference-league/cronica/2025/08/21/ver-gratis-online-neman-grodno-rayo-vallecano-conference-league.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/real-madrid/2025/08/28/lujo-suerte-madrid-ausencias-llamativas-desafio-unico-chelsea.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/conference-league/2025/08/28/pasaporte-regla-fiesta-vallecas.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/real-madrid/alineaciones-real-oviedo-real-madrid-alineaciones-probables-oviedo-real-madrid-segunda-jornada-laliga-202526-20250824-508781.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/rayo/2025/08/19/gol-alvaro-garcia-0-2-girona-1-3-rayo-vallecan-video.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/2025/08/25/sancet-vuelve-rayo.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-anuncia-plan-para-europa-20250827-509468.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera-division/alineacion-posible-de-osasuna-contra-el-valencia-en-laliga-ea-sports-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/conference-league/2025/08/21/neman-rayo-vallecano-batalla-alvaro-garcia-encarrilan-clasificacion_300738864.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/conference-league/cronica/2025/08/21/ver-gratis-online-neman-grodno-rayo-vallecano-conference-league.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/27/akor-adams-baja-girona.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/conference-league/2025/08/28/pasaporte-regla-fiesta-vallecas.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/26/sevilla-getafe-en-directo-laliga-ea-sports-hoy-en-vivo-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/rayo/2025/08/19/gol-alvaro-garcia-0-2-girona-1-3-rayo-vallecan-video.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/25/sevilla-inicia-conversaciones-patterson.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-anuncia-plan-para-europa-20250827-509468.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/22/sevilla-atento-julian-araujo.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/conference-league/2025/08/21/neman-rayo-vallecano-batalla-alvaro-garcia-encarrilan-clasificacion_300738864.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/19/bade-punto-cerrar-traspaso-bayer-leverkusen.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/27/akor-adams-baja-girona.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/real-sociedad/2025/08/24/real-empata-espanyol-evita-dudas.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/26/sevilla-getafe-en-directo-laliga-ea-sports-hoy-en-vivo-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-val Valencia-cf-hace-oficial-la-cesion-de-largie-ramazani
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/25/sevilla-inicia-conversaciones-patterson.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/valencia-cf/2025/08/25/diego-lopez-renueva-valencia-cf-2029.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/real-sociedad/2025/08/24/real-empata-espanyol-evita-dudas.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/valencia-cf/2025/08/28/ramazani-nuevo-jugador-valencia.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-val Valencia-cf-hace-oficial-la-cesion-de-largie-ramazani — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/valencia-cf/acuerdo-para-fichaje-hugo-guillamon-20250823-508900.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/valencia-cf/2025/08/25/diego-lopez-renueva-valencia-cf-2029.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/villarreal/2025/08/24/villarreal-quiere-repatriar-arnau-tenas.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/22/sevilla-atento-julian-araujo.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/villarreal/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/19/bade-punto-cerrar-traspaso-bayer-leverkusen.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/villarreal/2025/08/21/villarreal-ficha-renato-veiga.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/valencia-cf/acuerdo-para-fichaje-hugo-guillamon-20250823-508900.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/villarreal/2025/08/23/villarreal-girona-submarino-hunde-los-michel-20250824-509073.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/valencia-cf/2025/08/28/ramazani-nuevo-jugador-valencia.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/villarreal/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/villarreal/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/villarreal/2025/08/27/villarreal-negocia-sevilla-vargas-sustituto-pino-20250827-509368.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/villarreal/2025/08/23/villarreal-girona-submarino-hunde-los-michel-20250824-509073.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nueva-lesion-gravedad-villarreal-120982037.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/villarreal/2025/08/24/villarreal-quiere-repatriar-arnau-tenas.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/yeremy-pino-negociacion-fichaje-crystal-palace-50-millones_300742047.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/villarreal/2025/08/21/villarreal-ficha-renato-veiga.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/fernando-roig-se-lia-venta-yeremy-pino-newcastle_300743842.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/villarreal/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/villarreal/2025/08/27/villarreal-negocia-sevilla-vargas-sustituto-pino-20250827-509368.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/villarreal-operaciones-cierre-mercado-fichajes_300743448.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nueva-lesion-gravedad-villarreal-120982037.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nombres-propios-mercado-villarreal-yeremy-pino-dovbyk-arnau-tenas-tani-oluwaseyi-denis-diego-conde-120967480.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/yeremy-pino-negociacion-fichaje-crystal-palace-50-millones_300742047.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/arnau-tenas-llega-a-vila-real-para-cerrar-su-fichaje-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/fernando-roig-se-lia-venta-yeremy-pino-newcastle_300743842.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-Atletico-de-Madrid-para-2025-2026-es-uruguayo-20250318-8948.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/villarreal-operaciones-cierre-mercado-fichajes_300743448.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_atletico-de-madrid-pierde-a-diez-jugadores-en-este-paron-de-selecciones-20250317-8945.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nombres-propios-mercado-villarreal-yeremy-pino-dovbyk-arnau-tenas-tani-oluwaseyi-denis-diego-conde-120967480.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/la-convocatoria-de-la-seleccion-argentina-con-seis-jugadores-del-atletico-de-madrid-20250317-8943.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/arnau-tenas-llega-a-vila-real-para-cerrar-su-fichaje-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_metropolitano-puede-dejar-de-ser-sede-para-el-mundial-y-entrar-el-nou-mestalla-20250318-8946.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/las-posiciones-que-reforzara-el-atletico-de-madrid-este-verano-20250321-8957.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/la-convocatoria-de-la-seleccion-argentina-con-seis-jugadores-del-atletico-de-madrid-20250317-8943.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.fcbarcelonanoticias.com/fichajes/bombazo-newcastle-quiere-fichar-fermin-lopez_314471_102.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-Atletico-de-Madrid-para-2025-2026-es-uruguayo-20250318-8948.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/barcelona/sorteo-champions-league-horario-donde-ver-sorteo-fase-liga-liga-campeones-20250828-509494.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_atletico-de-madrid-pierde-a-diez-jugadores-en-este-paron-de-selecciones-20250317-8945.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/22/boye-garra-goles-alaves-coudet.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/las-posiciones-que-reforzara-el-atletico-de-madrid-este-verano-20250321-8957.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/barcelona/sorteo-champions-league-horario-donde-ver-sorteo-fase-liga-liga-campeones-20250828-509494.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/18/lucas-boye-objetivo-alaves.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/22/boye-garra-goles-alaves-coudet.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-hora-ver-hoy-partido-television-online_300733341.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_metropolitano-puede-dejar-de-ser-sede-para-el-mundial-y-entrar-el-nou-mestalla-20250318-8946.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/18/lucas-boye-objetivo-alaves.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/betis/fichaje-talento-contrastado-atletico-20250828-509608.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-hora-ver-hoy-partido-television-online_300733341.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/real-betis/20250829/convocatoria-david-gordo-para-sub-espana-gonzalo-garcia-mosquera-angel-ortiz-pablo-garcia-20250829-509697.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/betis/fichaje-talento-contrastado-atletico-20250828-509608.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/betis/2025/08/29/betis-confirma-fichaje-perla-atletica-gran-club-20250829-509758.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/betis/2025/08/27/gol-bartra-0-1-celta-vigo-1-1-betis-video.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/betis/2025/08/29/ruibal-descartado-ante-el-athletic-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/cronica/2025/08/27/celta-betis-anulan-balaidos.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/betis/2025/08/29/betis-confirma-fichaje-perla-atletica-gran-club-20250829-509758.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/celta-de-vigo/20250829/problemas-pegada-arranque.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/real-betis/20250829/convocatoria-david-gordo-para-sub-espana-gonzalo-garcia-mosquera-angel-ortiz-pablo-garcia-20250829-509697.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/celta/2025/08/29/giraldez-sabemos-dificil-creo-preparados-asumir-retos.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/betis/2025/08/27/gol-bartra-0-1-celta-vigo-1-1-betis-video.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/celta/2025/08/27/celta-betis-europa-league-cambia-agenda-previa-analisis-pronostico-prediccion.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/celta-de-vigo/20250829/problemas-pegada-arranque.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/celta/2025/08/29/rivales-celta-europa-league-partidos-juega-equipo-claudio-giraldez.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/betis/2025/08/29/ruibal-descartado-ante-el-athletic-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/celta/2025/08/27/giraldez-jugadores-vez-estan-preparados-disputar-partidos-semana.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/cronica/2025/08/27/celta-betis-anulan-balaidos.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/elche/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/celta/2025/08/27/celta-betis-europa-league-cambia-agenda-previa-analisis-pronostico-prediccion.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/cronica/2025/08/23/elche-ole.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/celta/2025/08/29/giraldez-sabemos-dificil-creo-preparados-asumir-retos.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-competencia-para-cerrar-incorporacion-tyrell-malacia-20250828-509561.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/celta/2025/08/27/giraldez-jugadores-vez-estan-preparados-disputar-partidos-semana.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-fichaje-del-elche-que-brilla-20250821-508728.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/elche/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-eder-sarabia-lia-por-completo-elche-20250824-509032.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-competencia-para-cerrar-incorporacion-tyrell-malacia-20250828-509561.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-levante-directo-partido-laliga-vivo-online-20250829-509738.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-fichaje-del-elche-que-brilla-20250821-508728.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/elche-cf/2025/08/18/alineacion-confirmada-elche-betis-laliga_300736454.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/cronica/2025/08/23/elche-ole.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/el-elche-levante-en-directo-laliga-ea-sports-hoy-en-vivo-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-eder-sarabia-lia-por-completo-elche-20250824-509032.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/elche-ole.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/celta/2025/08/29/rivales-celta-europa-league-partidos-juega-equipo-claudio-giraldez.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/27/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-levante-directo-partido-laliga-vivo-online-20250829-509738.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/elche-cholo.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/elche-cf/2025/08/18/alineacion-confirmada-elche-betis-laliga_300736454.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/getafe/2025/08/29/marcelino-pebordalas-cum-laude.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/el-elche-levante-en-directo-laliga-ea-sports-hoy-en-vivo-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/cronica/2025/08/25/sevilla-getafe-kilometro-cero-sanchez-pizjuan-previa-analisis-pronostico-prediccion.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/27/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/valencia-getafe-directo-partido-laliga-s-20250829-509748.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/getafe/2025/08/29/marcelino-pebordalas-cum-laude.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/girona/2025/08/23/david-lopez-golpe-realidad-ponernos-nuestro-sitio.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/elche-ole.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/22/alex-moreno-una-alegria-girona-20250822-508869.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/elche-cholo.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/27/alex-moreno-muy-cerca-20250827-509424.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/cronica/2025/08/25/sevilla-getafe-kilometro-cero-sanchez-pizjuan-previa-analisis-pronostico-prediccion.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/29/alineaciones-girona-sevilla-alineacion-probable-girona-sevilla-jornada-laliga-20250829-509751.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/valencia-getafe-directo-partido-laliga-s-20250829-509748.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/24/michel-confia-joven-ucraniano-20250824-509018.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/22/alex-moreno-una-alegria-girona-20250822-508869.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/29/michel-espera-poder-cerrar-fichaje-20250829-509698.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/girona/2025/08/23/david-lopez-golpe-realidad-ponernos-nuestro-sitio.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/21/alex-moreno-vuelve-laliga-20250821-508753.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/24/michel-confia-joven-ucraniano-20250824-509018.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/espanyol/2025/08/18/antoniu-roca-renueva-espanyol-2028.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/29/michel-espera-poder-cerrar-fichaje-20250829-509698.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/espanyol/2025/08/24/real-sociedad-espanyol-partido-historico-previa-analisis-pronostico-prediccion.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/27/alex-moreno-muy-cerca-20250827-509424.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/espanyol/2025/08/17/espanyol-saca-pecho-luchamos-ciudad-club-facil.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/21/alex-moreno-vuelve-laliga-20250821-508753.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/espanyol/2025/08/18/pasion-jj-watt-espanyol-accionista-leyenda-nfl-comparte-cerveza-aficion.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/29/alineaciones-girona-sevilla-alineacion-probable-girona-sevilla-jornada-laliga-20250829-509751.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rcd-espanyol/20250823/charles-pickel-cerrado-20250827-509442.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/espanyol/2025/08/18/antoniu-roca-renueva-espanyol-2028.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/espanyol/acuerdo-total-por-fichaje-clemens-riedel-20250825-509442.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/espanyol/2025/08/24/real-sociedad-espanyol-partido-historico-previa-analisis-pronostico-prediccion.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/real-sociedad-espanyol-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250824-509023.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/espanyol/acuerdo-total-por-fichaje-clemens-riedel-20250825-509442.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/espanyol/2025/08/17/espanyol-saca-pecho-luchamos-ciudad-club-facil.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rcd-espanyol/20250823/charles-pickel-cerrado-20250827-509442.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250818/1002521853/pablo-ramon-marcha-cedido-racing-santander.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/real-sociedad-espanyol-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250824-509023.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/mallorca/2025/08/23/mallorca-celta-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/espanyol/2025/08/18/pasion-jj-watt-espanyol-accionista-leyenda-nfl-comparte-cerveza-aficion.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/mallorca/2025/08/28/mallorca-estara-bernabeu-habra-250-bermellones-feudo-blanco.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/mallorca/2025/08/23/mallorca-celta-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/mallorca-celta-vigo-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508934.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/mallorca/kacper-urbanski-vez-cerca-mallorca.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/28/situan-mallorca-delantero-sheraldo-becker-121015110.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250818/1002521853/pablo-ramon-marcha-cedido-racing-santander.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/30/primera-gran-salida-nivel-rcd-mallorca-real-madrid-121062991.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/mallorca/kacper-urbanski-vez-cerca-mallorca.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-valencia-firmar-levante-ud-121029209.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/mallorca-celta-vigo-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508934.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/28/levante-ud-carlos-espi-seleccion-espanola-121029209.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/28/situan-mallorca-delantero-sheraldo-becker-121015110.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/28/mathew-ryan-valencia-firmar-levante-ud-121029209.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/30/primera-gran-salida-nivel-rcd-mallorca-real-madrid-121062991.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/06/03/ainhoa-bascunan-renueva-2027-118182906.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-valencia-firmar-levante-ud-121029209.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/28/levante-ud-carlos-espi-seleccion-espanola-121029209.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/28/mathew-ryan-valencia-firmar-levante-ud-121029209.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-laliga-20250823-508252.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/06/03/ainhoa-bascunan-renueva-2027-118182906.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/levante/levante-barcelona-explota-tras-remontada-20250824-509000.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/22/posibles-alineaciones-levante-ud-fc-barcelona-jornada-2-laliga_300738300.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/28/posibles-alineaciones-elche-levante-jornada-3-laliga-ea-sports_300744591.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-laliga-20250823-508252.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/levante/levante-barcelona-explota-tras-remontada-20250824-509000.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/mathew-ryan-nuevo-portero-120966994.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/22/posibles-alineaciones-levante-ud-fc-barcelona-jornada-2-laliga_300738300.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/21/oficial-iker-losada-nuevo-jugador-levante-ud_300742053.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/28/posibles-alineaciones-elche-levante-jornada-3-laliga-ea-sports_300744591.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/mathew-ryan-nuevo-portero-120966994.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.lasprovincias.es/levanteud/levante-cede-victor-fernandez-20250829135923-nt.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/21/oficial-iker-losada-nuevo-jugador-levante-ud_300742053.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/rayo/2025/08/25/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-confirma-delicada-situacion-luiz-felipe-20250821-508631.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/rayo-vallecano-alerta-20250829-509757.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/rayo-vallecano/fichaje-luis-maximiano-20250825-509197.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.lasprovincias.es/levanteud/levante-cede-victor-fernandez-20250829135923-nt.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.elcomercio.es/real-oviedo/real-oviedo-veljko-paunovic-ambiente-carlos-tartiere-espectacular-20250825002431-nt.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/rayo-vallecano-alerta-20250829-509757.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/oviedo-real-sociedad-tv-a-que-hora-es-donde-verlo-en-tv-online-hoy-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/rayo/2025/08/25/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/oviedo-real-sociedad-estreno-esperar-previa-analisis-pronostico-prediccion.html#ancla_comentarios
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/rayo-vallecano/fichaje-luis-maximiano-20250825-509197.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/oviedo/2025/08/23/oviedo-real-madrid-dia-grande-tartiere-durisima-travesia-desierto.html
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-confirma-delicada-situacion-luiz-felipe-20250821-508631.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/real-madrid-mallorca-tv-horario-y-como-ver-en-estados-unidos-la-jornada-3-de-laliga-ea-sports-n/
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.elcomercio.es/real-oviedo/real-oviedo-veljko-paunovic-ambiente-carlos-tartiere-espectacular-20250825002431-nt.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/oviedo/2025/08/23/oviedo-real-madrid-dia-grande-tartiere-durisima-travesia-desierto.html — empty text scraped.
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/oviedo-real-sociedad-tv-a-que-hora-es-donde-verlo-en-tv-online-hoy-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/oviedo-real-sociedad-estreno-esperar-previa-analisis-pronostico-prediccion.html#ancla_comentarios — empty text scraped.
-2025-09-01 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/real-madrid-mallorca-tv-horario-y-como-ver-en-estados-unidos-la-jornada-3-de-laliga-ea-sports-n/ — empty text scraped.
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | ENRICHING WITH LLM (5 threads in parallel)
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://www.marca.com/futbol/elche/2025/08/23/rafa-mir-da-muestras-resurgir-elche.html
-2025-09-01 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://www.marca.com/futbol/elche/2025/08/17/rafa-mir-andre-silva-nuevos-delanteros-elche.html
-2025-09-01 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://www.fcbarcelonanoticias.com/fichajes/bombazo-newcastle-quiere-fichar-fermin-lopez_314471_102.html
-2025-09-01 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://www.marca.com/futbol/mallorca/2025/08/28/mallorca-estara-bernabeu-habra-250-bermellones-feudo-blanco.html
-2025-09-01 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
-2025-09-01 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
-2025-09-01 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
-2025-09-01 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
-2025-09-01 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
-2025-09-01 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
-2025-09-01 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
-2025-09-01 | ETL_get_article_contents | ERROR    | ❌ Failed to parse or enrich article with LLM: invalid syntax. Perhaps you forgot a comma? (<unknown>, line 2)
-2025-09-01 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | WRITING TO DATABASE
-2025-09-01 | ETL_get_article_contents | INFO     | ============================================================
-2025-09-01 | ETL_get_article_contents | INFO     | ✅ Successfully inserted 3 enriched articles into 'article_contents'
+2025-09-02 | ETL_get_article_contents | INFO     | Logger 'ETL_get_article_contents' initialized. Logging to: logs/ETL_get_article_contents.log
+2025-09-02 | ETL_get_article_contents | INFO     | 🚀 Starting ETL pipeline for article contents...
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | COLLECTING URLS TO SCRAPE THEIR CONTENTS
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | Retrieved 1000 total articles from article_urls.
+2025-09-02 | ETL_get_article_contents | INFO     | Retrieved 835 existing article_ids from 'article_contents'
+2025-09-02 | ETL_get_article_contents | INFO     | 🆕 169 articles still need to be scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 📋 169 articles pending scraping.
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | SCRAPING ARTICLE CONTENTS
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-atletico-de-madrid-para-2025-2026-es-uruguayo-20250318-8948.html
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el-atletico-de-madrid-fichara-a-alex-baena-del-villarreal-este-verano-20250321-8956.html
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/angel-correa-abandonara-el-atletico-de-madrid-este-verano-el-adios-a-un-angel-20250324-8965.html
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://atletimania.com/2025/08/21/espanyol-atletico-previa-convocatoria-alineaciones-probables-horario-canal-y-donde-ver-en-en-vivo-por-tv-hoy-el-partido-de-la-jornada-1-de-primera-division/
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/athletic/2025/08/25/athletic-rayo-vallecano-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/athletic/2025/08/25/athletic-rayo-vallecano-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/12/alaves-quiere-repetir-operacion-panichelli-fichaje-albarracin.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/angel-correa-abandonara-el-atletico-de-madrid-este-verano-el-adios-a-un-angel-20250324-8965.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-registrarse-primera-previa-analisis-pronostico-prediccion.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://atletimania.com/2025/08/21/espanyol-atletico-previa-convocatoria-alineaciones-probables-horario-canal-y-donde-ver-en-en-vivo-por-tv-hoy-el-partido-de-la-jornada-1-de-primera-division/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/betis/antony-aeropuerto-manchester-listo-para-viajar-betis-20250827-509469.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-atletico-de-madrid-para-2025-2026-es-uruguayo-20250318-8948.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/betis/2025/08/27/celta-betis-anulan-balaidos.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/12/alaves-quiere-repetir-operacion-panichelli-fichaje-albarracin.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.elcorreo.com/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-registrarse-primera-previa-analisis-pronostico-prediccion.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.lavozdegalicia.es/noticia/gradario/2025/08/27/giraldez-equipo-mejorar-individualidades-120967900.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el-atletico-de-madrid-fichara-a-alex-baena-del-villarreal-este-verano-20250321-8956.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/2025/08/24/elche-rompe-maldicion-tenian-50-anos.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/betis/antony-aeropuerto-manchester-listo-para-viajar-betis-20250827-509469.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/21/atletico-elche-horario-y-donde-ver-hoy-en-tv-y-canal-del-partido-de-laliga-ea-sports.html
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/alineacion-atletico-elche-hoy-partido-laliga-ea-sports.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/betis/2025/08/27/celta-betis-anulan-balaidos.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://teleelx.es/2025/08/28/elche-busca-la-cesion-de-tyrell-malacia/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.lavozdegalicia.es/noticia/gradario/2025/08/27/giraldez-equipo-mejorar-individualidades-120967900.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/elche-cf/20250825/elche-cierra-fichaje-inaki-pena-20250825-509194.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/2025/08/24/elche-rompe-maldicion-tenian-50-anos.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/oficial-antony-vuelve-al-betis-n/
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250828/1002521689/urko-esta-barcelona-firmar-espanyol.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/21/atletico-elche-horario-y-donde-ver-hoy-en-tv-y-canal-del-partido-de-laliga-ea-sports.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/uche-quiere-frenar-su-salida-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/alineacion-atletico-elche-hoy-partido-laliga-ea-sports.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/getafe/bordalas-sobre-inscritos-logica-preocupacion-20250823-508923.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://teleelx.es/2025/08/28/elche-busca-la-cesion-de-tyrell-malacia/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/alex-moreno-una-alegria-girona-2025/08/22-508869.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/elche-cf/20250825/elche-cierra-fichaje-inaki-pena-20250825-509194.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/traspaso-ounahi-cerrado-2025-08-28-509534.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/alex-moreno-una-alegria-girona-2025/08/22-508869.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/oferta-para-cerrar-llegada-vladyslav-vanat-2025-08-25-509127.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/traspaso-ounahi-cerrado-2025-08-28-509534.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/portu-david-lopez-cargan-duramente-contra-sus-companeros-2025-08-26-509350.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/getafe/bordalas-sobre-inscritos-logica-preocupacion-20250823-508923.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/cerrada-salida-krejci-2025-08-26-509252.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250828/1002521689/urko-esta-barcelona-firmar-espanyol.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/mallorca/20250823/alineaciones-mallorca-celta-alineacion-posible-mallorca-celta-partido-laliga-20250823-508886.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/oferta-para-cerrar-llegada-vladyslav-vanat-2025-08-25-509127.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/mallorca-celta-en-directo-laliga-ea-sports-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/portu-david-lopez-cargan-duramente-contra-sus-companeros-2025-08-26-509350.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/ryan-hambre-todavia-ayudar-levante-permanencia-120955863.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/cerrada-salida-krejci-2025-08-26-509252.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-levante-fichaje-oficial_300742053.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/uche-quiere-frenar-su-salida-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508944.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/mallorca/20250823/alineaciones-mallorca-celta-alineacion-posible-mallorca-celta-partido-laliga-20250823-508886.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/levante-ud/2025/08/26/mathew-ryan-incorporacion-inminente-20250826-509246.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/levante-ud/2025/08/26/mathew-ryan-incorporacion-inminente-20250826-509246.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/levante/2025/08/23/levante-barcelona-hora-canal-ver-hoy-tv-partido-laliga-ea-sports.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508944.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/levante/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-levante-fichaje-oficial_300742053.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.diariodenavarra.es/noticias/deportes/futbol/osasuna/portada/osasuna-descarta-el-fichaje-st-juste-658430-1027.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/ryan-hambre-todavia-ayudar-levante-permanencia-120955863.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.noticiasdenavarra.com/osasuna/2025/08/29/enfria-el-tercer-refuerzo-osasuna-658527-1027.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/mallorca-celta-en-directo-laliga-ea-sports-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/osasuna/2025/08/24/osasuna-valencia-test-carga-muralla-rojilla-previa-analisis-pronostico-prediccion.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/levante/2025/08/23/levante-barcelona-hora-canal-ver-hoy-tv-partido-laliga-ea-sports.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/levante/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/osasuna/osasuna-adios-opcion-juste-20250824-509053.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.noticiasdenavarra.com/osasuna/2025/08/29/enfria-el-tercer-refuerzo-osasuna-658527-1027.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera-division/alineacion-posible-de-osasuna-contra-el-valencia-en-laliga-ea-sports-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/osasuna/osasuna-adios-opcion-juste-20250824-509053.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/osasuna/2025/08/24/osasuna-valencia-test-carga-muralla-rojilla-previa-analisis-pronostico-prediccion.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: 
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping  — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.elcomercio.es/real-oviedo/real-oviedo-mercado-fichajes-real-oviedo-paciencia-20250826211724-nt.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.diariodenavarra.es/noticias/deportes/futbol/osasuna/portada/osasuna-descarta-el-fichaje-st-juste-658430-1027.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/oviedo/encarrila-fichaje-20250827-509477.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/real-madrid/2025/08/28/lujo-suerte-madrid-ausencias-llamativas-desafio-unico-chelsea.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/osasuna/2025/08/19/dia-osasuna-asesto-puntilla-madrid-galacticos-titulo-laliga-intrahistoria-goleada-inolvidable-rojillos.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/real-madrid/alineaciones-real-oviedo-real-madrid-alineaciones-probables-oviedo-real-madrid-segunda-jornada-laliga-202526-20250824-508781.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/oviedo/encarrila-fichaje-20250827-509477.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/2025/08/25/sancet-vuelve-rayo.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.elcomercio.es/real-oviedo/real-oviedo-mercado-fichajes-real-oviedo-paciencia-20250826211724-nt.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/conference-league/cronica/2025/08/21/ver-gratis-online-neman-grodno-rayo-vallecano-conference-league.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/real-madrid/2025/08/28/lujo-suerte-madrid-ausencias-llamativas-desafio-unico-chelsea.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/conference-league/2025/08/28/pasaporte-regla-fiesta-vallecas.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/real-madrid/alineaciones-real-oviedo-real-madrid-alineaciones-probables-oviedo-real-madrid-segunda-jornada-laliga-202526-20250824-508781.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/rayo/2025/08/19/gol-alvaro-garcia-0-2-girona-1-3-rayo-vallecan-video.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera-division/alineacion-posible-de-osasuna-contra-el-valencia-en-laliga-ea-sports-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-anuncia-plan-para-europa-20250827-509468.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/conference-league/cronica/2025/08/21/ver-gratis-online-neman-grodno-rayo-vallecano-conference-league.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/conference-league/2025/08/21/neman-rayo-vallecano-batalla-alvaro-garcia-encarrilan-clasificacion_300738864.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/2025/08/25/sancet-vuelve-rayo.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/27/akor-adams-baja-girona.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/conference-league/2025/08/28/pasaporte-regla-fiesta-vallecas.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/26/sevilla-getafe-en-directo-laliga-ea-sports-hoy-en-vivo-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/rayo/2025/08/19/gol-alvaro-garcia-0-2-girona-1-3-rayo-vallecan-video.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/25/sevilla-inicia-conversaciones-patterson.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/conference-league/2025/08/21/neman-rayo-vallecano-batalla-alvaro-garcia-encarrilan-clasificacion_300738864.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/22/sevilla-atento-julian-araujo.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-anuncia-plan-para-europa-20250827-509468.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/sevilla/2025/08/19/bade-punto-cerrar-traspaso-bayer-leverkusen.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/27/akor-adams-baja-girona.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/real-sociedad/2025/08/24/real-empata-espanyol-evita-dudas.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/25/sevilla-inicia-conversaciones-patterson.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://areapersonal.diariovasco.com/gestion/mi-cuenta.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/26/sevilla-getafe-en-directo-laliga-ea-sports-hoy-en-vivo-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-val Valencia-cf-hace-oficial-la-cesion-de-largie-ramazani
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/real-sociedad/2025/08/24/real-empata-espanyol-evita-dudas.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/valencia-cf/2025/08/25/diego-lopez-renueva-valencia-cf-2029.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://plazadeportiva.valenciaplaza.com/plazadeportiva/valenciacf/el-val Valencia-cf-hace-oficial-la-cesion-de-largie-ramazani — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/valencia-cf/2025/08/28/ramazani-nuevo-jugador-valencia.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/19/bade-punto-cerrar-traspaso-bayer-leverkusen.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/valencia-cf/acuerdo-para-fichaje-hugo-guillamon-20250823-508900.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/sevilla/2025/08/22/sevilla-atento-julian-araujo.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/villarreal/2025/08/24/villarreal-quiere-repatriar-arnau-tenas.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://areapersonal.diariovasco.com/gestion/mi-cuenta.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/villarreal/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/valencia-cf/acuerdo-para-fichaje-hugo-guillamon-20250823-508900.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/villarreal/2025/08/21/villarreal-ficha-renato-veiga.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/valencia-cf/2025/08/28/ramazani-nuevo-jugador-valencia.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/villarreal/2025/08/23/villarreal-girona-submarino-hunde-los-michel-20250824-509073.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/valencia-cf/2025/08/25/diego-lopez-renueva-valencia-cf-2029.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/villarreal/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/villarreal/2025/08/24/villarreal-quiere-repatriar-arnau-tenas.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/villarreal/2025/08/27/villarreal-negocia-sevilla-vargas-sustituto-pino-20250827-509368.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/villarreal/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nueva-lesion-gravedad-villarreal-120982037.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/villarreal/2025/08/21/villarreal-ficha-renato-veiga.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/yeremy-pino-negociacion-fichaje-crystal-palace-50-millones_300742047.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/villarreal/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/fernando-roig-se-lia-venta-yeremy-pino-newcastle_300743842.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/villarreal/2025/08/23/villarreal-girona-submarino-hunde-los-michel-20250824-509073.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/villarreal/2025/08/27/villarreal-negocia-sevilla-vargas-sustituto-pino-20250827-509368.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/villarreal-operaciones-cierre-mercado-fichajes_300743448.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/yeremy-pino-negociacion-fichaje-crystal-palace-50-millones_300742047.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nombres-propios-mercado-villarreal-yeremy-pino-dovbyk-arnau-tenas-tani-oluwaseyi-denis-diego-conde-120967480.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nueva-lesion-gravedad-villarreal-120982037.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/arnau-tenas-llega-a-vila-real-para-cerrar-su-fichaje-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/26/renato-veiga-central-habla-siete-idiomas-me-gusta-me-pregunten.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/fernando-roig-se-lia-venta-yeremy-pino-newcastle_300743842.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-Atletico-de-Madrid-para-2025-2026-es-uruguayo-20250318-8948.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/28/villarreal-operaciones-cierre-mercado-fichajes_300743448.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_atletico-de-madrid-pierde-a-diez-jugadores-en-este-paron-de-selecciones-20250317-8945.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/villarreal-cf/2025/08/27/nombres-propios-mercado-villarreal-yeremy-pino-dovbyk-arnau-tenas-tani-oluwaseyi-denis-diego-conde-120967480.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/la-convocatoria-de-la-seleccion-argentina-con-seis-jugadores-del-atletico-de-madrid-20250317-8943.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/arnau-tenas-llega-a-vila-real-para-cerrar-su-fichaje-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_metropolitano-puede-dejar-de-ser-sede-para-el-mundial-y-entrar-el-nou-mestalla-20250318-8946.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/villarreal-girona-ceramica-quiere-sacar-musculo.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.soycolchonero.es/noticias-del-atletico-de-madrid/las-posiciones-que-reforzara-el-atletico-de-madrid-este-verano-20250321-8957.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el primer-fichaje-del-Atletico-de-Madrid-para-2025-2026-es-uruguayo-20250318-8948.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.fcbarcelonanoticias.com/fichajes/bombazo-newcastle-quiere-fichar-fermin-lopez_314471_102.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_atletico-de-madrid-pierde-a-diez-jugadores-en-este-paron-de-selecciones-20250317-8945.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/barcelona/sorteo-champions-league-horario-donde-ver-sorteo-fase-liga-liga-campeones-20250828-509494.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/barcelona/sorteo-champions-league-horario-donde-ver-sorteo-fase-liga-liga-campeones-20250828-509494.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/22/boye-garra-goles-alaves-coudet.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/la-convocatoria-de-la-seleccion-argentina-con-seis-jugadores-del-atletico-de-madrid-20250317-8943.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/el_metropolitano-puede-dejar-de-ser-sede-para-el-mundial-y-entrar-el-nou-mestalla-20250318-8946.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/alaves/2025/08/18/lucas-boye-objetivo-alaves.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.soycolchonero.es/noticias-del-atletico-de-madrid/las-posiciones-que-reforzara-el-atletico-de-madrid-este-verano-20250321-8957.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-hora-ver-hoy-partido-television-online_300733341.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/22/boye-garra-goles-alaves-coudet.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/alaves/2025/08/16/alaves-levante-hora-ver-hoy-partido-television-online_300733341.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/betis/fichaje-talento-contrastado-atletico-20250828-509608.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/alaves/2025/08/18/lucas-boye-objetivo-alaves.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/real-betis/20250829/convocatoria-david-gordo-para-sub-espana-gonzalo-garcia-mosquera-angel-ortiz-pablo-garcia-20250829-509697.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/23/coudet-hemos-jugado-nuestra-intensidad-habitual.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/betis/2025/08/29/betis-confirma-fichaje-perla-atletica-gran-club-20250829-509758.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/betis/fichaje-talento-contrastado-atletico-20250828-509608.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/betis/2025/08/27/gol-bartra-0-1-celta-vigo-1-1-betis-video.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/21/coudet-he-querido-boye-veces-me-gustan-caracteristicas.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/betis/2025/08/29/ruibal-descartado-ante-el-athletic-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/alaves/2025/08/19/pablo-ibanez-diria-pretemporada-bestia-he-vivido.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/cronica/2025/08/27/celta-betis-anulan-balaidos.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/betis/2025/08/27/gol-bartra-0-1-celta-vigo-1-1-betis-video.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/celta-de-vigo/20250829/problemas-pegada-arranque.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/betis/2025/08/29/betis-confirma-fichaje-perla-atletica-gran-club-20250829-509758.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/celta/2025/08/29/giraldez-sabemos-dificil-creo-preparados-asumir-retos.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/real-betis/20250829/convocatoria-david-gordo-para-sub-espana-gonzalo-garcia-mosquera-angel-ortiz-pablo-garcia-20250829-509697.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/celta/2025/08/27/celta-betis-europa-league-cambia-agenda-previa-analisis-pronostico-prediccion.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/celta-de-vigo/20250829/problemas-pegada-arranque.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/celta/2025/08/29/rivales-celta-europa-league-partidos-juega-equipo-claudio-giraldez.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/betis/2025/08/29/ruibal-descartado-ante-el-athletic-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/celta/2025/08/27/giraldez-jugadores-vez-estan-preparados-disputar-partidos-semana.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/cronica/2025/08/27/celta-betis-anulan-balaidos.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/elche/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/celta/2025/08/29/giraldez-sabemos-dificil-creo-preparados-asumir-retos.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/cronica/2025/08/23/elche-ole.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/celta/2025/08/27/celta-betis-europa-league-cambia-agenda-previa-analisis-pronostico-prediccion.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-competencia-para-cerrar-incorporacion-tyrell-malacia-20250828-509561.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-competencia-para-cerrar-incorporacion-tyrell-malacia-20250828-509561.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-fichaje-del-elche-que-brilla-20250821-508728.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/celta/2025/08/27/giraldez-jugadores-vez-estan-preparados-disputar-partidos-semana.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-eder-sarabia-lia-por-completo-elche-20250824-509032.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/elche/2025/08/28/elche-levante-derbi-sirve-primera-previa-analisis-pronostico-prediccion.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/elche-levante-directo-partido-laliga-vivo-online-20250829-509738.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/cronica/2025/08/23/elche-ole.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/elche-cf/2025/08/18/alineacion-confirmada-elche-betis-laliga_300736454.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/celta/2025/08/29/rivales-celta-europa-league-partidos-juega-equipo-claudio-giraldez.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/el-elche-levante-en-directo-laliga-ea-sports-hoy-en-vivo-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-fichaje-del-elche-que-brilla-20250821-508728.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/elche-ole.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-eder-sarabia-lia-por-completo-elche-20250824-509032.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/27/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/elche-levante-directo-partido-laliga-vivo-online-20250829-509738.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/2025/08/23/elche-cholo.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/elche-cf/2025/08/18/alineacion-confirmada-elche-betis-laliga_300736454.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/getafe/2025/08/29/marcelino-pebordalas-cum-laude.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/el-elche-levante-en-directo-laliga-ea-sports-hoy-en-vivo-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/primera-division/cronica/2025/08/25/sevilla-getafe-kilometro-cero-sanchez-pizjuan-previa-analisis-pronostico-prediccion.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/elche-ole.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/valencia-getafe-directo-partido-laliga-s-20250829-509748.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/getafe/2025/08/29/marcelino-pebordalas-cum-laude.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/girona/2025/08/23/david-lopez-golpe-realidad-ponernos-nuestro-sitio.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/23/elche-cholo.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/22/alex-moreno-una-alegria-girona-20250822-508869.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/valencia-getafe-directo-partido-laliga-s-20250829-509748.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/27/alex-moreno-muy-cerca-20250827-509424.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/primera-division/cronica/2025/08/25/sevilla-getafe-kilometro-cero-sanchez-pizjuan-previa-analisis-pronostico-prediccion.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/29/alineaciones-girona-sevilla-alineacion-probable-girona-sevilla-jornada-laliga-20250829-509751.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/2025/08/27/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/24/michel-confia-joven-ucraniano-20250824-509018.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/girona/2025/08/23/david-lopez-golpe-realidad-ponernos-nuestro-sitio.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/29/michel-espera-poder-cerrar-fichaje-20250829-509698.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/22/alex-moreno-una-alegria-girona-20250822-508869.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/girona/2025/08/21/alex-moreno-vuelve-laliga-20250821-508753.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/27/alex-moreno-muy-cerca-20250827-509424.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/espanyol/2025/08/18/antoniu-roca-renueva-espanyol-2028.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/29/alineaciones-girona-sevilla-alineacion-probable-girona-sevilla-jornada-laliga-20250829-509751.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/espanyol/2025/08/24/real-sociedad-espanyol-partido-historico-previa-analisis-pronostico-prediccion.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/24/michel-confia-joven-ucraniano-20250824-509018.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/espanyol/2025/08/17/espanyol-saca-pecho-luchamos-ciudad-club-facil.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/29/michel-espera-poder-cerrar-fichaje-20250829-509698.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/espanyol/2025/08/18/pasion-jj-watt-espanyol-accionista-leyenda-nfl-comparte-cerveza-aficion.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/girona/2025/08/21/alex-moreno-vuelve-laliga-20250821-508753.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rcd-espanyol/20250823/charles-pickel-cerrado-20250827-509442.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/espanyol/2025/08/18/antoniu-roca-renueva-espanyol-2028.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/espanyol/acuerdo-total-por-fichaje-clemens-riedel-20250825-509442.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/espanyol/2025/08/24/real-sociedad-espanyol-partido-historico-previa-analisis-pronostico-prediccion.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/real-sociedad-espanyol-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250824-509023.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/espanyol/acuerdo-total-por-fichaje-clemens-riedel-20250825-509442.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/real-sociedad-espanyol-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250824-509023.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rcd-espanyol/20250823/charles-pickel-cerrado-20250827-509442.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.mundodeportivo.com/futbol/rcd-espanyol/20250818/1002521853/pablo-ramon-marcha-cedido-racing-santander.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/espanyol/2025/08/17/espanyol-saca-pecho-luchamos-ciudad-club-facil.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/mallorca/2025/08/23/mallorca-celta-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/espanyol/2025/08/18/pasion-jj-watt-espanyol-accionista-leyenda-nfl-comparte-cerveza-aficion.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/mallorca-celta-vigo-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508934.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/mallorca/kacper-urbanski-vez-cerca-mallorca.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250824/1002520692/pickel-nuevo-jugador-espanyol-20250824.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/28/situan-mallorca-delantero-sheraldo-becker-121015110.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.mundodeportivo.com/futbol/rcd-espanyol/20250818/1002521853/pablo-ramon-marcha-cedido-racing-santander.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/30/primera-gran-salida-nivel-rcd-mallorca-real-madrid-121062991.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/mallorca-celta-vigo-horario-canal-donde-ver-hoy-online-partido-jornada-laliga-20250823-508934.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-valencia-firmar-levante-ud-121029209.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/mallorca/2025/08/23/mallorca-celta-horario-ver-hoy-tv-canal-partido-laliga-ea-sports.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/28/levante-ud-carlos-espi-seleccion-espanola-121029209.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/mallorca/kacper-urbanski-vez-cerca-mallorca.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/28/mathew-ryan-valencia-firmar-levante-ud-121029209.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/28/situan-mallorca-delantero-sheraldo-becker-121015110.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/06/03/ainhoa-bascunan-renueva-2027-118182906.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/28/levante-ud-carlos-espi-seleccion-espanola-121029209.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rcd-mallorca/2025/08/30/primera-gran-salida-nivel-rcd-mallorca-real-madrid-121062991.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/28/mathew-ryan-valencia-firmar-levante-ud-121029209.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldiariomontanes.es/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.levante-emv.com/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/mathew-ryan-valencia-firmar-levante-ud-121029209.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-laliga-20250823-508252.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/levante/levante-barcelona-explota-tras-remontada-20250824-509000.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/06/03/ainhoa-bascunan-renueva-2027-118182906.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/22/posibles-alineaciones-levante-ud-fc-barcelona-jornada-2-laliga_300738300.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/levante/levante-barcelona-explota-tras-remontada-20250824-509000.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/28/posibles-alineaciones-elche-levante-jornada-3-laliga-ea-sports_300744591.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/primera-division/levante-barcelona-horario-canal-donde-ver-hoy-online-partido-laliga-20250823-508252.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.levante-emv.com/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/mathew-ryan-nuevo-portero-120966994.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/22/posibles-alineaciones-levante-ud-fc-barcelona-jornada-2-laliga_300738300.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/21/oficial-iker-losada-nuevo-jugador-levante-ud_300742053.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/28/posibles-alineaciones-elche-levante-jornada-3-laliga-ea-sports_300744591.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/carlos-alvarez-situacion-posible-venta-ingreso-extra-sevilla-levante_300742144.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/26/mathew-ryan-nuevo-portero-120966994.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.lasprovincias.es/levanteud/levante-cede-victor-fernandez-20250829135923-nt.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/21/oficial-iker-losada-nuevo-jugador-levante-ud_300742053.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/rayo/2025/08/25/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/victor-fernandez-hijo-nuevo-jugador-valencia-cf-procedente-levante-ud_300744224.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-confirma-delicada-situacion-luiz-felipe-20250821-508631.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/29/benfica-insiste-levante-aferra-clausula-carlos-alvarez-estamos-preparados-cualquier-escenario_300744748.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/rayo-vallecano-alerta-20250829-509757.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.lasprovincias.es/levanteud/levante-cede-victor-fernandez-20250829135923-nt.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.estadiodeportivo.com/futbol/rayo-vallecano/fichaje-luis-maximiano-20250825-509197.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/levante-ud/2025/08/25/levante-ud-interes-benfica-fichaje-suculenta-oferta_300741577.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.elcomercio.es/real-oviedo/real-oviedo-veljko-paunovic-ambiente-carlos-tartiere-espectacular-20250825002431-nt.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/rayo/2025/08/25/alineaciones-probables-chollos-jornada-3-laliga.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/oviedo-real-sociedad-tv-a-que-hora-es-donde-verlo-en-tv-online-hoy-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/rayo-vallecano-alerta-20250829-509757.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/oviedo-real-sociedad-estreno-esperar-previa-analisis-pronostico-prediccion.html#ancla_comentarios
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.estadiodeportivo.com/futbol/rayo-vallecano/fichaje-luis-maximiano-20250825-509197.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://www.marca.com/futbol/oviedo/2025/08/23/oviedo-real-madrid-dia-grande-tartiere-durisima-travesia-desierto.html
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.eldesmarque.com/futbol/rayo-vallecano/inigo-perez-confirma-delicada-situacion-luiz-felipe-20250821-508631.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | 🌐 Scraping content from URL: https://as.com/futbol/primera/real-madrid-mallorca-tv-horario-y-como-ver-en-estados-unidos-la-jornada-3-de-laliga-ea-sports-n/
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.elcomercio.es/real-oviedo/real-oviedo-veljko-paunovic-ambiente-carlos-tartiere-espectacular-20250825002431-nt.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://www.marca.com/futbol/oviedo/2025/08/23/oviedo-real-madrid-dia-grande-tartiere-durisima-travesia-desierto.html — empty text scraped.
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/oviedo-real-sociedad-tv-a-que-hora-es-donde-verlo-en-tv-online-hoy-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/oviedo-real-sociedad-estreno-esperar-previa-analisis-pronostico-prediccion.html#ancla_comentarios — empty text scraped.
+2025-09-02 | ETL_get_article_contents | WARNING  | ⚠️ Skipping https://as.com/futbol/primera/real-madrid-mallorca-tv-horario-y-como-ver-en-estados-unidos-la-jornada-3-de-laliga-ea-sports-n/ — empty text scraped.
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | ENRICHING WITH LLM (5 threads in parallel)
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://www.elcorreo.com/
+2025-09-02 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://as.com/futbol/primera/oficial-antony-vuelve-al-betis-n/
+2025-09-02 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://www.fcbarcelonanoticias.com/fichajes/bombazo-newcastle-quiere-fichar-fermin-lopez_314471_102.html
+2025-09-02 | ETL_get_article_contents | INFO     | Summarising article via LLM: https://www.eldiariomontanes.es/
+2025-09-02 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-09-02 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-09-02 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-09-02 | ETL_get_article_contents | INFO     | 🔁 Trying Gemini (Google) model...
+2025-09-02 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-09-02 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-09-02 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-09-02 | ETL_get_article_contents | INFO     | Gemini returned a valid response.
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | WRITING TO DATABASE
+2025-09-02 | ETL_get_article_contents | INFO     | ============================================================
+2025-09-02 | ETL_get_article_contents | INFO     | ✅ Successfully inserted 4 enriched articles into 'article_contents'
