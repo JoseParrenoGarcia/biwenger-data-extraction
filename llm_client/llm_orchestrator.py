@@ -1,5 +1,6 @@
 from llm_client.openai_utils import call_openai_chat_model
 from llm_client.googleai_utils import call_gemini_chat_model
+from llm_client.local_ollama_utils import call_local_ollama_chat_model, load_local_ollama_secrets  # <-- add this
 
 import os
 import toml
@@ -27,22 +28,28 @@ def call_llm(
         user_prompt: str,
         logger: Optional[logging.Logger] = None,
         temperature: float = 0.3,
-        model_priority: list[str] = ["gemini", "openai"]
+        model_priority: list[str] = ["gemini", "openai"],
+        # NEW (optional) overrides for the local vendor:
+        local_model: Optional[str] = None,
+        local_base_url: Optional[str] = None,
 ) -> str:
     """
     Central orchestrator for request–response LLM tasks.
-    Tries a prioritized list of LLM providers (e.g. Gemini, then OpenAI).
+    Tries a prioritized list of LLM providers (e.g. Gemini, then OpenAI, optionally Local).
 
     Args:
         system_prompt (str): System instructions for the model's behavior.
         user_prompt (str): Actual input or question for the LLM.
         logger (Optional[logging.Logger]): Optional logger instance.
         temperature (float): Sampling temperature.
-        model_priority (list[str]): List of LLM providers in order of preference ("gemini", "openai").
+        model_priority (list[str]): List of LLM providers in order of preference ("gemini", "openai", "local").
+        local_model (Optional[str]): If vendor == "local", use this Ollama model; falls back to secrets/local.toml.
+        local_base_url (Optional[str]): If vendor == "local", override base URL; falls back to secrets/local.toml.
 
     Returns:
         str: Model response text (stripped), or empty string if all fail.
     """
+
     if logger is None:
         logger = logging.getLogger(__name__)
 
@@ -89,6 +96,27 @@ def call_llm(
                 else:
                     logger.warning("⚠️ OpenAI returned an empty response.")
 
+            elif vendor == "local":
+                logger.info("🔁 Trying LOCAL (Ollama) model...")
+                # Pull defaults from local.toml; allow explicit overrides via function params
+                local_cfg = load_local_ollama_secrets().get("local", {})
+                chosen_model = local_model or local_cfg.get("model", "llama3.1")
+                chosen_base_url = local_base_url or local_cfg.get("base_url", "http://localhost:11434/v1")
+
+                response = call_local_ollama_chat_model(
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    model=chosen_model,
+                    temperature=temperature,
+                    logger=logger,
+                    base_url=chosen_base_url,
+                )
+                if response:
+                    logger.info("LOCAL (Ollama) returned a valid response.")
+                    return response
+                else:
+                    logger.warning("⚠️ LOCAL (Ollama) returned an empty response.")
+
             else:
                 logger.warning(f"❌ Unknown LLM vendor: {vendor}")
 
@@ -111,13 +139,26 @@ if __name__ == "__main__":
     2. 'Top 10 LaLiga stadiums ranked by attendance.'
     3. 'Barcelona to rest several starters ahead of Champions League.'
 
-    Which of these are relevant for a fantasy football manager? Return only the useful headlines.
+    Which of these are relevant for a fantasy football manager where we are interested in possible lineups? Return only the useful headlines.
     """
 
     response = call_llm(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
-        logger=logger
+        logger=logger,
+        temperature=0.3,
+        model_priority=["local", "gemini", "openai"],  # <-- now includes local
+        local_model="gemma3:27b",  # or "gpt-oss:20b", "gemma3:4b", etc.
+    )
+
+    print("\n🤖 Unified LLM Response:\n")
+    print(response)
+
+    print("------------------------------------------------")
+    response = call_llm(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        logger=logger,
     )
 
     print("\n🤖 Unified LLM Response:\n")
