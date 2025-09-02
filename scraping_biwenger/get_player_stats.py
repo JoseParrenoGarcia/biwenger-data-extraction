@@ -30,7 +30,7 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
     logger.info("✅ Credentials loaded successfully.")
 
     # 2) Start browser
-    pw, browser, context, page = start_browser_accept_cookies(headless=False)
+    pw, browser, context, page = start_browser_accept_cookies(headless=True)
     logger.info("✅ Logged in")
 
     # 3) Login
@@ -72,10 +72,12 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
 
         # --- Value DF (right panel, 'Value' tab) ---
         value_history_df = pd.DataFrame(value_history_rows)
-        print(value_history_df)
+        # print(value_history_df)
 
         # 8) Save to Supabase
         supabase = get_supabase_client()
+
+        # Upsert players first (to get their IDs)
         table_name = "biwenger_player_stats"
 
         if not check_if_table_exists(supabase, table_name):
@@ -89,6 +91,7 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             insert_rows_into_table(supabase, table_name=table_name, rows=player_detail_df.to_dict(orient="records"))
             logger.info(f"✅ Inserted {len(player_detail_rows)} rows into '{table_name}'")
 
+        # Upsert matches
         matches_table = "biwenger_player_matches"
         if not check_if_table_exists(supabase, matches_table):
             logger.error(f"❌ Table '{matches_table}' does not exist in Supabase.")
@@ -97,6 +100,17 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             logger.info(f"🗑️ Cleared existing rows from '{matches_table}'")
             insert_rows_into_table(supabase, table_name=matches_table, rows=matches_df.to_dict(orient="records"))
             logger.info(f"✅ Inserted {len(matches_df)} rows into '{matches_table}'")
+
+        # Upsert value history next (to get their IDs)
+        value_table = "biwenger_player_value"
+        if not check_if_table_exists(supabase, value_table):
+            logger.error(f"❌ Table '{value_table}' does not exist in Supabase.")
+        else:
+            supabase.table(value_table).delete().neq("id", 0).execute()
+            logger.info(f"🗑️ Cleared existing rows from '{value_table}'")
+            insert_rows_into_table(supabase, table_name=value_table, rows=value_history_df.to_dict(orient="records"))
+            logger.info(f"✅ Inserted {len(value_history_df)} rows into '{value_table}'")
+
 
     finally:
         try:

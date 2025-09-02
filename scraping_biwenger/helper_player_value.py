@@ -52,49 +52,47 @@ def _read_price_csv_to_df(download: Download) -> pd.DataFrame:
     """
     Convert the downloaded CSV file to a normalized DataFrame with:
       ['date', 'market_value_eur']
-    Tries common delimiters and currency formats.
+    Handles Biwenger's 'Date;' header and timezone strings.
     """
     path = download.path()
-    # Pandas sniffing: try ',', then ';', then '\t'
-    for sep in (",", ";", "\t"):
+
+    # 1) Read with BOM handling and delimiter sniff
+    df = None
+    for sep in (";", ",", "\t"):
         try:
-            df = pd.read_csv(path, sep=sep)
+            df = pd.read_csv(path, sep=sep, engine="python", encoding="utf-8-sig")
             if df.shape[1] >= 2:
                 break
         except Exception:
             continue
+    if df is None or df.shape[1] < 2:
+        return pd.DataFrame(columns=["date", "market_value_eur"])
 
-    # Heuristic: find the most likely date & value columns.
-    cols = [c.lower().strip() for c in df.columns]
-    df.columns = cols
+    # 2) Normalize column names (e.g., 'Date' and 'Unnamed: 1')
+    df.columns = [str(c).lower().strip() for c in df.columns]
+    date_col = next((c for c in df.columns if "date" in c), df.columns[0])
+    # value header is usually missing → ends up as 'unnamed: 1'
+    val_col = next((c for c in df.columns if any(k in c for k in ("value","precio","price","valor"))),
+                   df.columns[-1])
 
-    date_col = next((c for c in cols if "date" in c or "fecha" in c), cols[0])
-    val_col = next(
-        (c for c in cols if any(k in c for k in ("value", "precio", "price", "valor"))),
-        cols[1] if len(cols) > 1 else cols[0],
-    )
+    # 3) Clean dates: drop parenthetical TZ name and 'GMT', then parse with utc=True
+    import re
+    def _clean_date(s):
+        if pd.isna(s): return None
+        s = str(s)
+        s = re.sub(r"\s*\([^)]*\)", "", s)   # remove " (Central European Summer Time)"
+        s = s.replace("GMT", "").strip()     # "GMT+0200" → "+0200"
+        return s
 
-    out = df[[date_col, val_col]].copy()
+    dt = pd.to_datetime(df[date_col].map(_clean_date), errors="coerce", utc=True)
 
-    # Parse dates
-    out["date"] = pd.to_datetime(out[date_col], errors="coerce").dt.date
+    # 4) Numeric value
+    vals = pd.to_numeric(df[val_col], errors="coerce")
 
-    # Normalize euros like "€1,990,000" or "1.990.000 €"
-    def _to_number(x):
-        if pd.isna(x):
-            return None
-        s = str(x)
-        s = s.replace("€", "").replace(" ", "")
-        # Handle Spanish thousands '.' and decimal ',' if ever present
-        s = s.replace(".", "").replace(",", "")
-        try:
-            return float(s)
-        except Exception:
-            return None
-
-    out["market_value_eur"] = out[val_col].map(_to_number)
+    out = pd.DataFrame({"date": dt.dt.date, "market_value_eur": vals})
     out = out.dropna(subset=["date", "market_value_eur"]).reset_index(drop=True)
     return out[["date", "market_value_eur"]]
+
 
 def scrape_value_history_for_player(
     page: Page,
@@ -107,27 +105,24 @@ def scrape_value_history_for_player(
     Enriches rows with player context if provided.
     """
     ok = open_value_tab(page, timeout=timeout)
-    page.pause()
-    # if not ok:
-    #     if logger: logger.warning("Could not open Value tab.")
-    #     return pd.DataFrame(columns=["date", "market_value_eur"])
+    if not ok:
+        if logger: logger.warning("Could not open Value tab.")
+        return pd.DataFrame(columns=["date", "market_value_eur"])
 
-    # try:
-    #     dl = click_download_csv(page, timeout=timeout)
-    # except PWTimeout:
-    #     if logger: logger.warning("CSV download did not start in time.")
-    #     return pd.DataFrame(columns=["date", "market_value_eur"])
-    #
-    # df = _read_price_csv_to_df(dl)
-    #
-    # # Add optional context (player_name, team, slug, etc.)
-    # if player_ctx:
-    #     for k, v in player_ctx.items():
-    #         df[k] = v
-    #
-    # if logger:
-    #     logger.info(f"💾 Value history rows: {len(df)} (e.g., {df.head(1).to_dict(orient='records')})")
+    try:
+        dl = click_download_csv(page, timeout=timeout)
+    except PWTimeout:
+        if logger: logger.warning("CSV download did not start in time.")
+        return pd.DataFrame(columns=["date", "market_value_eur"])
 
-    df = pd.DataFrame(columns=["date", "market_value_eur"])
+    df = _read_price_csv_to_df(dl)
+
+    # Add optional context (player_name, team, slug, etc.)
+    if player_ctx:
+        for k, v in player_ctx.items():
+            df[k] = v
+
+    if logger:
+        logger.info(f"💾 Value history rows: {len(df)} (e.g., {df.head(1).to_dict(orient='records')})")
 
     return df
