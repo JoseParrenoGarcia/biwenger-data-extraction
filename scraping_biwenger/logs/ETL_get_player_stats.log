@@ -11,19 +11,19 @@
 2025-09-02 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Mbappé
 2025-09-02 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Mbappé: {'points': 37, 'value': 23280000, 'matches_played': 3, 'average': 12.3}
 2025-09-02 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Mbappé: 3 rows
-2025-09-02 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366 (e.g., [{'date': datetime.date(2024, 9, 2), 'market_value_eur': 23550000, 'player_name': 'Mbappé', 'team': 'Real Madrid', 'slug': 'mbappe'}])
+2025-09-02 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366 (e.g., [{'date': '2024-09-02', 'market_value_eur': 23550000, 'player_name': 'Mbappé', 'team': 'Real Madrid', 'slug': 'mbappe'}])
 2025-09-02 | ETL_get_player_stats | INFO     | 📈 Value history captured for Mbappé: 366 rows
 2025-09-02 | ETL_get_player_stats | INFO     | 🔎 [2/9] Opening player: Pépé (nicolas-pepe)
 2025-09-02 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pépé
 2025-09-02 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Pépé: {'points': 34, 'value': 8050000, 'matches_played': 3, 'average': 11.3}
 2025-09-02 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Pépé: 3 rows
-2025-09-02 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366 (e.g., [{'date': datetime.date(2024, 9, 2), 'market_value_eur': 3390000, 'player_name': 'Pépé', 'team': 'Villarreal', 'slug': 'nicolas-pepe'}])
+2025-09-02 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366 (e.g., [{'date': '2024-09-02', 'market_value_eur': 3390000, 'player_name': 'Pépé', 'team': 'Villarreal', 'slug': 'nicolas-pepe'}])
 2025-09-02 | ETL_get_player_stats | INFO     | 📈 Value history captured for Pépé: 366 rows
 2025-09-02 | ETL_get_player_stats | INFO     | 🔎 [3/9] Opening player: Yamal (lamine-yamal)
 2025-09-02 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Yamal
 2025-09-02 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Yamal: {'points': 30, 'value': 21710000, 'matches_played': 3, 'average': 10.0}
 2025-09-02 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Yamal: 3 rows
-2025-09-02 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366 (e.g., [{'date': datetime.date(2024, 9, 2), 'market_value_eur': 19060000, 'player_name': 'Yamal', 'team': 'Barcelona', 'slug': 'lamine-yamal'}])
+2025-09-02 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366 (e.g., [{'date': '2024-09-02', 'market_value_eur': 19060000, 'player_name': 'Yamal', 'team': 'Barcelona', 'slug': 'lamine-yamal'}])
 2025-09-02 | ETL_get_player_stats | INFO     | 📈 Value history captured for Yamal: 366 rows
 2025-09-02 | ETL_get_player_stats | INFO     | ⛔ Reached max_players=3. Stopping early.
 2025-09-02 | ETL_get_player_stats | INFO     | 🏁 Done. Players processed: 3. Detail rows: 3, Match rows: 9
@@ -32,3 +32,4 @@
 2025-09-02 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_matches'
 2025-09-02 | ETL_get_player_stats | INFO     | ✅ Inserted 9 rows into 'biwenger_player_matches'
 2025-09-02 | ETL_get_player_stats | INFO     | 🗑️ Cleared existing rows from 'biwenger_player_value'
+2025-09-02 | ETL_get_player_stats | INFO     | ✅ Inserted 1098 rows into 'biwenger_player_value'

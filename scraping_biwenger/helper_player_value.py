@@ -89,7 +89,11 @@ def _read_price_csv_to_df(download: Download) -> pd.DataFrame:
     # 4) Numeric value
     vals = pd.to_numeric(df[val_col], errors="coerce")
 
-    out = pd.DataFrame({"date": dt.dt.date, "market_value_eur": vals})
+    out = pd.DataFrame({
+        "date": dt.dt.strftime("%Y-%m-%d"),  # string, JSON-safe
+        "market_value_eur": pd.to_numeric(vals, errors="coerce")
+    })
+
     out = out.dropna(subset=["date", "market_value_eur"]).reset_index(drop=True)
     return out[["date", "market_value_eur"]]
 
