@@ -21,7 +21,7 @@
 2025-09-02 | ETL_get_injury_news  | INFO     | Building system and user prompts for LLM
 2025-09-02 | ETL_get_injury_news  | INFO     | Calling LLM orchestrator
 2025-09-02 | ETL_get_injury_news  | INFO     | 🔁 Trying LOCAL (Ollama) model...
-2025-09-02 | ETL_get_injury_news  | INFO     | 🔁 Calling local model via Ollama: model='gemma3:27b', base_url='http://localhost:11434/v1'
+2025-09-02 | ETL_get_injury_news  | INFO     | 🔁 Calling local model via Ollama: model='llama3.1:8b', base_url='http://localhost:11434/v1'
 2025-09-02 | ETL_get_injury_news  | INFO     | LOCAL (Ollama) returned a valid response.
 2025-09-02 | ETL_get_injury_news  | INFO     | ------------------------------
 2025-09-02 | ETL_get_injury_news  | INFO     | WRITING RESULTS BACK TO SUPABASE
@@ -43,11 +43,8 @@
 2025-09-02 | ETL_get_injury_news  | INFO     | Building system and user prompts for LLM
 2025-09-02 | ETL_get_injury_news  | INFO     | Calling LLM orchestrator
 2025-09-02 | ETL_get_injury_news  | INFO     | 🔁 Trying LOCAL (Ollama) model...
-2025-09-02 | ETL_get_injury_news  | INFO     | 🔁 Calling local model via Ollama: model='gemma3:27b', base_url='http://localhost:11434/v1'
-2025-09-02 | ETL_get_injury_news  | ERROR    | ❌ Local model call failed: Request timed out.
-2025-09-02 | ETL_get_injury_news  | WARNING  | ⚠️ LOCAL (Ollama) returned an empty response.
-2025-09-02 | ETL_get_injury_news  | INFO     | 🔁 Trying Gemini (Google) model...
-2025-09-02 | ETL_get_injury_news  | INFO     | Gemini returned a valid response.
+2025-09-02 | ETL_get_injury_news  | INFO     | 🔁 Calling local model via Ollama: model='llama3.1:8b', base_url='http://localhost:11434/v1'
+2025-09-02 | ETL_get_injury_news  | INFO     | LOCAL (Ollama) returned a valid response.
 2025-09-02 | ETL_get_injury_news  | INFO     | ------------------------------
 2025-09-02 | ETL_get_injury_news  | INFO     | WRITING RESULTS BACK TO SUPABASE
 2025-09-02 | ETL_get_injury_news  | INFO     | ------------------------------
