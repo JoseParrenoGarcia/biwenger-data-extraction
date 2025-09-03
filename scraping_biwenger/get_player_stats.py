@@ -131,5 +131,4 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_player_stats(max_pages=1, max_players_detail=3)
-    # ETL_get_player_stats()
+    ETL_get_player_stats()
