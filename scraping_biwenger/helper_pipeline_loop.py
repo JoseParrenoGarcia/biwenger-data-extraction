@@ -65,7 +65,7 @@ def scrape_all_players_detail(
             player_detail_rows.append(detail)
             processed += 1
             logger.info(f"✅ Stats scraped for {name}: "
-                        f"{ {k: detail.get(k) for k in ['points','value','matches_played','average']} }")
+                        f"{ {k: detail.get(k) for k in ['points','value','matches_played','average','market_purchases_pct','market_sales_pct']} }")
         except Exception as e:
             logger.exception(f"Failed scraping stats for '{name}': {e}")
 

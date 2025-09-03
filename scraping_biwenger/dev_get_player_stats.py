@@ -30,7 +30,7 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
     logger.info("✅ Credentials loaded successfully.")
 
     # 2) Start browser
-    pw, browser, context, page = start_browser_accept_cookies(headless=False)
+    pw, browser, context, page = start_browser_accept_cookies(headless=True)
     logger.info("✅ Logged in")
 
     # 3) Login
@@ -47,14 +47,14 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
 
         # 6) Extract all player names
         players_list = extract_all_player_names(logger=logger, page=page, max_pages=max_pages)
-        print(players_list)
+        # print(players_list)
 
         if not players_list:
             logger.warning("No players extracted; aborting search step.")
             return
 
         # 7) Extract details (stats) + per-match rows in the same pass
-        player_detail_rows, match_rows = scrape_all_players_detail(
+        player_detail_rows, match_rows, value_history_rows = scrape_all_players_detail(
             logger, page, players_list, max_players=max_players_detail, collect_matches=True
         )
 
@@ -70,8 +70,14 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
         keep_cols = ["season_label", "round_label", "match_date", "points", "best_xi", "events", "player_name", "team"]
         matches_df = matches_df[[c for c in keep_cols if c in matches_df.columns]].copy()
 
+        # --- Value DF (right panel, 'Value' tab) ---
+        value_history_df = pd.DataFrame(value_history_rows)
+        # print(value_history_df)
+
         # 8) Save to Supabase
         supabase = get_supabase_client()
+
+        # Upsert players first (to get their IDs)
         table_name = "biwenger_player_stats"
 
         if not check_if_table_exists(supabase, table_name):
@@ -85,6 +91,7 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             insert_rows_into_table(supabase, table_name=table_name, rows=player_detail_df.to_dict(orient="records"))
             logger.info(f"✅ Inserted {len(player_detail_rows)} rows into '{table_name}'")
 
+        # Upsert matches
         matches_table = "biwenger_player_matches"
         if not check_if_table_exists(supabase, matches_table):
             logger.error(f"❌ Table '{matches_table}' does not exist in Supabase.")
@@ -93,6 +100,17 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             logger.info(f"🗑️ Cleared existing rows from '{matches_table}'")
             insert_rows_into_table(supabase, table_name=matches_table, rows=matches_df.to_dict(orient="records"))
             logger.info(f"✅ Inserted {len(matches_df)} rows into '{matches_table}'")
+
+        # Upsert value history next (to get their IDs)
+        value_table = "biwenger_player_value"
+        if not check_if_table_exists(supabase, value_table):
+            logger.error(f"❌ Table '{value_table}' does not exist in Supabase.")
+        else:
+            supabase.table(value_table).delete().neq("id", 0).execute()
+            logger.info(f"🗑️ Cleared existing rows from '{value_table}'")
+            insert_rows_into_table(supabase, table_name=value_table, rows=value_history_df.to_dict(orient="records"))
+            logger.info(f"✅ Inserted {len(value_history_df)} rows into '{value_table}'")
+
 
     finally:
         try:
@@ -114,3 +132,4 @@ if __name__ == "__main__":
     pd.set_option('display.max_colwidth', None)
 
     ETL_get_player_stats(max_pages=1, max_players_detail=3)
+    # ETL_get_player_stats()

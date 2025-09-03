@@ -37,6 +37,18 @@ def _parse_money(text: str) -> Optional[int]:
     except Exception:
         return None
 
+def _parse_percent(text: str) -> Optional[float]:
+    """'23%' -> 23.0  | '3.5 %' -> 3.5"""
+    if not text:
+        return None
+    s = text.replace("\u2212", "-")
+    s = re.sub(r"[^\d\.\-]", "", s)
+    try:
+        return float(s) if s not in ("", "-", "--", ".") else None
+    except Exception:
+        return None
+
+
 # -----------------------------
 # Header fields
 # -----------------------------
@@ -193,6 +205,10 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
         "max_value": 0,
         "matches_played": 0,
         "average": 0.0,
+        # NEW: Market percentages
+        "market_purchases_pct": 0.0,
+        "market_sales_pct": 0.0,
+        "market_usage_pct": 0.0,
     }
 
     try:
@@ -204,50 +220,88 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
     try:
         pts = (
             page.locator("player-detail-stats .stat", has_text="Points")
-            .locator("div")
-            .first.inner_text()
-            .strip()
+            .locator("div").first.inner_text().strip()
         )
-        stats["points"] = _parse_int(pts)
+        stats["points"] = _parse_int(pts) or 0
     except Exception:
         pass
 
-    # Value
+    # Value (current, min, max)
     try:
         val = page.locator("player-detail-stats tr", has_text="Value").locator("td.tr").inner_text()
-        stats["value"] = _parse_money(val)
+        stats["value"] = _parse_money(val) or 0
+    except Exception:
+        pass
+    try:
+        vmin = page.locator("player-detail-stats tr", has_text=re.compile(r"\bMin\b", re.I)).locator("td.tr").inner_text()
+        stats["min_value"] = _parse_money(vmin) or 0
+    except Exception:
+        pass
+    try:
+        vmax = page.locator("player-detail-stats tr", has_text=re.compile(r"\bMax\b", re.I)).locator("td.tr").inner_text()
+        stats["max_value"] = _parse_money(vmax) or 0
     except Exception:
         pass
 
     # Matches Played
     try:
         mp = (
-            page.locator("player-detail-stats .stat", has_text="Matches")
-            .locator("div")
-            .first.inner_text()
-            .strip()
+            page.locator("player-detail-stats .stat", has_text="Matches played")
+            .locator("div").first.inner_text().strip()
         )
-        stats["matches_played"] = _parse_int(mp)
+        stats["matches_played"] = _parse_int(mp) or 0
     except Exception:
         pass
 
-    # Average
+    # Average (fallback to computed if missing)
     try:
         avg = (
-            page.locator("player-detail-stats .stat", has_text="Average")
-            .locator("div")
-            .first.inner_text()
-            .strip()
+            page.locator("player-detail-stats .stat", has_text=re.compile(r"\bAverage\b", re.I))
+            .locator("div").first.inner_text().strip()
         )
-        stats["average"] = float(avg.replace(",", "."))
+        parsed = _parse_float(avg)
+        if parsed is not None:
+            stats["average"] = parsed
+        elif stats["matches_played"] > 0:
+            stats["average"] = round(stats["points"] / stats["matches_played"], 1)
     except Exception:
-        # Fallback: compute average if possible, else keep 0.0
         if stats["matches_played"] > 0:
             stats["average"] = round(stats["points"] / stats["matches_played"], 1)
-        else:
-            stats["average"] = 0.0
+
+    # --- NEW: Market percentages (Purchases, Sales, Usage) ---
+    try:
+        # Prefer the data-section attributes (most stable).
+        ptxt = page.locator("player-detail-stats .stat[data-section='Purchases'] div").first.inner_text()
+        stxt = page.locator("player-detail-stats .stat[data-section='Sales'] div").first.inner_text()
+        utxt = page.locator("player-detail-stats .stat[data-section='Usage'] div").first.inner_text()
+
+        p = _parse_percent(ptxt); s = _parse_percent(stxt); u = _parse_percent(utxt)
+        if p is not None: stats["market_purchases_pct"] = p
+        if s is not None: stats["market_sales_pct"] = s
+        if u is not None: stats["market_usage_pct"] = u
+    except Exception:
+        # Fallbacks by label text in case attributes change
+        try:
+            ptxt = page.locator("player-detail-stats .stat", has_text=re.compile(r"\bPurchases\b", re.I)).locator("div").first.inner_text()
+            p = _parse_percent(ptxt)
+            if p is not None: stats["market_purchases_pct"] = p
+        except Exception:
+            pass
+        try:
+            stxt = page.locator("player-detail-stats .stat", has_text=re.compile(r"\bSales\b", re.I)).locator("div").first.inner_text()
+            s = _parse_percent(stxt)
+            if s is not None: stats["market_sales_pct"] = s
+        except Exception:
+            pass
+        try:
+            utxt = page.locator("player-detail-stats .stat", has_text=re.compile(r"\bUsage\b", re.I)).locator("div").first.inner_text()
+            u = _parse_percent(utxt)
+            if u is not None: stats["market_usage_pct"] = u
+        except Exception:
+            pass
 
     return stats
+
 
 # -----------------------------
 # Season label (minimal, optional)
