@@ -29,9 +29,6 @@ TEAM_NEWS_SOURCES = {
         "https://www.eldesmarque.com/futbol/athletic-club/",
     ],
     "Atletico Madrid": [
-        "https://www.soycolchonero.es",
-        "https://atletimania.com",
-        "https://estoesatleti.es",
         "https://www.marca.com/futbol/atletico.html?intcmp=MENUESCU&s_kw=atletico",
         "https://as.com/noticias/atletico-madrid/",
         "https://www.estadiodeportivo.com/futbol/atletico-madrid/",
@@ -64,7 +61,6 @@ TEAM_NEWS_SOURCES = {
         "https://www.marca.com/futbol/elche.html?intcmp=MENUESCU&s_kw=elche",
         "https://as.com/noticias/elche-cf/",
         "https://diariofranjiverde.com/category/elchecf/",
-        "https://teleelx.es/category/deportes/elche-cf/",
         "https://alicanteplaza.es/tag/elche-cf",
         "https://www.estadiodeportivo.com/futbol/elche/",
         "https://www.eldesmarque.com/futbol/elche-cf/",
