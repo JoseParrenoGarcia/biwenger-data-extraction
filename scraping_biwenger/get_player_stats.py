@@ -47,7 +47,7 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
 
         # 6) Extract all player names
         players_list = extract_all_player_names(logger=logger, page=page, max_pages=max_pages)
-        print(players_list)
+        # print(players_list)
 
         if not players_list:
             logger.warning("No players extracted; aborting search step.")
