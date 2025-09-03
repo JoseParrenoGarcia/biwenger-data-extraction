@@ -15,7 +15,7 @@
 2025-09-03 | ETL_get_relevant_articles | INFO     | Team 2/2: Real Madrid
 2025-09-03 | ETL_get_relevant_articles | INFO     | ------------------------------
 2025-09-03 | ETL_get_relevant_articles | INFO     | -> Scraping: https://www.marca.com/futbol/real-madrid.html?intcmp=MENUESCU&s_kw=realmadrid
-2025-09-03 | ETL_get_relevant_articles | INFO     | --> Found 390 unique links (was 429 before deduplication)
+2025-09-03 | ETL_get_relevant_articles | INFO     | --> Found 391 unique links (was 430 before deduplication)
 2025-09-03 | ETL_get_relevant_articles | INFO     | -> Scraping: https://as.com/noticias/real-madrid/?omnil=mod_esc
 2025-09-03 | ETL_get_relevant_articles | INFO     | --> Found 66 unique links (was 108 before deduplication)
 2025-09-03 | ETL_get_relevant_articles | INFO     | ------------------------------
@@ -25,6 +25,15 @@
 2025-09-03 | ETL_get_relevant_articles | INFO     | FILTERING OUT EXISTING URLS IN THE DATABASE FROM SCRAPED LINKS
 2025-09-03 | ETL_get_relevant_articles | INFO     | ============================================================
 2025-09-03 | ETL_get_relevant_articles | INFO     | ✅ Removed 0 duplicate URLs already in the database.
-2025-09-03 | ETL_get_relevant_articles | INFO     | 🆕 684 new URLs remain for LLM filtering.
+2025-09-03 | ETL_get_relevant_articles | INFO     | 🆕 685 new URLs remain for LLM filtering.
 2025-09-03 | ETL_get_relevant_articles | INFO     | ============================================================
-2025-09-03 | ETL_get_relevant_articles | INFO     | ✅ ETL pipeline completed successfully.
+2025-09-03 | ETL_get_relevant_articles | INFO     | STARTING URL FILTERING PROCESS
+2025-09-03 | ETL_get_relevant_articles | INFO     | ============================================================
+2025-09-03 | ETL_get_relevant_articles | INFO     | Ensuring input structure is valid...
+2025-09-03 | ETL_get_relevant_articles | INFO     | Launching parallel LLM filtering (5 threads max)...
+2025-09-03 | ETL_get_relevant_articles | INFO     | 🧠 Filtering links for Valencia with LLM
+2025-09-03 | ETL_get_relevant_articles | INFO     | 🧠 Filtering links for Real Madrid with LLM
+2025-09-03 | ETL_get_relevant_articles | INFO     | 🔁 Trying LOCAL (Ollama) model...
+2025-09-03 | ETL_get_relevant_articles | INFO     | 🔁 Trying LOCAL (Ollama) model...
+2025-09-03 | ETL_get_relevant_articles | INFO     | 🔁 Calling local model via Ollama: model='gpt-oss:latest', base_url='http://localhost:11434/v1'
+2025-09-03 | ETL_get_relevant_articles | INFO     | 🔁 Calling local model via Ollama: model='gpt-oss:latest', base_url='http://localhost:11434/v1'

@@ -112,25 +112,25 @@ def enrich_row_with_llm(row: dict, logger: logging.Logger) -> dict | None:
         article_title=row.get("title", "")
     )
 
-    # llm_response = call_llm(
-    #     system_prompt=system_prompt,
-    #     user_prompt=user_prompt,
-    #     model_priority=["gemini", "openai"],
-    #     logger=logger
-    # )
-
     llm_response = call_llm(
-        system_prompt,
-        user_prompt,
-        logger=logger,
-        temperature=0.3,
-        model_priority=["local", "gemini", "openai"],  # <-- now includes local
-<<<<<<< Updated upstream
-        local_model="gpt-oss:latest",  # or "gpt-oss:latest", "gemma3:4b", etc.
-=======
-        local_model="gemma3:27b",  # or "gpt-oss:20b", "gemma3:4b", etc.
->>>>>>> Stashed changes
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        model_priority=["gemini", "openai"],
+        logger=logger
     )
+
+    #     llm_response = call_llm(
+    #         system_prompt,
+    #         user_prompt,
+    #         logger=logger,
+    #         temperature=0.3,
+    #         model_priority=["local", "gemini", "openai"],  # <-- now includes local
+    # <<<<<<< Updated upstream
+    #         local_model="gpt-oss:latest",  # or "gpt-oss:latest", "gemma3:4b", etc.
+    # =======
+    #         local_model="gemma3:27b",  # or "gpt-oss:20b", "gemma3:4b", etc.
+    # >>>>>>> Stashed changes
+    #     )
 
     try:
         clean_json_str = extract_code_block(llm_response)
