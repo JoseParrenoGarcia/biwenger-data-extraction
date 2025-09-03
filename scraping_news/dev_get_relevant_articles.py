@@ -32,7 +32,7 @@ def _validate_scraped_links_structure(data: dict) -> None:
             for link in links:
                 assert isinstance(link, str), f"Each link must be a string. Found: {type(link)}"
 
-def get_existing_article_urls(logger: logging.Logger) -> set:
+def get_existing_article_urls(logger: logging.Logger, table_name: str = "article_urls") -> set:
     """
     Fetches (team, url) pairs from article_urls table.
 
@@ -41,7 +41,6 @@ def get_existing_article_urls(logger: logging.Logger) -> set:
     """
 
     supabase = get_supabase_client()
-    table_name = "article_urls"
 
     if not check_if_table_exists(supabase, table_name):
         logger.warning(f"⚠️ Table '{table_name}' does not exist.")
@@ -186,7 +185,6 @@ def filter_out_existing_urls(
 
 def filter_links_with_llm(
     scraped_links_dict: Dict[str, Dict[str, List[str]]],
-    model_priority: List[str] = ["openai", "gemini"],
     logger: Optional[logging.Logger] = None
 ) -> Dict[str, Dict[str, List[str]]]:
     """
@@ -211,11 +209,19 @@ def filter_links_with_llm(
         system_prompt, user_prompt = prompt_url_relevance_filter(team=team, team_links_dict=team_links_dict)
 
         try:
+            # llm_response = call_llm(
+            #     system_prompt=system_prompt,
+            #     user_prompt=user_prompt,
+            #     model_priority=model_priority,
+            #     logger=logger,
+            # )
             llm_response = call_llm(
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                model_priority=model_priority,
+                system_prompt,
+                user_prompt,
                 logger=logger,
+                temperature=0.3,
+                model_priority=["local", "gemini", "openai"],  # <-- now includes local
+                local_model="gpt-oss:latest",  # or "gpt-oss:20b", "gemma3:4b", etc.
             )
 
             if not llm_response:
@@ -363,7 +369,7 @@ def ETL_get_relevant_articles(test=False):
     )
 
     # Step 2: Filter out existing URLs from DB
-    existing_team_url_set = get_existing_article_urls(logger)
+    existing_team_url_set = get_existing_article_urls(logger=logger, table_name="article_urls_dev")
     scraped_links_dict_filtered = filter_out_existing_urls(
         scraped_links_dict=scraped_links_dict,
         existing_team_url_set=existing_team_url_set,
@@ -373,19 +379,18 @@ def ETL_get_relevant_articles(test=False):
     # Step 3: Filter with LLM
     filtered_links_dict = filter_links_with_llm(
         scraped_links_dict=scraped_links_dict_filtered,
-        model_priority=["openai", "gemini"],
         logger=logger
     )
-
-    # Step 4: Flatten the dictionary for easier storage
-    flat_rows = flatten_filtered_links_dict(filtered_links_dict, logger)
-    logger.info(f"Flattened filtered links into {len(flat_rows)} rows for potential storage.")
-
-    insert_deduplicated_articles_in_database(
-        flat_rows=flat_rows,
-        table_name="article_urls",
-        logger=logger
-    )
+    #
+    # # Step 4: Flatten the dictionary for easier storage
+    # flat_rows = flatten_filtered_links_dict(filtered_links_dict, logger)
+    # logger.info(f"Flattened filtered links into {len(flat_rows)} rows for potential storage.")
+    #
+    # insert_deduplicated_articles_in_database(
+    #     flat_rows=flat_rows,
+    #     table_name="article_urls",
+    #     logger=logger
+    # )
 
     logger.info("=" * 60)
     logger.info("✅ ETL pipeline completed successfully.")

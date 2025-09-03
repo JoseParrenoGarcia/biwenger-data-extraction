@@ -112,11 +112,20 @@ def enrich_row_with_llm(row: dict, logger: logging.Logger) -> dict | None:
         article_title=row.get("title", "")
     )
 
+    # llm_response = call_llm(
+    #     system_prompt=system_prompt,
+    #     user_prompt=user_prompt,
+    #     model_priority=["gemini", "openai"],
+    #     logger=logger
+    # )
+
     llm_response = call_llm(
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        model_priority=["gemini", "openai"],
-        logger=logger
+        system_prompt,
+        user_prompt,
+        logger=logger,
+        temperature=0.3,
+        model_priority=["local", "gemini", "openai"],  # <-- now includes local
+        local_model="gpt-oss:latest",  # or "gpt-oss:latest", "gemma3:4b", etc.
     )
 
     try:
@@ -135,7 +144,7 @@ def enrich_row_with_llm(row: dict, logger: logging.Logger) -> dict | None:
         logger.error(f"❌ Failed to parse or enrich article with LLM: {e}")
         return None
 
-def ETL_get_article_contents(test: bool = False):
+def ETL_get_article_contents():
     """
     Orchestrates the scraping of full article contents from URLs already marked as relevant.
     Now includes parallel LLM enrichment using ThreadPoolExecutor.
@@ -159,7 +168,7 @@ def ETL_get_article_contents(test: bool = False):
     logger.info("=" * 60)
 
     scraped_rows = []
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         future_to_article = {
             executor.submit(scrape_and_build_article_content_row, article, logger): article
             for article in articles_to_scrape
@@ -180,7 +189,7 @@ def ETL_get_article_contents(test: bool = False):
 
     rows_to_insert = []
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         future_to_row = {executor.submit(enrich_row_with_llm, row, logger): row for row in scraped_rows}
 
         for future in as_completed(future_to_row):
@@ -206,4 +215,4 @@ def ETL_get_article_contents(test: bool = False):
         logger.info("📭 No articles were enriched or ready for insertion.")
 
 if __name__ == "__main__":
-    ETL_get_article_contents(test=True)
+    ETL_get_article_contents()
