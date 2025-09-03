@@ -29,9 +29,6 @@ TEAM_NEWS_SOURCES = {
         "https://www.eldesmarque.com/futbol/athletic-club/",
     ],
     "Atletico Madrid": [
-        "https://www.soycolchonero.es",
-        "https://atletimania.com",
-        "https://estoesatleti.es",
         "https://www.marca.com/futbol/atletico.html?intcmp=MENUESCU&s_kw=atletico",
         "https://as.com/noticias/atletico-madrid/",
         "https://www.estadiodeportivo.com/futbol/atletico-madrid/",
