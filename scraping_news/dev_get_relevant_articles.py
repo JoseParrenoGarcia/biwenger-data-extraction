@@ -184,8 +184,9 @@ def filter_out_existing_urls(
 
 
 def filter_links_with_llm(
-    scraped_links_dict: Dict[str, Dict[str, List[str]]],
-    logger: Optional[logging.Logger] = None
+        scraped_links_dict: Dict[str, Dict[str, List[str]]],
+        logger: Optional[logging.Logger] = None,
+        max_workers: int = 3,
 ) -> Dict[str, Dict[str, List[str]]]:
     """
     Filters article links using LLM in parallel, per team.
@@ -200,7 +201,7 @@ def filter_links_with_llm(
     logger.info("Ensuring input structure is valid...")
     _validate_scraped_links_structure(data=scraped_links_dict)
 
-    logger.info("Launching parallel LLM filtering (5 threads max)...")
+    logger.info(f"Launching parallel LLM filtering ({max_workers} threads max)...")
 
     filtered_dict = {}
 
@@ -230,6 +231,8 @@ def filter_links_with_llm(
 
             clean = extract_code_block(llm_response)
             parsed = ast.literal_eval(clean)
+
+            print(parsed)
             _validate_scraped_links_structure({team: parsed})
 
             logger.info(f"✅ {team}: retained {sum(len(v) for v in parsed.values())} links after filtering.")
@@ -239,7 +242,7 @@ def filter_links_with_llm(
             logger.error(f"❌ Failed to process team {team}: {e}")
             return {team: team_links_dict}
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(process_team, team, team_links_dict): team
             for team, team_links_dict in scraped_links_dict.items()
