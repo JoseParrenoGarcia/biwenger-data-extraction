@@ -194,3 +194,13 @@ def compute_value_delta_for_slug(
         | (merged["market_value_eur"] != merged["market_value_eur_db"])
     ].drop(columns=["market_value_eur_db"])
     return delta.reset_index(drop=True)
+
+def delete_stats_for_player_team_day(
+    supabase, table_name: str, player_name: str, team: str, as_of_date: str
+) -> None:
+    supabase.table(table_name)\
+        .delete()\
+        .eq("player_name", player_name)\
+        .eq("team", team)\
+        .eq("as_of_date", as_of_date)\
+        .execute()

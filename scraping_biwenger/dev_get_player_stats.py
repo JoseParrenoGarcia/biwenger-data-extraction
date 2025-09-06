@@ -16,6 +16,7 @@ from supabase_client.utils import (
     insert_rows_into_table_batched,
     compute_content_hash,
     delete_rows_for_slug_dates,
+    delete_stats_for_player_team_day,
     fetch_existing_values_for_slug,
 )
 
@@ -72,6 +73,19 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             .drop(columns=["name", "slug", "href"], errors="ignore")
         )
 
+        # Normalize keys to avoid trivial dupes (whitespace/case)
+        if "player_name" in player_detail_df.columns:
+            player_detail_df["player_name"] = player_detail_df["player_name"].astype(str).str.strip()
+        if "team" in player_detail_df.columns:
+            player_detail_df["team"] = player_detail_df["team"].astype(str).str.strip()
+
+        # one row per player-team **in this scrape**
+        stats_df = player_detail_df.drop_duplicates(subset=["player_name", "team"], keep="last")
+
+        today = pd.Timestamp.utcnow().date().isoformat()
+        stats_df["as_of_date"] = today
+
+        # Add content_hash column for change detection
         # --- Matches DF (right panel, 'Points' tab) ---
         matches_df = pd.DataFrame(match_rows)
         keep_cols = ["season_label", "round_label", "match_date", "points", "best_xi", "events", "player_name", "team"]
@@ -90,23 +104,41 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
         if not check_if_table_exists(supabase, table_name):
             logger.error(f"❌ Table '{table_name}' does not exist in Supabase.")
         else:
-            # Delete everything first (truncate semantics)
-            supabase.table(table_name).delete().neq("id", 0).execute()
-            logger.info(f"🗑️ Cleared existing rows from '{table_name}'")
+            if stats_df.empty:
+                logger.info("ℹ️ No stats to process.")
+            else:
+                # 1) delete today's snapshot per (player_name, team)
+                for (pname, team) in (
+                        stats_df[["player_name", "team"]]
+                                .dropna()
+                                .drop_duplicates()
+                                .itertuples(index=False, name=None)
+                ):
+                    delete_stats_for_player_team_day(
+                        supabase, table_name, pname, team, today
+                    )
 
-            # Insert fresh rows
-            insert_rows_into_table(supabase, table_name=table_name, rows=player_detail_df.to_dict(orient="records"))
-            logger.info(f"✅ Inserted {len(player_detail_rows)} rows into '{table_name}'")
+                # 2) insert fresh snapshot rows (JSON-safe)
+                stats_payload = stats_df.where(stats_df.notna(), None).to_dict(orient="records")
+                insert_rows_into_table_batched(
+                    supabase,
+                    table_name=table_name,
+                    rows=stats_payload,
+                    chunk_size=1000,
+                    sleep_s=0.03,
+                    returning="minimal",
+                )
+                logger.info(f"✅ Upserted {len(stats_payload)} player stat rows into '{table_name}' for {today}")
 
-        # Upsert matches
-        matches_table = "biwenger_player_matches"
-        if not check_if_table_exists(supabase, matches_table):
-            logger.error(f"❌ Table '{matches_table}' does not exist in Supabase.")
-        else:
-            supabase.table(matches_table).delete().neq("id", 0).execute()
-            logger.info(f"🗑️ Cleared existing rows from '{matches_table}'")
-            insert_rows_into_table(supabase, table_name=matches_table, rows=matches_df.to_dict(orient="records"))
-            logger.info(f"✅ Inserted {len(matches_df)} rows into '{matches_table}'")
+        # # Upsert matches
+        # matches_table = "biwenger_player_matches"
+        # if not check_if_table_exists(supabase, matches_table):
+        #     logger.error(f"❌ Table '{matches_table}' does not exist in Supabase.")
+        # else:
+        #     supabase.table(matches_table).delete().neq("id", 0).execute()
+        #     logger.info(f"🗑️ Cleared existing rows from '{matches_table}'")
+        #     insert_rows_into_table(supabase, table_name=matches_table, rows=matches_df.to_dict(orient="records"))
+        #     logger.info(f"✅ Inserted {len(matches_df)} rows into '{matches_table}'")
 
         # --- Value DF (right panel, 'Value' tab) ---
         value_history_df = pd.DataFrame(value_history_rows)
@@ -180,5 +212,5 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_player_stats(max_pages=1, max_players_detail=3)
+    ETL_get_player_stats(max_pages=1, max_players_detail=5)
     # ETL_get_player_stats()

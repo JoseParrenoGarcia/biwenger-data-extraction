@@ -25,5 +25,18 @@
 2025-09-06 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Yamal: 3 rows
 2025-09-06 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366
 2025-09-06 | ETL_get_player_stats | INFO     | 📈 Value history captured for Yamal: 366 rows
-2025-09-06 | ETL_get_player_stats | INFO     | ⛔ Reached max_players=3. Stopping early.
-2025-09-06 | ETL_get_player_stats | INFO     | 🏁 Done. Players processed: 3. Detail rows: 3, Match rows: 9
+2025-09-06 | ETL_get_player_stats | INFO     | 🔎 [4/9] Opening player: Vinícius Jr (vinicius-junior)
+2025-09-06 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Vinícius Jr
+2025-09-06 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Vinícius Jr: {'points': 30, 'value': 16240000, 'matches_played': 3, 'average': 10.0, 'market_purchases_pct': 26.0, 'market_sales_pct': 1.0}
+2025-09-06 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Vinícius Jr: 3 rows
+2025-09-06 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366
+2025-09-06 | ETL_get_player_stats | INFO     | 📈 Value history captured for Vinícius Jr: 366 rows
+2025-09-06 | ETL_get_player_stats | INFO     | 🔎 [5/9] Opening player: Pape Gueye (pape-gueye)
+2025-09-06 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Pape Gueye
+2025-09-06 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Pape Gueye: {'points': 29, 'value': 8020000, 'matches_played': 3, 'average': 9.7, 'market_purchases_pct': 16.0, 'market_sales_pct': 3.0}
+2025-09-06 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Pape Gueye: 3 rows
+2025-09-06 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366
+2025-09-06 | ETL_get_player_stats | INFO     | 📈 Value history captured for Pape Gueye: 366 rows
+2025-09-06 | ETL_get_player_stats | INFO     | ⛔ Reached max_players=5. Stopping early.
+2025-09-06 | ETL_get_player_stats | INFO     | 🏁 Done. Players processed: 5. Detail rows: 5, Match rows: 15
+2025-09-06 | ETL_get_player_stats | INFO     | ✅ Upserted 5 player stat rows into 'biwenger_player_stats' for 2025-09-06

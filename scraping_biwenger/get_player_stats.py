@@ -16,6 +16,8 @@ from supabase_client.utils import (
     insert_rows_into_table_batched,
     delete_rows_for_slug_dates,
     fetch_existing_values_for_slug,
+    upsert_rows_into_table,
+    compute_content_hash
 )
 
 
