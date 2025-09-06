@@ -204,3 +204,31 @@ def delete_stats_for_player_team_day(
         .eq("team", team)\
         .eq("as_of_date", as_of_date)\
         .execute()
+
+def delete_matches_for_player_dates(
+    supabase,
+    table_name: str,
+    player_name: str,
+    team: str,
+    dates: List[str],
+    chunk_size: int = 100,
+) -> None:
+    """
+    Delete existing match rows for (player_name, team) limited to the given match_date list.
+    - `dates` must be 'YYYY-MM-DD' strings (normalize before calling).
+    - Chunked to keep the SQL IN() list small and avoid timeouts.
+    """
+    if not dates:
+        return
+
+    # dedupe + drop falsy
+    uniq_dates = sorted({d for d in dates if d})
+
+    for i in range(0, len(uniq_dates), chunk_size):
+        batch = uniq_dates[i : i + chunk_size]
+        supabase.table(table_name) \
+            .delete() \
+            .eq("player_name", player_name) \
+            .eq("team", team) \
+            .in_("match_date", batch) \
+            .execute()

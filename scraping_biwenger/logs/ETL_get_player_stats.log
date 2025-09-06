@@ -37,6 +37,19 @@
 2025-09-06 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Pape Gueye: 3 rows
 2025-09-06 | ETL_get_player_stats | INFO     | 💾 Value history rows: 366
 2025-09-06 | ETL_get_player_stats | INFO     | 📈 Value history captured for Pape Gueye: 366 rows
-2025-09-06 | ETL_get_player_stats | INFO     | ⛔ Reached max_players=5. Stopping early.
-2025-09-06 | ETL_get_player_stats | INFO     | 🏁 Done. Players processed: 5. Detail rows: 5, Match rows: 15
-2025-09-06 | ETL_get_player_stats | INFO     | ✅ Upserted 5 player stat rows into 'biwenger_player_stats' for 2025-09-06
+2025-09-06 | ETL_get_player_stats | INFO     | 🔎 [6/9] Opening player: Buchanan (tajon-buchanan)
+2025-09-06 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Buchanan
+2025-09-06 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Buchanan: {'points': 29, 'value': 4940000, 'matches_played': 3, 'average': 9.7, 'market_purchases_pct': 40.0, 'market_sales_pct': 2.0}
+2025-09-06 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Buchanan: 3 rows
+2025-09-06 | ETL_get_player_stats | INFO     | 💾 Value history rows: 189
+2025-09-06 | ETL_get_player_stats | INFO     | 📈 Value history captured for Buchanan: 189 rows
+2025-09-06 | ETL_get_player_stats | INFO     | 🔎 [7/9] Opening player: Escandell (aaron-escandell)
+2025-09-06 | ETL_get_player_stats | INFO     | 🟢 Player detail opened via search: Escandell
+2025-09-06 | ETL_get_player_stats | INFO     | ✅ Stats scraped for Escandell: {'points': 29, 'value': 4840000, 'matches_played': 3, 'average': 9.7, 'market_purchases_pct': 20.0, 'market_sales_pct': 1.0}
+2025-09-06 | ETL_get_player_stats | INFO     | 📊 Matches scraped for Escandell: 3 rows
+2025-09-06 | ETL_get_player_stats | INFO     | 💾 Value history rows: 75
+2025-09-06 | ETL_get_player_stats | INFO     | 📈 Value history captured for Escandell: 75 rows
+2025-09-06 | ETL_get_player_stats | INFO     | ⛔ Reached max_players=7. Stopping early.
+2025-09-06 | ETL_get_player_stats | INFO     | 🏁 Done. Players processed: 7. Detail rows: 7, Match rows: 21
+2025-09-06 | ETL_get_player_stats | INFO     | ✅ Upserted 7 player stat rows into 'biwenger_player_stats' for 2025-09-06
+2025-09-06 | ETL_get_player_stats | INFO     | ✅ Upserted (replace-by-dates) 21 match rows into 'biwenger_player_matches'
