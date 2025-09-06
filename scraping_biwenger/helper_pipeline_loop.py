@@ -117,7 +117,7 @@ def scrape_all_players_detail(
 
         _cooldown()
         if processed % 20 == 0 and processed > 0:
-            _cooldown(1500, 2500)
+            _cooldown(500, 1500)
 
     logger.info(f"🏁 Done. Players processed: {processed}. "
                 f"Detail rows: {len(player_detail_rows)}, Match rows: {len(match_rows)}")

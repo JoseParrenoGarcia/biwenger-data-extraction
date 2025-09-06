@@ -10,7 +10,13 @@ from scraping_biwenger.helper_pipeline_loop import scrape_all_players_detail
 from scraping_biwenger.utils import _rand_sleep
 import pandas as pd
 from supabase_client.connection import get_supabase_client
-from supabase_client.utils import check_if_table_exists, insert_rows_into_table, upsert_rows_into_table, compute_content_hash
+from supabase_client.utils import (
+    check_if_table_exists,
+    insert_rows_into_table,
+    insert_rows_into_table_batched,
+    delete_rows_for_slug_dates,
+    fetch_existing_values_for_slug,
+)
 
 
 def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
@@ -101,16 +107,57 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
             insert_rows_into_table(supabase, table_name=matches_table, rows=matches_df.to_dict(orient="records"))
             logger.info(f"✅ Inserted {len(matches_df)} rows into '{matches_table}'")
 
-        # Upsert value history next (to get their IDs)
-        value_table = "biwenger_player_value"
-        if not check_if_table_exists(supabase, value_table):
-            logger.error(f"❌ Table '{value_table}' does not exist in Supabase.")
-        else:
-            supabase.table(value_table).delete().neq("id", 0).execute()
-            logger.info(f"🗑️ Cleared existing rows from '{value_table}'")
-            insert_rows_into_table(supabase, table_name=value_table, rows=value_history_df.to_dict(orient="records"))
-            logger.info(f"✅ Inserted {len(value_history_df)} rows into '{value_table}'")
+        # --- Value DF (right panel, 'Value' tab) ---
+        value_history_df = pd.DataFrame(value_history_rows)
 
+        v = value_history_df.copy()
+        v["date"] = pd.to_datetime(v["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        v["market_value_eur"] = pd.to_numeric(v["market_value_eur"], errors="coerce")
+        v = v.dropna(subset=["date", "market_value_eur"])
+
+        to_insert_all = []
+
+        for slug, g in v.groupby("slug"):
+            if not slug: continue
+            min_d, max_d = g["date"].min(), g["date"].max()
+
+            existing = fetch_existing_values_for_slug(supabase, "biwenger_player_value", slug, min_d, max_d)
+            # map date -> value in DB
+            db_map = dict(zip(existing["date"], existing["market_value_eur"]))
+
+            # split new vs changed
+            g = g.sort_values("date").drop_duplicates(subset=["date"], keep="last")
+            new_mask = ~g["date"].isin(existing["date"])
+            changed_mask = g["date"].isin(existing["date"]) & (g["market_value_eur"] != g["date"].map(db_map))
+
+            new_rows = g.loc[new_mask]
+            changed_rows = g.loc[changed_mask]
+
+            # remove the changed ones in DB, then insert them with the new value
+            if not changed_rows.empty:
+                delete_rows_for_slug_dates(
+                    supabase,
+                    "biwenger_player_value",
+                    slug,
+                    changed_rows["date"].tolist()
+                )
+                to_insert_all.append(changed_rows)
+
+            if not new_rows.empty:
+                to_insert_all.append(new_rows)
+
+        # bulk insert everything we need (JSON-safe)
+        if to_insert_all:
+            payload_df = pd.concat(to_insert_all, ignore_index=True)
+            payload_df = payload_df.where(payload_df.notna(), None)
+            insert_rows_into_table_batched(
+                supabase,
+                "biwenger_player_value",
+                payload_df.to_dict(orient="records"),
+                chunk_size=1000,
+                sleep_s=0.03,
+                returning="minimal",
+            )
 
     finally:
         try:
