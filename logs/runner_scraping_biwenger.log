@@ -1,7 +1,11 @@
-2025-09-02 | scraping_biwenger_logger | INFO     | Logger 'scraping_biwenger_logger' initialized. Logging to: logs/runner_scraping_biwenger.log
-2025-09-02 | scraping_biwenger_logger | INFO     | ============================================================
-2025-09-02 | scraping_biwenger_logger | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
-2025-09-02 | scraping_biwenger_logger | INFO     | ============================================================
-2025-09-02 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_current_team()...
-2025-09-02 | scraping_biwenger_logger | INFO     | ✅ ETL_get_current_team completed in 0.38 minutes
-2025-09-02 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_player_stats()...
+2025-09-07 | scraping_biwenger_logger | INFO     | Logger 'scraping_biwenger_logger' initialized. Logging to: logs/runner_scraping_biwenger.log
+2025-09-07 | scraping_biwenger_logger | INFO     | ============================================================
+2025-09-07 | scraping_biwenger_logger | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
+2025-09-07 | scraping_biwenger_logger | INFO     | ============================================================
+2025-09-07 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_current_team()...
+2025-09-07 | scraping_biwenger_logger | INFO     | ✅ ETL_get_current_team completed in 0.36 minutes
+2025-09-07 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_player_stats()...
+2025-09-07 | scraping_biwenger_logger | INFO     | ✅ ETL_get_player_stats completed in 167.00 minutes
+2025-09-07 | scraping_biwenger_logger | INFO     | ============================================================
+2025-09-07 | scraping_biwenger_logger | INFO     | ✅ FULL PIPELINE COMPLETED SUCCESSFULLY in 167.37 minutes
+2025-09-07 | scraping_biwenger_logger | INFO     | ============================================================
