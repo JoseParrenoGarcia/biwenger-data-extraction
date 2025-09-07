@@ -1,4 +1,3 @@
-# ~/bin/run_scraping_players.sh
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -32,10 +31,11 @@ notify() {
 notify "Players scraping started…"
 
 # --- Run your scraper (module exec + required subcommand) ---
-code1=0
-if "$PY" "$REPO/scraping_biwenger/runner.py" "$@"; then
+if "$PY" -m scraping_biwenger.runner run_scraping_players "$@"; then
   notify "Players scraping ✅ completed."
+  exit 0
 else
-  code1=$?
-  notify "Players scraping ❌ failed (exit $code1)."
+  code=$?
+  notify "Players scraping ❌ failed (exit $code)."
+  exit "$code"
 fi
