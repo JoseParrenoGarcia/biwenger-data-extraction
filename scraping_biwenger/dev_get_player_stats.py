@@ -73,7 +73,10 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
         )
 
         # one row per player-team **in this scrape**
-        stats_df = player_detail_df.drop_duplicates(subset=["player_name", "team"], keep="last")
+        stats_df = player_detail_df.drop_duplicates(
+            subset=["player_name", "team"],
+            keep="last"
+        )
 
         today = pd.Timestamp.utcnow().date().isoformat()
         stats_df["as_of_date"] = today
@@ -232,5 +235,5 @@ if __name__ == "__main__":
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
 
-    ETL_get_player_stats(max_pages=1, max_players_detail=7)
+    ETL_get_player_stats(max_pages=1, max_players_detail=1)
     # ETL_get_player_stats()

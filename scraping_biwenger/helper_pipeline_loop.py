@@ -2,16 +2,16 @@ from typing import List, Dict, Optional, Tuple
 from playwright.sync_api import Page
 import random, time
 
-from helper_search_and_open_player import (
+from scraping_biwenger.helper_search_and_open_player import (
     open_player_via_search,
     click_back_to_players_table,
     clear_search_box_if_present,
 )
-from helper_players_detail import scrape_player_detail
-from helper_player_value import open_value_tab, click_download_csv, scrape_value_history_for_player
+from scraping_biwenger.helper_players_detail import scrape_player_detail
+from scraping_biwenger.helper_player_value import open_value_tab, click_download_csv, scrape_value_history_for_player
 
 # 👇 import your existing match helpers wherever you put them
-from helper_player_matches import (
+from scraping_biwenger.helper_player_matches import (
     open_points_tab,
     scrape_player_matches,
     with_retries,

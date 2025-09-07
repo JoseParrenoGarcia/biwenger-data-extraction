@@ -1,9 +1,8 @@
 # scraping_biwenger/helper_player_value.py
 
 from __future__ import annotations
-from typing import Optional, List, Dict
+from typing import Optional, Dict
 import re
-import time
 import pandas as pd
 from playwright.sync_api import Page, Download, TimeoutError as PWTimeout
 
