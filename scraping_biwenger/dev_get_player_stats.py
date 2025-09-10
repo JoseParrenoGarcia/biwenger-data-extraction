@@ -37,7 +37,7 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
     logger.info("✅ Credentials loaded successfully.")
 
     # 2) Start browser
-    pw, browser, context, page = start_browser_accept_cookies(headless=True)
+    pw, browser, context, page = start_browser_accept_cookies(headless=False)
     logger.info("✅ Logged in")
 
     # 3) Login
