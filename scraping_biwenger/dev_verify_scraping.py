@@ -3,14 +3,13 @@ import argparse
 import pandas as pd
 
 from config_logging import get_logger
-from scraping_biwenger.get_current_team import scrape_basic_team_table
+from scraping_biwenger.current_team.pipeline import scrape_current_team_snapshot
 from scraping_biwenger.helper_extract_all_player_names import extract_all_player_names
 from scraping_biwenger.helper_pipeline_loop import scrape_all_players_detail
 from scraping_biwenger.scraper_actions_in_biwenger import (
     click_tab_in_horizontal_main_menu,
     load_biwenger_credentials,
     perform_login,
-    scroll_into_view,
     start_browser_accept_cookies,
 )
 from scraping_biwenger.utils import _rand_sleep
@@ -111,10 +110,7 @@ def verify_current_team(headless: bool) -> pd.DataFrame:
 
     try:
         perform_login(page, creds["email"], creds["password"], logger=logger)
-        click_tab_in_horizontal_main_menu(page, "team", logger=logger)
-        page.get_by_role("button", name="Table").click()
-        scroll_into_view(page, "segmented-control button[aria-label='Squad']")
-        df = scrape_basic_team_table(page)
+        df = scrape_current_team_snapshot(page, logger=logger)
         logger.info("Current-team dry run scraped %s rows.", len(df))
         return df
     finally:

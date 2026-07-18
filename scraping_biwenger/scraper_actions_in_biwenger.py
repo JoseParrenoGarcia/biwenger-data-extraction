@@ -222,12 +222,17 @@ def click_tab_in_horizontal_main_menu(page, tab_name: str, logger=None):
     target = tab_name.strip().lower()
     started_at = time.perf_counter()
     if logger:
-        logger.info("Navigating to Biwenger tab: %s", target)
+        logger.info("Navigating to Biwenger tab: %s from %s", target, page.url)
 
-    # Just click by href directly
-    page.click(f'a[href="/{target}"]')
+    try:
+        tab_selector = f'a[href="/{target}"]'
+        page.locator(tab_selector).first.wait_for(state="visible", timeout=5000)
+        page.click(tab_selector)
+    except Exception:
+        if logger:
+            logger.info("Tab link for '%s' was not visible; navigating directly.", target)
+        page.goto(f"{DEFAULT_ROOT_URL}{target}", wait_until="domcontentloaded")
 
-    # Wait for navigation to happen
     page.wait_for_url(f"**/{target}*", timeout=10000)
     _log_timing(logger, f"Landed on Biwenger tab: {target}", started_at)
 
