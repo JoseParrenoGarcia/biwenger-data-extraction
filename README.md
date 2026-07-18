@@ -37,3 +37,32 @@ Fill in `secrets/supabase.toml` with the Supabase project URL and anon key.
 The `secrets/` directory remains ignored by Git except for `*.example.toml`
 templates. Do not commit real credentials. OpenAI, Gemini, and local Ollama
 secrets are not required for the current Biwenger-only pipeline.
+
+## Supabase Bootstrap
+
+Normal scraping uses the Supabase project URL and anon key from
+`secrets/supabase.toml`. Those credentials are for data upload only; they should
+not create tables.
+
+For a new Supabase project, apply the tracked schema migration once with the
+Supabase CLI:
+
+```bash
+/opt/homebrew/bin/brew install supabase/tap/supabase
+supabase --version
+supabase init
+supabase link --project-ref <your-project-ref>
+supabase db push
+```
+
+The Supabase CLI is a system tool, not a Python package, so it is intentionally
+not listed in `requirements.txt`.
+
+After the migration is applied, verify the anon connection:
+
+```bash
+python3 -m supabase_client.connection
+```
+
+If the normal pipeline runs before the migration exists, it should fail with a
+clear message telling you to run the schema bootstrap first.

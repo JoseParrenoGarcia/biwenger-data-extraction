@@ -1,0 +1,76 @@
+from config_logging import get_logger
+from scraping_biwenger.current_team.persist import DEFAULT_CURRENT_TEAM_TABLE, replace_current_team
+from scraping_biwenger.current_team.scrape import scrape_basic_team_table
+from scraping_biwenger.current_team.transform import transform_current_team
+from scraping_biwenger.scraper_actions_in_biwenger import (
+    click_tab_in_horizontal_main_menu,
+    load_biwenger_credentials,
+    perform_login,
+    scroll_into_view,
+    start_browser_accept_cookies,
+)
+
+
+def scrape_current_team_snapshot(page, logger=None):
+    """
+    Navigate from the logged-in app to the team table and return normalized rows.
+    """
+    click_tab_in_horizontal_main_menu(page, "team", logger=logger)
+    page.get_by_role("button", name="Table").click()
+    scroll_into_view(page, "segmented-control button[aria-label='Squad']")
+    raw_df = scrape_basic_team_table(page)
+    return transform_current_team(raw_df)
+
+
+def run_current_team_pipeline(
+    *,
+    headless: bool = True,
+    persist: bool = True,
+    table_name: str = DEFAULT_CURRENT_TEAM_TABLE,
+    logger=None,
+):
+    """
+    Login to Biwenger, scrape the current-team table, and optionally persist it.
+    """
+    logger = logger or get_logger(
+        "ETL_get_current_team",
+        log_file="logs/ETL_get_current_team.log",
+    )
+    logger.info("=" * 70)
+    logger.info("Starting ETL: get_current_team")
+    logger.info("=" * 70)
+
+    creds = load_biwenger_credentials(profile="biwenger")
+    logger.info("Credentials loaded successfully for profile 'biwenger'.")
+
+    pw, browser, context, page = start_browser_accept_cookies(
+        headless=headless,
+        logger=logger,
+    )
+    logger.info("Browser session started.")
+
+    try:
+        perform_login(page, creds["email"], creds["password"], logger=logger)
+        team_data = scrape_current_team_snapshot(page, logger=logger)
+        logger.info("Scraped and transformed %s current-team rows.", len(team_data))
+
+        if persist:
+            replace_current_team(team_data, table_name=table_name, logger=logger)
+        else:
+            logger.info("Skipping Supabase persistence for current-team dry run.")
+
+        return team_data
+    finally:
+        try:
+            context.close()
+        except Exception:
+            pass
+        try:
+            browser.close()
+        except Exception:
+            pass
+        try:
+            pw.stop()
+        except Exception:
+            pass
+

@@ -48,5 +48,6 @@ Important current decisions:
 - Make test runs easy, for example limited runs with a small number of players.
 - For scraper refactors, preserve behavior with a local dry-run path before changing persistence.
 - Prefer verification modes that can scrape the full current team and a limited number of players while printing outputs without writing to Supabase.
+- Supabase schema bootstrap uses the Supabase CLI as a system dependency, not a Python package. Do not add the Supabase CLI to `requirements.txt`.
 - Validate dataframe columns and payload schemas before uploads.
 - Keep local automation simple and documented.

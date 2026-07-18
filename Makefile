@@ -26,6 +26,16 @@ install:
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install -r requirements.txt
 
+.PHONY: supabase-bootstrap
+supabase-bootstrap:
+	@echo "🧱 Applying Supabase migrations..."
+	supabase db push
+
+.PHONY: supabase-check
+supabase-check:
+	@echo "🔌 Checking Supabase connection..."
+	$(PYTHON) -m supabase_client.connection
+
 # ────────────────────────────────────────────────────────────────
 # COMBINED / FUTURE TARGETS
 # ────────────────────────────────────────────────────────────────
