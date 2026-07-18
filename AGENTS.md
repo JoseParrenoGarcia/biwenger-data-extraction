@@ -46,6 +46,7 @@ Important current decisions:
 - Separate orchestration, scraping, parsing, validation, and persistence over time.
 - Prefer parser-level tests that do not require Biwenger, Playwright, or Supabase.
 - Make test runs easy, for example limited runs with a small number of players.
+- For scraper refactors, preserve behavior with a local dry-run path before changing persistence.
+- Prefer verification modes that can scrape the full current team and a limited number of players while printing outputs without writing to Supabase.
 - Validate dataframe columns and payload schemas before uploads.
 - Keep local automation simple and documented.
-

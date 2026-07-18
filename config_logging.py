@@ -47,7 +47,7 @@ def get_logger(name: str,
     # Enhanced formatter with more detailed information
     formatter = logging.Formatter(
         '%(asctime)s | %(name)-20s | %(levelname)-8s | %(message)s',
-        datefmt='%Y-%m-%d'
+        datefmt='%Y-%m-%d %H:%M:%S'
     )
 
     # Console handler - shows logs in terminal
