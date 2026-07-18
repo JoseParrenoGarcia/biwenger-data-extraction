@@ -11,12 +11,40 @@ from scraping_biwenger.scraper_actions_in_biwenger import (
 )
 
 
+def select_table_layout(page, logger=None) -> None:
+    """
+    Select the squad table layout when the page is not already rendering a table.
+    """
+    if page.locator("table.table.no-swipe tbody tr").first.count() > 0:
+        if logger:
+            logger.info("Current-team table is already visible.")
+        return
+
+    selectors = [
+        '[role="button"][aria-label="Table"]',
+        '[role="button"][title="Table"]',
+        'button:has-text("Table")',
+    ]
+    for selector in selectors:
+        try:
+            page.locator(selector).first.click(timeout=3000)
+            if logger:
+                logger.info("Selected table layout with selector %s.", selector)
+            return
+        except Exception:
+            if logger:
+                logger.info("Table layout selector did not match: %s", selector)
+
+    if logger:
+        logger.info("No table layout selector matched; scraper will wait for table rows.")
+
+
 def scrape_current_team_snapshot(page, logger=None):
     """
     Navigate from the logged-in app to the team table and return normalized rows.
     """
     click_tab_in_horizontal_main_menu(page, "team", logger=logger)
-    page.get_by_role("button", name="Table").click()
+    select_table_layout(page, logger=logger)
     scroll_into_view(page, "segmented-control button[aria-label='Squad']")
     raw_df = scrape_basic_team_table(page)
     return transform_current_team(raw_df)
@@ -73,4 +101,3 @@ def run_current_team_pipeline(
             pw.stop()
         except Exception:
             pass
-

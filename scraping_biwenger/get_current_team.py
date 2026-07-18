@@ -42,4 +42,7 @@ if __name__ == "__main__":
     pd.set_option("display.max_colwidth", None)
 
     args = parse_args()
-    ETL_get_current_team(headless=not args.headed, persist=not args.dry_run)
+    team_data = ETL_get_current_team(headless=not args.headed, persist=not args.dry_run)
+    if args.dry_run:
+        print("\nDRY RUN ONLY: no Supabase rows were written.")
+        print(team_data.to_string(index=False))

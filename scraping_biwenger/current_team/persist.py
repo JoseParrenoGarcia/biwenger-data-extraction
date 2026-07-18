@@ -57,7 +57,7 @@ def insert_current_team(
             logger.error(message)
         raise RuntimeError(message)
 
-    rows = df.to_dict(orient="records")
+    rows = df.astype(object).where(pd.notna(df), None).to_dict(orient="records")
     insert_rows_into_table(supabase, table_name=table_name, rows=rows)
     if logger:
         logger.info("Inserted %s rows into '%s'.", len(rows), table_name)
