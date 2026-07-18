@@ -1,6 +1,0 @@
-2025-09-02 | llm_orchestrator_test | INFO     | Logger 'llm_orchestrator_test' initialized. Logging to: logs/llm_orchestrator_test.log
-2025-09-02 | llm_orchestrator_test | INFO     | 🔁 Trying LOCAL (Ollama) model...
-2025-09-02 | llm_orchestrator_test | INFO     | 🔁 Calling local model via Ollama: model='gemma3:27b', base_url='http://localhost:11434/v1'
-2025-09-02 | llm_orchestrator_test | INFO     | LOCAL (Ollama) returned a valid response.
-2025-09-02 | llm_orchestrator_test | INFO     | 🔁 Trying Gemini (Google) model...
-2025-09-02 | llm_orchestrator_test | INFO     | Gemini returned a valid response.
