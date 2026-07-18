@@ -66,8 +66,8 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
             logger.info("No player stats to process.")
         return
 
-    for pname, team, as_of_date in (
-        stats_df[["player_name", "team", "as_of_date"]]
+    for pname, team, as_of_date, scoring_system in (
+        stats_df[["player_name", "team", "as_of_date", "scoring_system"]]
         .dropna()
         .drop_duplicates()
         .itertuples(index=False, name=None)
@@ -78,6 +78,7 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
             pname,
             team,
             as_of_date,
+            scoring_system,
         )
 
     payload = stats_df.astype(object).where(stats_df.notna(), None).to_dict(orient="records")
@@ -100,7 +101,10 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
         return
 
     to_insert = []
-    for (pname, team), group in matches_df.groupby(["player_name", "team"], dropna=False):
+    for (pname, team, scoring_system), group in matches_df.groupby(
+        ["player_name", "team", "scoring_system"],
+        dropna=False,
+    ):
         dates = group["match_date"].dropna().unique().tolist()
         if not dates:
             continue
@@ -111,6 +115,7 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
             pname,
             team,
             dates,
+            scoring_system,
         )
         to_insert.append(group)
 

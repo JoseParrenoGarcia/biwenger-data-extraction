@@ -68,6 +68,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
             "position": " Forward ",
             "status": " Fit ",
             "status_detail": "",
+            "scoring_system": " sofascore ",
             "points": "42",
             "value": "1200000",
             "min_value": "1000000",
@@ -93,6 +94,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
             "events": [{"type": "goal"}],
             "player_name": "Player One",
             "team": "Athletic",
+            "scoring_system": "sofascore",
         },
         {
             "season_label": "2026/2027",
@@ -103,6 +105,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
             "events": [{"type": "goal"}],
             "player_name": "Player One",
             "team": "Athletic",
+            "scoring_system": "sofascore",
         },
     ]
     value_rows = [
@@ -135,11 +138,13 @@ def test_transform_player_outputs_normalizes_three_payloads():
     assert stats_df.loc[0, "player_name"] == "Player One"
     assert stats_df.loc[0, "team"] == "Athletic"
     assert stats_df.loc[0, "status_detail"] is None
+    assert stats_df.loc[0, "scoring_system"] == "sofascore"
     assert stats_df.loc[0, "points"] == 42
     assert stats_df.loc[0, "market_usage_pct"] == 0.0
     assert stats_df.loc[0, "as_of_date"] == "2026-07-18"
     assert len(matches_df) == 1
     assert matches_df.loc[0, "match_date"] == "2026-08-20"
+    assert matches_df.loc[0, "scoring_system"] == "sofascore"
     assert matches_df.loc[0, "as_of_date"] == "2026-07-18"
     assert len(value_df) == 1
     assert value_df.loc[0, "date"] == "2026-08-20"
@@ -155,6 +160,22 @@ def test_transform_player_outputs_returns_empty_payload_shapes():
     assert stats_df.empty
     assert matches_df.empty
     assert value_df.empty
+
+
+def test_transform_player_outputs_defaults_scoring_system_to_sofascore():
+    stats_df, _, _ = transform_player_outputs(
+        [
+            {
+                "player_name": "Player One",
+                "team": "Athletic",
+            }
+        ],
+        [],
+        [],
+        as_of_date="2026-07-18",
+    )
+
+    assert stats_df.loc[0, "scoring_system"] == "sofascore"
 
 
 def test_validate_player_payloads_rejects_missing_columns():

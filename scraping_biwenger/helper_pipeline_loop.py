@@ -14,6 +14,7 @@ from scraping_biwenger.helper_player_value import open_value_tab, click_download
 from scraping_biwenger.helper_player_matches import (
     open_points_tab,
     scrape_player_matches,
+    select_scoring_system,
     with_retries,
 )
 
@@ -61,7 +62,19 @@ def scrape_all_players_detail(
             _log_timing(logger, f"Back-to-table after failed open for {name}", back_started_at)
             continue
 
+        try:
+            scoring_started_at = time.time()
+            scoring_system = select_scoring_system(page, target_label="SofaScore", logger=logger)
+            _log_timing(logger, f"SofaScore selection for {name}", scoring_started_at)
+        except Exception as e:
+            logger.exception(f"Skipping {name} — could not select SofaScore scoring system: {e}")
+            back_started_at = time.time()
+            click_back_to_players_table(page)
+            _log_timing(logger, f"Back-to-table after scoring-system failure for {name}", back_started_at)
+            continue
+
         # 2) scrape left-panel stats
+        detail = None
         try:
             detail_started_at = time.time()
             detail = scrape_player_detail(page, logger=logger)
@@ -70,6 +83,7 @@ def scrape_all_players_detail(
                 "name": name,
                 "slug": slug,
                 "href": player.get("href", ""),
+                "scoring_system": scoring_system,
             })
             player_detail_rows.append(detail)
             processed += 1
@@ -77,6 +91,10 @@ def scrape_all_players_detail(
                         f"{ {k: detail.get(k) for k in ['points','value','matches_played','average','market_purchases_pct','market_sales_pct']} }")
         except Exception as e:
             logger.exception(f"Failed scraping stats for '{name}': {e}")
+            back_started_at = time.time()
+            click_back_to_players_table(page)
+            _log_timing(logger, f"Back-to-table after detail failure for {name}", back_started_at)
+            continue
 
         # 3) scrape matches (Points tab) while page is still open
         if collect_matches:
@@ -94,6 +112,7 @@ def scrape_all_players_detail(
                 for r in rows:
                     r["player_name"] = detail.get("player_name", "") or name
                     r["team"] = detail.get("team", "")
+                    r["scoring_system"] = scoring_system
                 match_rows.extend(rows)
 
                 logger.info(f"📊 Matches scraped for {name}: {len(rows)} rows")

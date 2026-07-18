@@ -9,6 +9,7 @@ PLAYER_STATS_COLUMNS = [
     "position",
     "status",
     "status_detail",
+    "scoring_system",
     "points",
     "value",
     "min_value",
@@ -31,6 +32,7 @@ PLAYER_MATCHES_COLUMNS = [
     "events",
     "player_name",
     "team",
+    "scoring_system",
     "as_of_date",
 ]
 
@@ -61,6 +63,7 @@ OPTIONAL_TEXT_COLUMNS = [
     "position",
     "status",
     "status_detail",
+    "scoring_system",
     "season",
 ]
 
@@ -124,6 +127,7 @@ def transform_player_outputs(
         stats_df["team"] = stats_df["team"].astype(str).str.strip()
         for column in OPTIONAL_TEXT_COLUMNS:
             stats_df[column] = stats_df[column].map(_clean_text)
+        stats_df["scoring_system"] = stats_df["scoring_system"].fillna("sofascore")
         for column in INTEGER_COLUMNS:
             stats_df[column] = pd.to_numeric(stats_df[column], errors="coerce").fillna(0).astype(int)
         for column in FLOAT_COLUMNS:
@@ -140,6 +144,7 @@ def transform_player_outputs(
             if column not in matches_df.columns:
                 matches_df[column] = None
         matches_df = matches_df[PLAYER_MATCHES_COLUMNS]
+        matches_df["scoring_system"] = matches_df["scoring_system"].map(_clean_text).fillna("sofascore")
         matches_df["match_date"] = pd.to_datetime(matches_df["match_date"], errors="coerce").dt.strftime("%Y-%m-%d")
         matches_df["points"] = pd.to_numeric(matches_df["points"], errors="coerce")
         matches_df["_events_dedupe_key"] = matches_df["events"].map(_events_dedupe_key)
@@ -150,6 +155,7 @@ def transform_player_outputs(
                 "match_date",
                 "season_label",
                 "round_label",
+                "scoring_system",
                 "points",
                 "best_xi",
                 "_events_dedupe_key",

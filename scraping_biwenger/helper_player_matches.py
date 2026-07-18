@@ -155,6 +155,73 @@ def open_points_tab(page: Page, timeout: int = 10_000, logger=None):
             "Points tab did not load its table. Verify the header selector and that the tab is present."
         )
 
+
+def _normalize_scoring_system_label(label: str) -> str:
+    normalized = re.sub(r"\s+", " ", (label or "").strip()).lower()
+    if normalized == "sofascore":
+        return "sofascore"
+    return normalized.replace(" ", "_").replace(".", "")
+
+
+def select_scoring_system(
+    page: Page,
+    *,
+    target_label: str = "SofaScore",
+    timeout: int = 10_000,
+    logger=None,
+) -> str:
+    """
+    Select the desired player points scoring system and return its normalized key.
+    """
+    started_at = time.time()
+    open_points_tab(page, timeout=timeout, logger=logger)
+
+    button_selector = 'player-detail-points score-selector-btn button[modalmenutitle="Scoring system"]'
+    fallback_selector = 'button[modalmenutitle="Scoring system"]'
+
+    button = page.locator(button_selector).first
+    if button.count() == 0:
+        button = page.locator(fallback_selector).first
+
+    current_label = _safe_text(button)
+    target_key = _normalize_scoring_system_label(target_label)
+    if _normalize_scoring_system_label(current_label) == target_key:
+        if logger:
+            logger.info("Scoring system already selected: %s", current_label)
+        _log_timing(logger, "Scoring system selection", started_at)
+        return target_key
+
+    button.click(timeout=timeout)
+    page.wait_for_selector("round-league-score-menu", timeout=timeout, state="visible")
+
+    option = page.locator("round-league-score-menu button").filter(
+        has_text=re.compile(rf"^\s*{re.escape(target_label)}\s*$", re.I)
+    ).first
+    option.click(timeout=timeout)
+
+    page.wait_for_function(
+        """
+        ({ selector, fallbackSelector, target }) => {
+            const button =
+                document.querySelector(selector) ||
+                document.querySelector(fallbackSelector);
+            return button && (button.textContent || '').trim().toLowerCase() === target.toLowerCase();
+        }
+        """,
+        arg={
+            "selector": button_selector,
+            "fallbackSelector": fallback_selector,
+            "target": target_label,
+        },
+        timeout=timeout,
+    )
+    page.wait_for_selector("player-detail-points point-list table", timeout=timeout, state="visible")
+
+    if logger:
+        logger.info("Selected scoring system: %s", target_label)
+    _log_timing(logger, "Scoring system selection", started_at)
+    return target_key
+
 # -----------------------------
 # Scrape per-match rows
 # -----------------------------
