@@ -37,15 +37,15 @@ def ETL_get_player_stats(max_pages=100, max_players_detail=1_000):
     logger.info("✅ Credentials loaded successfully.")
 
     # 2) Start browser
-    pw, browser, context, page = start_browser_accept_cookies(headless=True)
-    logger.info("✅ Logged in")
+    pw, browser, context, page = start_browser_accept_cookies(headless=True, logger=logger)
+    logger.info("✅ Browser session started")
 
     # 3) Login
     try:
-        perform_login(page, creds["email"], creds["password"])
+        perform_login(page, creds["email"], creds["password"], logger=logger)
 
         # 4) Navigate to players page
-        click_tab_in_horizontal_main_menu(page, "players")
+        click_tab_in_horizontal_main_menu(page, "players", logger=logger)
         _rand_sleep(0.5, 1.5)
 
         # 5) Click view as list

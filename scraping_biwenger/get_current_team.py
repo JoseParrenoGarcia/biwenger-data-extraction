@@ -232,15 +232,15 @@ def ETL_get_current_team():
     logger.info("✅ Credentials loaded successfully.")
 
     # 2) Start browser
-    pw, browser, context, page = start_browser_accept_cookies(headless=True)
-    logger.info("✅ Logged in")
+    pw, browser, context, page = start_browser_accept_cookies(headless=True, logger=logger)
+    logger.info("✅ Browser session started")
 
     try:
         # 3) Login
-        perform_login(page, creds["email"], creds["password"])
+        perform_login(page, creds["email"], creds["password"], logger=logger)
 
         # 4) Navigate to team page
-        click_tab_in_horizontal_main_menu(page, "team")
+        click_tab_in_horizontal_main_menu(page, "team", logger=logger)
 
         # 5) Click view as list
         page.get_by_role("button", name="Table").click()
