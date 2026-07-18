@@ -1,7 +1,0 @@
-2025-09-05 | scraping_biwenger_logger | INFO     | Logger 'scraping_biwenger_logger' initialized. Logging to: logs/runner_scraping_biwenger.log
-2025-09-05 | scraping_biwenger_logger | INFO     | ============================================================
-2025-09-05 | scraping_biwenger_logger | INFO     | 🚀 STARTING FULL SCRAPING + ENRICHMENT PIPELINE
-2025-09-05 | scraping_biwenger_logger | INFO     | ============================================================
-2025-09-05 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_current_team()...
-2025-09-05 | scraping_biwenger_logger | INFO     | ✅ ETL_get_current_team completed in 0.37 minutes
-2025-09-05 | scraping_biwenger_logger | INFO     | 🔍 Running ETL_get_player_stats()...

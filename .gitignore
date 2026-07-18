@@ -3,6 +3,15 @@ __pycache__/
 *.py[cod]
 *.pyo
 
+# Runtime logs
+*.log
+*.out
+*.err
+logs/*
+*/logs/*
+!logs/.gitkeep
+!*/logs/.gitkeep
+
 # Ignore environment files
 .env
 .venv/
