@@ -61,6 +61,6 @@ def test_valid_secrets_structure(tmp_path):
 #         pytest.skip("Skipping real connection test — no secrets/supabase.toml file")
 #
 #     client = get_supabase_client()
-#     response = client.table("articles").select("*").limit(1).execute()
+#     response = client.table("biwenger_current_team").select("*").limit(1).execute()
 #
 #     assert isinstance(response.data, list)  # Expecting a list of rows or empty list

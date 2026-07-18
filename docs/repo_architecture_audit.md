@@ -2,6 +2,10 @@
 
 Date: 2026-07-18
 
+Status note: the news scraping, structured news, and LLM client subsystems
+described below were removed after this audit. Keep this document as historical
+context for the cleanup rationale, not as the current runtime map.
+
 ## Executive summary
 
 This repository is a Python ETL project for collecting fantasy football data for Biwenger. It currently combines three concerns:

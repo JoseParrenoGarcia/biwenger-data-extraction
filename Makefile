@@ -10,15 +10,9 @@ PYTHON := python3
 # SCRAPING PIPELINE TARGETS
 # ────────────────────────────────────────────────────────────────
 
-.PHONY: scrape-news
-scrape-news:
-	@echo "🔁 Running full scraping pipeline..."
-	bash bash_scripts/run_scraping_news.sh
-
-
 .PHONY: scrape-players
 scrape-players:
-	@echo "🔁 Running full scraping pipeline..."
+	@echo "🔁 Running Biwenger player scraping pipeline..."
 	bash bash_scripts/run_scraping_players.sh
 
 
@@ -37,7 +31,7 @@ install:
 # ────────────────────────────────────────────────────────────────
 
 .PHONY: all
-all: scrape-news
+all: scrape-players
 
 # Future:
 # make test

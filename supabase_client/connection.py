@@ -35,10 +35,10 @@ if __name__ == "__main__":
         supabase = get_supabase_client()
         print("✅ Connected to Supabase successfully.")
 
-        # Minimal test: try selecting 0 rows from the 'articles' table (if it exists)
+        # Minimal test: try selecting 0 rows from an active Biwenger table.
         try:
-            result = supabase.table("articles").select("*").limit(1).execute()
-            print("📦 Sample query from 'articles' table succeeded.")
+            result = supabase.table("biwenger_current_team").select("*").limit(1).execute()
+            print("📦 Sample query from 'biwenger_current_team' table succeeded.")
             pprint(result.data)
         except Exception as query_err:
             print("⚠️ Connection OK, but table query failed (maybe table doesn't exist yet):")
