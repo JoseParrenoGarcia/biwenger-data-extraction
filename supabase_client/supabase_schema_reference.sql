@@ -41,6 +41,7 @@ create table if not exists public.biwenger_player_stats (
     position text,
     status text,
     status_detail text,
+    scoring_system text not null default 'sofascore',
     points integer not null default 0,
     value bigint not null default 0,
     min_value bigint not null default 0,
@@ -52,7 +53,8 @@ create table if not exists public.biwenger_player_stats (
     market_usage_pct double precision not null default 0,
     season text,
     as_of_date date not null,
-    created_at timestamptz default now()
+    created_at timestamptz default now(),
+    unique (player_name, team, as_of_date, scoring_system)
 );
 
 create table if not exists public.biwenger_player_matches (
@@ -65,6 +67,7 @@ create table if not exists public.biwenger_player_matches (
     points integer,
     best_xi boolean,
     events jsonb,
+    scoring_system text not null default 'sofascore',
     as_of_date date not null,
     created_at timestamptz default now()
 );

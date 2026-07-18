@@ -53,13 +53,33 @@ def _to_date_iso(iso_str: str) -> Optional[str]:
 
 def _get_season_label(page: Page) -> str:
     """
-    Minimal best-effort season label. If not present, returns ''.
+    Return the currently selected Points-tab season label.
+
+    Prefer the visible Biwenger season button, e.g. "2025/2026 season", because
+    the URL can contain stale or app-level season hints that do not match the
+    match rows currently rendered.
     """
+    # Best source: the visible season selector in the player points panel.
+    selectors = [
+        'player-detail-points button[modalmenutitle="Season"]',
+        'button[modalmenutitle="Season"]',
+    ]
+    for selector in selectors:
+        try:
+            button = page.locator(selector).first
+            if button.count() > 0:
+                text = _safe_text(button)
+                normalized = re.sub(r"\s*season\s*$", "", text, flags=re.IGNORECASE).strip()
+                if normalized:
+                    return normalized
+        except Exception:
+            pass
+
     # Try URL param
     try:
         m = re.search(r"[?&]season=(20\d{2}-20\d{2})", page.url)
         if m:
-            return m.group(1)
+            return m.group(1).replace("-", "/")
     except Exception:
         pass
     # Try any nearby link containing season pattern (very defensive)
@@ -68,7 +88,7 @@ def _get_season_label(page: Page) -> str:
         if link.count() > 0:
             m = re.search(r"(20\d{2}-20\d{2})", _safe_attr(link, "href"))
             if m:
-                return m.group(1)
+                return m.group(1).replace("-", "/")
     except Exception:
         pass
     return ""
@@ -77,14 +97,21 @@ def _get_season_label(page: Page) -> str:
 # UI: open the "Points" tab
 # -----------------------------
 
-def open_points_tab(page: Page, timeout: int = 10_000):
+def _log_timing(logger, label: str, started_at: float) -> None:
+    if logger:
+        logger.info("%s completed in %.2fs", label, time.time() - started_at)
+
+
+def open_points_tab(page: Page, timeout: int = 10_000, logger=None):
     """
     Ensure the right-hand 'Points' tab is active and loaded.
     Click the tab header (not the tabpanel) and wait for the table or 'Total' block.
     Safe to call if already active.
     """
+    started_at = time.time()
     # Already visible?
     if page.locator("player-detail-points point-list table").first.count() > 0:
+        _log_timing(logger, "Points tab already visible check", started_at)
         return
 
     # Scroll tab header area into view (in case of lazy-load)
@@ -121,10 +148,79 @@ def open_points_tab(page: Page, timeout: int = 10_000):
             timeout=timeout,
             state="visible",
         )
+        _log_timing(logger, "Points tab open/wait", started_at)
     except PWTimeout:
+        _log_timing(logger, "Points tab open/wait failed", started_at)
         raise RuntimeError(
             "Points tab did not load its table. Verify the header selector and that the tab is present."
         )
+
+
+def _normalize_scoring_system_label(label: str) -> str:
+    normalized = re.sub(r"\s+", " ", (label or "").strip()).lower()
+    if normalized == "sofascore":
+        return "sofascore"
+    return normalized.replace(" ", "_").replace(".", "")
+
+
+def select_scoring_system(
+    page: Page,
+    *,
+    target_label: str = "SofaScore",
+    timeout: int = 10_000,
+    logger=None,
+) -> str:
+    """
+    Select the desired player points scoring system and return its normalized key.
+    """
+    started_at = time.time()
+    open_points_tab(page, timeout=timeout, logger=logger)
+
+    button_selector = 'player-detail-points score-selector-btn button[modalmenutitle="Scoring system"]'
+    fallback_selector = 'button[modalmenutitle="Scoring system"]'
+
+    button = page.locator(button_selector).first
+    if button.count() == 0:
+        button = page.locator(fallback_selector).first
+
+    current_label = _safe_text(button)
+    target_key = _normalize_scoring_system_label(target_label)
+    if _normalize_scoring_system_label(current_label) == target_key:
+        if logger:
+            logger.info("Scoring system already selected: %s", current_label)
+        _log_timing(logger, "Scoring system selection", started_at)
+        return target_key
+
+    button.click(timeout=timeout)
+    page.wait_for_selector("round-league-score-menu", timeout=timeout, state="visible")
+
+    option = page.locator("round-league-score-menu button").filter(
+        has_text=re.compile(rf"^\s*{re.escape(target_label)}\s*$", re.I)
+    ).first
+    option.click(timeout=timeout)
+
+    page.wait_for_function(
+        """
+        ({ selector, fallbackSelector, target }) => {
+            const button =
+                document.querySelector(selector) ||
+                document.querySelector(fallbackSelector);
+            return button && (button.textContent || '').trim().toLowerCase() === target.toLowerCase();
+        }
+        """,
+        arg={
+            "selector": button_selector,
+            "fallbackSelector": fallback_selector,
+            "target": target_label,
+        },
+        timeout=timeout,
+    )
+    page.wait_for_selector("player-detail-points point-list table", timeout=timeout, state="visible")
+
+    if logger:
+        logger.info("Selected scoring system: %s", target_label)
+    _log_timing(logger, "Scoring system selection", started_at)
+    return target_key
 
 # -----------------------------
 # Scrape per-match rows
@@ -140,7 +236,7 @@ def scrape_player_matches(page: Page, logger=None) -> List[Dict]:
     """
     # Ensure Points tab is visible
     try:
-        open_points_tab(page)
+        open_points_tab(page, logger=logger)
     except Exception as e:
         if logger: logger.warning(f"⚠️ Points tab not available: {e}")
         return []

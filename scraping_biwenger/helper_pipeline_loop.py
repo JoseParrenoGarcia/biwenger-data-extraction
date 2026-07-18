@@ -14,11 +14,16 @@ from scraping_biwenger.helper_player_value import open_value_tab, click_download
 from scraping_biwenger.helper_player_matches import (
     open_points_tab,
     scrape_player_matches,
+    select_scoring_system,
     with_retries,
 )
 
 def _cooldown(min_ms=300, max_ms=900):
     time.sleep(random.uniform(min_ms / 1000, max_ms / 1000))
+
+def _log_timing(logger, label: str, started_at: float) -> None:
+    if logger:
+        logger.info("%s completed in %.2fs", label, time.time() - started_at)
 
 def scrape_all_players_detail(
     logger,
@@ -39,6 +44,7 @@ def scrape_all_players_detail(
     processed = 0
 
     for idx, player in enumerate(players_list, start=1):
+        player_started_at = time.time()
         if max_players and processed >= max_players:
             logger.info(f"⛔ Reached max_players={max_players}. Stopping early.")
             break
@@ -51,16 +57,33 @@ def scrape_all_players_detail(
         opened = open_player_via_search(logger, page, player, base_url=base_url)
         if not opened:
             logger.warning(f"Skipping {name} — could not open detail.")
+            back_started_at = time.time()
             click_back_to_players_table(page)
+            _log_timing(logger, f"Back-to-table after failed open for {name}", back_started_at)
+            continue
+
+        try:
+            scoring_started_at = time.time()
+            scoring_system = select_scoring_system(page, target_label="SofaScore", logger=logger)
+            _log_timing(logger, f"SofaScore selection for {name}", scoring_started_at)
+        except Exception as e:
+            logger.exception(f"Skipping {name} — could not select SofaScore scoring system: {e}")
+            back_started_at = time.time()
+            click_back_to_players_table(page)
+            _log_timing(logger, f"Back-to-table after scoring-system failure for {name}", back_started_at)
             continue
 
         # 2) scrape left-panel stats
+        detail = None
         try:
-            detail = scrape_player_detail(page)
+            detail_started_at = time.time()
+            detail = scrape_player_detail(page, logger=logger)
+            _log_timing(logger, f"Detail scrape for {name}", detail_started_at)
             detail.update({
                 "name": name,
                 "slug": slug,
                 "href": player.get("href", ""),
+                "scoring_system": scoring_system,
             })
             player_detail_rows.append(detail)
             processed += 1
@@ -68,12 +91,17 @@ def scrape_all_players_detail(
                         f"{ {k: detail.get(k) for k in ['points','value','matches_played','average','market_purchases_pct','market_sales_pct']} }")
         except Exception as e:
             logger.exception(f"Failed scraping stats for '{name}': {e}")
+            back_started_at = time.time()
+            click_back_to_players_table(page)
+            _log_timing(logger, f"Back-to-table after detail failure for {name}", back_started_at)
+            continue
 
         # 3) scrape matches (Points tab) while page is still open
         if collect_matches:
             try:
+                matches_started_at = time.time()
                 # your own helpers with a light retry
-                _ = open_points_tab(page)  # safe if already active
+                _ = open_points_tab(page, logger=logger)  # safe if already active
                 rows = with_retries(
                     lambda: scrape_player_matches(page, logger=logger),
                     validate=lambda r: r is not None and len(r) > 0,
@@ -84,14 +112,17 @@ def scrape_all_players_detail(
                 for r in rows:
                     r["player_name"] = detail.get("player_name", "") or name
                     r["team"] = detail.get("team", "")
+                    r["scoring_system"] = scoring_system
                 match_rows.extend(rows)
 
                 logger.info(f"📊 Matches scraped for {name}: {len(rows)} rows")
+                _log_timing(logger, f"Matches scrape for {name}", matches_started_at)
             except Exception as e:
                 logger.warning(f"⚠️ Failed to scrape matches for {name}: {e}")
 
         # 4) Scrape value history (Value tab)
         try:
+            value_started_at = time.time()
             vdf = scrape_value_history_for_player(
                 page,
                 logger=logger,
@@ -103,10 +134,12 @@ def scrape_all_players_detail(
                 logger.info(f"📈 Value history captured for {name}: {len(vdf)} rows")
             else:
                 logger.info(f"📈 Value history empty for {name}")
+            _log_timing(logger, f"Value history scrape for {name}", value_started_at)
         except Exception as e:
             logger.warning(f"⚠️ Failed to scrape value history for {name}: {e}")
 
         # 5) back to table for next player
+        back_started_at = time.time()
         if not click_back_to_players_table(page):
             logger.warning("Back-to-table failed; forcing go_back() and clearing search.")
             try:
@@ -114,8 +147,10 @@ def scrape_all_players_detail(
                 clear_search_box_if_present(page)
             except Exception:
                 pass
+        _log_timing(logger, f"Back-to-table for {name}", back_started_at)
 
         _cooldown()
+        _log_timing(logger, f"Full player cycle for {name}", player_started_at)
         if processed % 20 == 0 and processed > 0:
             _cooldown(500, 1500)
 

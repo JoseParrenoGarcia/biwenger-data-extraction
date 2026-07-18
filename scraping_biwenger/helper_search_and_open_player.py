@@ -81,6 +81,10 @@ def wait_player_detail_loaded(page: Page, timeout_ms: int = 8000) -> bool:
     except PWTimeout:
         return False
 
+def _log_timing(logger, label: str, started_at: float) -> None:
+    if logger:
+        logger.info("%s completed in %.2fs", label, time.time() - started_at)
+
 def open_player_via_search(logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com") -> bool:
     """
     Try to open a player's detail page via the search box.
@@ -93,49 +97,72 @@ def open_player_via_search(logger, page: Page, player: Dict[str, str], base_url:
         logger.warning("open_player_via_search: missing player name; skipping.")
         return False
 
+    flow_started_at = time.time()
     try:
         # 1) Focus + clear search
+        step_started_at = time.time()
         focus_and_clear_search_box(page)
+        _log_timing(logger, f"Player search clear input for '{name}'", step_started_at)
         # 2) Type name
+        step_started_at = time.time()
         type_player_name(page, name)
+        _log_timing(logger, f"Player search type query for '{name}'", step_started_at)
         # 3) Wait table filtered
+        step_started_at = time.time()
         if not wait_table_filtered_for_name(page, name, timeout_ms=7000):
+            _log_timing(logger, f"Player search filter wait failed for '{name}'", step_started_at)
             logger.warning(f"Search didn't show expected results for '{name}'. Trying fallback to href if available.")
             if href:
+                fallback_started_at = time.time()
                 page.goto(base_url + href, wait_until="domcontentloaded")
                 ok = wait_player_detail_loaded(page, timeout_ms=8000)
+                _log_timing(logger, f"Player fallback href open for '{name}'", fallback_started_at)
                 if ok:
                     logger.info(f"✅ Opened via fallback href: {href}")
+                    _log_timing(logger, f"Player open flow for '{name}'", flow_started_at)
                     return True
                 logger.warning("Fallback href did not load player detail in time.")
                 return False
             return False
+        _log_timing(logger, f"Player search filter wait for '{name}'", step_started_at)
 
         # 4) Click a matching row
+        step_started_at = time.time()
         clicked = click_matching_player_row(page, name)
+        _log_timing(logger, f"Player search result click for '{name}'", step_started_at)
         if not clicked:
             logger.warning(f"Couldn't click a result row for '{name}'.")
             # fallback to href
             if href:
+                fallback_started_at = time.time()
                 page.goto(base_url + href, wait_until="domcontentloaded")
                 ok = wait_player_detail_loaded(page, timeout_ms=8000)
+                _log_timing(logger, f"Player fallback href open for '{name}'", fallback_started_at)
                 if ok:
                     logger.info(f"✅ Opened via fallback href: {href}")
+                    _log_timing(logger, f"Player open flow for '{name}'", flow_started_at)
                     return True
             return False
 
         # 5) Wait for player detail
+        step_started_at = time.time()
         if not wait_player_detail_loaded(page, timeout_ms=9000):
+            _log_timing(logger, f"Player detail wait failed for '{name}'", step_started_at)
             logger.warning(f"Player detail didn't appear after clicking result for '{name}'. Attempting href fallback.")
             if href:
+                fallback_started_at = time.time()
                 page.goto(base_url + href, wait_until="domcontentloaded")
                 ok = wait_player_detail_loaded(page, timeout_ms=8000)
+                _log_timing(logger, f"Player fallback href open after click for '{name}'", fallback_started_at)
                 if ok:
                     logger.info(f"✅ Opened via fallback href after click: {href}")
+                    _log_timing(logger, f"Player open flow for '{name}'", flow_started_at)
                     return True
             return False
+        _log_timing(logger, f"Player detail wait for '{name}'", step_started_at)
 
         logger.info(f"🟢 Player detail opened via search: {name}")
+        _log_timing(logger, f"Player open flow for '{name}'", flow_started_at)
         return True
 
     except Exception as e:
@@ -143,9 +170,12 @@ def open_player_via_search(logger, page: Page, player: Dict[str, str], base_url:
         # Last-chance fallback
         if href:
             try:
+                fallback_started_at = time.time()
                 page.goto(base_url + href, wait_until="domcontentloaded")
                 if wait_player_detail_loaded(page, timeout_ms=8000):
                     logger.info(f"✅ Opened via fallback href after exception: {href}")
+                    _log_timing(logger, f"Player fallback href open after exception for '{name}'", fallback_started_at)
+                    _log_timing(logger, f"Player open flow for '{name}'", flow_started_at)
                     return True
             except Exception:
                 pass

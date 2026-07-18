@@ -196,14 +196,21 @@ def compute_value_delta_for_slug(
     return delta.reset_index(drop=True)
 
 def delete_stats_for_player_team_day(
-    supabase, table_name: str, player_name: str, team: str, as_of_date: str
+    supabase,
+    table_name: str,
+    player_name: str,
+    team: str,
+    as_of_date: str,
+    scoring_system: str | None = None,
 ) -> None:
-    supabase.table(table_name)\
+    query = supabase.table(table_name)\
         .delete()\
         .eq("player_name", player_name)\
         .eq("team", team)\
-        .eq("as_of_date", as_of_date)\
-        .execute()
+        .eq("as_of_date", as_of_date)
+    if scoring_system is not None:
+        query = query.eq("scoring_system", scoring_system)
+    query.execute()
 
 def delete_matches_for_player_dates(
     supabase,
@@ -211,6 +218,7 @@ def delete_matches_for_player_dates(
     player_name: str,
     team: str,
     dates: List[str],
+    scoring_system: str | None = None,
     chunk_size: int = 100,
 ) -> None:
     """
@@ -226,9 +234,11 @@ def delete_matches_for_player_dates(
 
     for i in range(0, len(uniq_dates), chunk_size):
         batch = uniq_dates[i : i + chunk_size]
-        supabase.table(table_name) \
+        query = supabase.table(table_name) \
             .delete() \
             .eq("player_name", player_name) \
             .eq("team", team) \
-            .in_("match_date", batch) \
-            .execute()
+            .in_("match_date", batch)
+        if scoring_system is not None:
+            query = query.eq("scoring_system", scoring_system)
+        query.execute()
