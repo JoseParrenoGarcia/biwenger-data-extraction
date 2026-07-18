@@ -4,15 +4,12 @@ import pandas as pd
 
 from config_logging import get_logger
 from scraping_biwenger.current_team.pipeline import scrape_current_team_snapshot
-from scraping_biwenger.helper_extract_all_player_names import extract_all_player_names
-from scraping_biwenger.helper_pipeline_loop import scrape_all_players_detail
+from scraping_biwenger.players.pipeline import scrape_players_snapshot
 from scraping_biwenger.scraper_actions_in_biwenger import (
-    click_tab_in_horizontal_main_menu,
     load_biwenger_credentials,
     perform_login,
     start_browser_accept_cookies,
 )
-from scraping_biwenger.utils import _rand_sleep
 
 
 def _print_df(title: str, df: pd.DataFrame, max_rows: int | None = None) -> None:
@@ -28,73 +25,6 @@ def _print_df(title: str, df: pd.DataFrame, max_rows: int | None = None) -> None
 
     rows_to_print = len(df) if max_rows is None else max_rows
     print(df.head(rows_to_print).to_string(index=False))
-
-
-def _build_player_outputs(
-    player_detail_rows: list[dict],
-    match_rows: list[dict],
-    value_history_rows: list[dict],
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    today = pd.Timestamp.utcnow().date().isoformat()
-
-    player_detail_df = (
-        pd.DataFrame(player_detail_rows)
-        .drop_duplicates(subset=["player_name"], keep="first")
-        .drop(columns=["name", "slug", "href"], errors="ignore")
-    )
-
-    stats_df = player_detail_df.drop_duplicates(
-        subset=["player_name", "team"],
-        keep="last",
-    )
-    if not stats_df.empty:
-        stats_df = stats_df.copy()
-        stats_df["as_of_date"] = today
-
-    matches_df = pd.DataFrame(match_rows)
-    keep_cols = [
-        "season_label",
-        "round_label",
-        "match_date",
-        "points",
-        "best_xi",
-        "events",
-        "player_name",
-        "team",
-    ]
-    matches_df = matches_df[[c for c in keep_cols if c in matches_df.columns]].copy()
-    if not matches_df.empty:
-        matches_df["as_of_date"] = today
-        matches_df = matches_df.drop_duplicates(
-            subset=[
-                "player_name",
-                "team",
-                "match_date",
-                "season_label",
-                "round_label",
-                "points",
-                "best_xi",
-                "events",
-            ],
-            keep="last",
-        )
-
-    value_history_df = pd.DataFrame(value_history_rows)
-    if not value_history_df.empty:
-        value_history_df = value_history_df.copy()
-        value_history_df["date"] = pd.to_datetime(
-            value_history_df["date"],
-            errors="coerce",
-        ).dt.strftime("%Y-%m-%d")
-        value_history_df["market_value_eur"] = pd.to_numeric(
-            value_history_df["market_value_eur"],
-            errors="coerce",
-        )
-        value_history_df = value_history_df.dropna(
-            subset=["date", "market_value_eur"],
-        )
-
-    return stats_df, matches_df, value_history_df
 
 
 def verify_current_team(headless: bool) -> pd.DataFrame:
@@ -136,32 +66,11 @@ def verify_players(
 
     try:
         perform_login(page, creds["email"], creds["password"], logger=logger)
-        click_tab_in_horizontal_main_menu(page, "players", logger=logger)
-        _rand_sleep(0.5, 1.5)
-        page.get_by_role("button", name="Table").click()
-        _rand_sleep(0.5, 1.5)
-
-        players_list = extract_all_player_names(
-            logger=logger,
-            page=page,
-            max_pages=max_pages,
-        )
-        players_list = players_list[:max_players]
-        print(f"\nSelected {len(players_list)} players for dry run:")
-        for player in players_list:
-            print(f"- {player.get('name')} ({player.get('slug')})")
-
-        player_detail_rows, match_rows, value_history_rows = scrape_all_players_detail(
-            logger,
+        return scrape_players_snapshot(
             page,
-            players_list,
-            max_players=max_players,
-            collect_matches=True,
-        )
-        return _build_player_outputs(
-            player_detail_rows,
-            match_rows,
-            value_history_rows,
+            logger,
+            max_pages=max_pages,
+            max_players_detail=max_players,
         )
     finally:
         context.close()

@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 from playwright.sync_api import Page
 import re
+import time
 
 # -----------------------------
 # Small parsing helpers
@@ -47,6 +48,11 @@ def _parse_percent(text: str) -> Optional[float]:
         return float(s) if s not in ("", "-", "--", ".") else None
     except Exception:
         return None
+
+
+def _log_timing(logger, label: str, started_at: float) -> None:
+    if logger:
+        logger.info("%s completed in %.2fs", label, time.time() - started_at)
 
 
 # -----------------------------
@@ -193,7 +199,7 @@ def scrape_player_status(page: Page, timeout_ms: int = 4000) -> Dict[str, Option
 # Statistics panel (minimal)
 # -----------------------------
 
-def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
+def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
     """
     Extract key statistics from the Statistics panel on the player detail page.
     Returns ints/floats for numeric fields, defaults to 0 if unavailable.
@@ -211,12 +217,17 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
         "market_usage_pct": 0.0,
     }
 
+    started_at = time.time()
     try:
+        wait_started_at = time.time()
         page.wait_for_selector("player-detail-stats", timeout=timeout_ms)
+        _log_timing(logger, "Player statistics panel wait", wait_started_at)
     except Exception:
+        _log_timing(logger, "Player statistics panel wait failed", started_at)
         return stats
 
     # Points
+    step_started_at = time.time()
     try:
         pts = (
             page.locator("player-detail-stats .stat", has_text="Points")
@@ -225,25 +236,35 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
         stats["points"] = _parse_int(pts) or 0
     except Exception:
         pass
+    _log_timing(logger, "Player statistics points parse", step_started_at)
 
     # Value (current, min, max)
+    step_started_at = time.time()
     try:
         val = page.locator("player-detail-stats tr", has_text="Value").locator("td.tr").inner_text()
         stats["value"] = _parse_money(val) or 0
     except Exception:
         pass
+    _log_timing(logger, "Player statistics value parse", step_started_at)
+
+    step_started_at = time.time()
     try:
         vmin = page.locator("player-detail-stats tr", has_text=re.compile(r"\bMin\b", re.I)).locator("td.tr").inner_text()
         stats["min_value"] = _parse_money(vmin) or 0
     except Exception:
         pass
+    _log_timing(logger, "Player statistics min value parse", step_started_at)
+
+    step_started_at = time.time()
     try:
         vmax = page.locator("player-detail-stats tr", has_text=re.compile(r"\bMax\b", re.I)).locator("td.tr").inner_text()
         stats["max_value"] = _parse_money(vmax) or 0
     except Exception:
         pass
+    _log_timing(logger, "Player statistics max value parse", step_started_at)
 
     # Matches Played
+    step_started_at = time.time()
     try:
         mp = (
             page.locator("player-detail-stats .stat", has_text="Matches played")
@@ -252,12 +273,20 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
         stats["matches_played"] = _parse_int(mp) or 0
     except Exception:
         pass
+    _log_timing(logger, "Player statistics matches played parse", step_started_at)
 
     # Average (fallback to computed if missing)
+    step_started_at = time.time()
     try:
-        avg = (
-            page.locator("player-detail-stats .stat", has_text=re.compile(r"\bAverage\b", re.I))
-            .locator("div").first.inner_text().strip()
+        avg = page.locator("player-detail-stats").evaluate(
+            """
+            root => {
+                const stats = Array.from(root.querySelectorAll('.stat'));
+                const stat = stats.find(el => /\\bAverage\\b/i.test(el.textContent || ''));
+                const value = stat?.querySelector('div')?.textContent || '';
+                return value.trim();
+            }
+            """
         )
         parsed = _parse_float(avg)
         if parsed is not None:
@@ -267,8 +296,10 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
     except Exception:
         if stats["matches_played"] > 0:
             stats["average"] = round(stats["points"] / stats["matches_played"], 1)
+    _log_timing(logger, "Player statistics average parse", step_started_at)
 
     # --- NEW: Market percentages (Purchases, Sales, Usage) ---
+    step_started_at = time.time()
     try:
         # Prefer the data-section attributes (most stable).
         ptxt = page.locator("player-detail-stats .stat[data-section='Purchases'] div").first.inner_text()
@@ -299,6 +330,8 @@ def scrape_player_statistics(page, timeout_ms: int = 6000) -> dict:
             if u is not None: stats["market_usage_pct"] = u
         except Exception:
             pass
+    _log_timing(logger, "Player statistics market percentages parse", step_started_at)
+    _log_timing(logger, "Player statistics parse", started_at)
 
     return stats
 
@@ -326,14 +359,40 @@ def _get_season_label(page, timeout=3000) -> str:
 # Composer
 # -----------------------------
 
-def scrape_player_detail(page: Page) -> Dict:
-    season_label = _get_season_label(page)
+def scrape_player_detail(page: Page, logger=None) -> Dict:
+    started_at = time.time()
 
-    return {
-        "player_name":     scrape_player_name(page) or "(unknown)",
-        "team":            scrape_team_name(page)   or "",
-        "position":        scrape_position(page)    or "",
-        **scrape_player_status(page),
-        **scrape_player_statistics(page),
+    step_started_at = time.time()
+    season_label = _get_season_label(page)
+    _log_timing(logger, "Player detail season label parse", step_started_at)
+
+    step_started_at = time.time()
+    player_name = scrape_player_name(page) or "(unknown)"
+    _log_timing(logger, "Player detail name parse", step_started_at)
+
+    step_started_at = time.time()
+    team = scrape_team_name(page) or ""
+    _log_timing(logger, "Player detail team parse", step_started_at)
+
+    step_started_at = time.time()
+    position = scrape_position(page) or ""
+    _log_timing(logger, "Player detail position parse", step_started_at)
+
+    step_started_at = time.time()
+    status = scrape_player_status(page)
+    _log_timing(logger, "Player detail status parse", step_started_at)
+
+    step_started_at = time.time()
+    statistics = scrape_player_statistics(page, logger=logger)
+    _log_timing(logger, "Player detail statistics parse", step_started_at)
+
+    detail = {
+        "player_name":     player_name,
+        "team":            team,
+        "position":        position,
+        **status,
+        **statistics,
         "season":          season_label or "",
     }
+    _log_timing(logger, "Player detail full parse", started_at)
+    return detail

@@ -49,5 +49,7 @@ Important current decisions:
 - For scraper refactors, preserve behavior with a local dry-run path before changing persistence.
 - Prefer verification modes that can scrape the full current team and a limited number of players while printing outputs without writing to Supabase.
 - Supabase schema bootstrap uses the Supabase CLI as a system dependency, not a Python package. Do not add the Supabase CLI to `requirements.txt`.
+- Player detail DOM notes are available at @docs/player_stats_dom_notes.md. Start there when investigating player scraping selectors, timing, or parser behavior. The raw copied DOM snapshot is at @docs/player_stats_html.txt.
+- If inspecting large copied Biwenger HTML dumps, prefer using subagents or narrow shell searches so the main context is not flooded with raw DOM.
 - Validate dataframe columns and payload schemas before uploads.
 - Keep local automation simple and documented.

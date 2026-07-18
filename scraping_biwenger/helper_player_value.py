@@ -3,6 +3,7 @@
 from __future__ import annotations
 from typing import Optional, Dict
 import re
+import time
 import pandas as pd
 from playwright.sync_api import Page, Download, TimeoutError as PWTimeout
 
@@ -11,6 +12,10 @@ IMG_BTN = "segmented-control button:has(.icon-image)"
 VALUE_TAB = "tab[header='Value'], [role='tab']:has-text('Value')"
 CHART_CANVAS = "chart-js canvas"
 TOOLS = "chart-js .tools segmented-control"
+
+def _log_timing(logger, label: str, started_at: float) -> None:
+    if logger:
+        logger.info("%s completed in %.2fs", label, time.time() - started_at)
 
 def _hover_chart_to_reveal_tools(page: Page, timeout: float = 3000) -> None:
     # Hover the canvas to reveal the segmented-control with the CSV/PNG buttons.
@@ -107,18 +112,26 @@ def scrape_value_history_for_player(
     Open Value tab → click CSV download → parse to DataFrame.
     Enriches rows with player context if provided.
     """
+    started_at = time.time()
+    step_started_at = time.time()
     ok = open_value_tab(page, timeout=timeout)
+    _log_timing(logger, "Value tab open/wait", step_started_at)
     if not ok:
         if logger: logger.warning("Could not open Value tab.")
         return pd.DataFrame(columns=["date", "market_value_eur"])
 
     try:
+        step_started_at = time.time()
         dl = click_download_csv(page, timeout=timeout)
+        _log_timing(logger, "Value CSV download", step_started_at)
     except PWTimeout:
+        _log_timing(logger, "Value CSV download failed", step_started_at)
         if logger: logger.warning("CSV download did not start in time.")
         return pd.DataFrame(columns=["date", "market_value_eur"])
 
+    step_started_at = time.time()
     df = _read_price_csv_to_df(dl)
+    _log_timing(logger, "Value CSV parse", step_started_at)
 
     # Add optional context (player_name, team, slug, etc.)
     if player_ctx:
@@ -127,5 +140,6 @@ def scrape_value_history_for_player(
 
     if logger:
         logger.info(f"💾 Value history rows: {len(df)}")
+        _log_timing(logger, "Value history full scrape", started_at)
 
     return df
