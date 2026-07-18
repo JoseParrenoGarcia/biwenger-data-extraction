@@ -38,6 +38,7 @@ Important current decisions:
 - Avoid touching secrets or printing secret values.
 - Treat `secrets/` as off-limits unless the user explicitly asks for safe example templates.
 - Do not commit or rely on generated logs.
+- Do not commit to Git unless told so. And always create new branches, never to main.
 
 ## Engineering Preferences
 
