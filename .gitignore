@@ -24,4 +24,5 @@ venv/
 .idea/
 
 # Secrets
-secrets/
+secrets/*
+!secrets/*.example.toml
