@@ -53,13 +53,23 @@ def scrape_all_players_detail(
         slug = player.get("slug", "")
         logger.info(f"🔎 [{idx}/{len(players_list)}] Opening player: {name} ({slug})")
 
+        def needs_table_return() -> bool:
+            if idx >= len(players_list):
+                return False
+            if max_players and processed >= max_players:
+                return False
+            return True
+
         # 1) open the player page
         opened = open_player_via_search(logger, page, player, base_url=base_url)
         if not opened:
             logger.warning(f"Skipping {name} — could not open detail.")
-            back_started_at = time.time()
-            click_back_to_players_table(page)
-            _log_timing(logger, f"Back-to-table after failed open for {name}", back_started_at)
+            if needs_table_return():
+                back_started_at = time.time()
+                click_back_to_players_table(page)
+                _log_timing(logger, f"Back-to-table after failed open for {name}", back_started_at)
+            else:
+                logger.info(f"Skipping back-to-table for final selected player: {name}")
             continue
 
         try:
@@ -68,9 +78,12 @@ def scrape_all_players_detail(
             _log_timing(logger, f"SofaScore selection for {name}", scoring_started_at)
         except Exception as e:
             logger.exception(f"Skipping {name} — could not select SofaScore scoring system: {e}")
-            back_started_at = time.time()
-            click_back_to_players_table(page)
-            _log_timing(logger, f"Back-to-table after scoring-system failure for {name}", back_started_at)
+            if needs_table_return():
+                back_started_at = time.time()
+                click_back_to_players_table(page)
+                _log_timing(logger, f"Back-to-table after scoring-system failure for {name}", back_started_at)
+            else:
+                logger.info(f"Skipping back-to-table for final selected player: {name}")
             continue
 
         # 2) scrape left-panel stats
@@ -91,9 +104,12 @@ def scrape_all_players_detail(
                         f"{ {k: detail.get(k) for k in ['points','value','matches_played','average','market_purchases_pct','market_sales_pct']} }")
         except Exception as e:
             logger.exception(f"Failed scraping stats for '{name}': {e}")
-            back_started_at = time.time()
-            click_back_to_players_table(page)
-            _log_timing(logger, f"Back-to-table after detail failure for {name}", back_started_at)
+            if needs_table_return():
+                back_started_at = time.time()
+                click_back_to_players_table(page)
+                _log_timing(logger, f"Back-to-table after detail failure for {name}", back_started_at)
+            else:
+                logger.info(f"Skipping back-to-table for final selected player: {name}")
             continue
 
         # 3) scrape matches (Points tab) while page is still open
@@ -144,15 +160,18 @@ def scrape_all_players_detail(
             logger.warning(f"⚠️ Failed to scrape value history for {name}: {e}")
 
         # 5) back to table for next player
-        back_started_at = time.time()
-        if not click_back_to_players_table(page):
-            logger.warning("Back-to-table failed; forcing go_back() and clearing search.")
-            try:
-                page.go_back(wait_until="domcontentloaded")
-                clear_search_box_if_present(page)
-            except Exception:
-                pass
-        _log_timing(logger, f"Back-to-table for {name}", back_started_at)
+        if needs_table_return():
+            back_started_at = time.time()
+            if not click_back_to_players_table(page):
+                logger.warning("Back-to-table failed; forcing go_back() and clearing search.")
+                try:
+                    page.go_back(wait_until="domcontentloaded")
+                    clear_search_box_if_present(page)
+                except Exception:
+                    pass
+            _log_timing(logger, f"Back-to-table for {name}", back_started_at)
+        else:
+            logger.info(f"Skipping back-to-table for final selected player: {name}")
 
         _cooldown()
         _log_timing(logger, f"Full player cycle for {name}", player_started_at)
