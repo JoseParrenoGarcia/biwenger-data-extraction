@@ -1,6 +1,6 @@
 from playwright.sync_api import Page, TimeoutError as PWTimeout
 from typing import Dict
-from scraping_biwenger.utils import _rand_sleep
+from scraping_biwenger.shared.timing import _rand_sleep
 import random
 import time
 

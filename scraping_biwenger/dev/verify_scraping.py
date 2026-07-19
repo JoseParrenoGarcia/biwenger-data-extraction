@@ -28,7 +28,7 @@ def _print_df(title: str, df: pd.DataFrame, max_rows: int | None = None) -> None
 def verify_current_team(headless: bool) -> pd.DataFrame:
     logger = get_logger(
         "dev_verify_current_team",
-        log_file="logs/dev_verify_scraping.log",
+        log_file="logs/dev_verify_biwenger.log",
     )
     creds = load_biwenger_credentials(profile="biwenger")
     pw, browser, context, page = start_browser_accept_cookies(
@@ -54,7 +54,7 @@ def verify_players(
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     logger = get_logger(
         "dev_verify_players",
-        log_file="logs/dev_verify_scraping.log",
+        log_file="logs/dev_verify_biwenger.log",
     )
     creds = load_biwenger_credentials(profile="biwenger_player_scraper")
     pw, browser, context, page = start_browser_accept_cookies(

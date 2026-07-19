@@ -2,7 +2,7 @@ from typing import List, Dict, Optional, Tuple
 from playwright.sync_api import Page
 import random, time
 
-from scraping_biwenger.helper_search_and_open_player import (
+from scraping_biwenger.players.search_and_open import (
     open_player_via_search,
     click_back_to_players_table,
     clear_search_box_if_present,
