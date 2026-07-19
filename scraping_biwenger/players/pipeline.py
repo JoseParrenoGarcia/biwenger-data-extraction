@@ -2,11 +2,9 @@ from config_logging import get_logger
 from scraping_biwenger.players.persist import persist_player_outputs
 from scraping_biwenger.players.scrape import scrape_player_rows
 from scraping_biwenger.players.transform import transform_player_outputs
-from scraping_biwenger.scraper_actions_in_biwenger import (
-    load_biwenger_credentials,
-    perform_login,
-    start_browser_accept_cookies,
-)
+from scraping_biwenger.shared.auth import perform_login
+from scraping_biwenger.shared.browser_session import start_browser_accept_cookies
+from scraping_biwenger.shared.config import load_biwenger_credentials
 
 
 def scrape_players_snapshot(

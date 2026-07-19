@@ -5,11 +5,9 @@ import pandas as pd
 from config_logging import get_logger
 from scraping_biwenger.current_team.pipeline import scrape_current_team_snapshot
 from scraping_biwenger.players.pipeline import scrape_players_snapshot
-from scraping_biwenger.scraper_actions_in_biwenger import (
-    load_biwenger_credentials,
-    perform_login,
-    start_browser_accept_cookies,
-)
+from scraping_biwenger.shared.auth import perform_login
+from scraping_biwenger.shared.browser_session import start_browser_accept_cookies
+from scraping_biwenger.shared.config import load_biwenger_credentials
 
 
 def _print_df(title: str, df: pd.DataFrame, max_rows: int | None = None) -> None:

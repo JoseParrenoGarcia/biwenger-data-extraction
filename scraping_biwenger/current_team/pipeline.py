@@ -2,13 +2,10 @@ from config_logging import get_logger
 from scraping_biwenger.current_team.persist import DEFAULT_CURRENT_TEAM_TABLE, replace_current_team
 from scraping_biwenger.current_team.scrape import scrape_basic_team_table
 from scraping_biwenger.current_team.transform import transform_current_team
-from scraping_biwenger.scraper_actions_in_biwenger import (
-    click_tab_in_horizontal_main_menu,
-    load_biwenger_credentials,
-    perform_login,
-    scroll_into_view,
-    start_browser_accept_cookies,
-)
+from scraping_biwenger.shared.auth import perform_login
+from scraping_biwenger.shared.browser_session import start_browser_accept_cookies
+from scraping_biwenger.shared.config import load_biwenger_credentials
+from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu, scroll_into_view
 
 
 def select_table_layout(page, logger=None) -> None:
