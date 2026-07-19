@@ -98,6 +98,22 @@ def open_player_via_search(logger, page: Page, player: Dict[str, str], base_url:
         return False
 
     flow_started_at = time.time()
+    if player.get("open_by_href_only") and href:
+        try:
+            fallback_started_at = time.time()
+            page.goto(base_url + href, wait_until="domcontentloaded")
+            ok = wait_player_detail_loaded(page, timeout_ms=8000)
+            _log_timing(logger, f"Player direct href open for '{name}'", fallback_started_at)
+            if ok:
+                logger.info(f"✅ Opened via direct href: {href}")
+                _log_timing(logger, f"Player open flow for '{name}'", flow_started_at)
+                return True
+            logger.warning("Direct href did not load player detail in time.")
+            return False
+        except Exception as e:
+            logger.exception(f"Error opening direct href for '{name}': {e}")
+            return False
+
     try:
         # 1) Focus + clear search
         step_started_at = time.time()

@@ -11,6 +11,7 @@ def ETL_get_player_stats(
     *,
     headless: bool = True,
     persist: bool = True,
+    player_slug: str | None = None,
 ):
     """
     Backward-compatible entry point for the player ETL.
@@ -20,6 +21,7 @@ def ETL_get_player_stats(
         persist=persist,
         max_pages=max_pages,
         max_players_detail=max_players_detail,
+        player_slug=player_slug,
     )
 
 
@@ -53,6 +55,13 @@ def parse_args() -> argparse.Namespace:
         default=100,
         help="Maximum number of player list pages to discover.",
     )
+    parser.add_argument(
+        "--player-slug",
+        help=(
+            "Scrape one Biwenger player directly by URL slug, "
+            "for example 'moussa-diarra-2'. Skips player-list discovery."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -79,6 +88,7 @@ def main() -> None:
         max_players_detail=args.max_players,
         headless=not args.headed,
         persist=not args.dry_run,
+        player_slug=args.player_slug,
     )
     if args.dry_run:
         print("\nDRY RUN ONLY: no Supabase rows were written.")

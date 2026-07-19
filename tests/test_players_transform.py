@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from scraping_biwenger.helper_player_matches import _get_season_label
+from scraping_biwenger.helper_player_matches import _get_season_label, _points_content_is_loaded
 from scraping_biwenger.players.transform import (
     PLAYER_MATCHES_COLUMNS,
     PLAYER_STATS_COLUMNS,
@@ -60,6 +60,32 @@ def test_get_season_label_normalizes_url_fallback():
     assert _get_season_label(page) == "2026/2027"
 
 
+def test_points_content_is_loaded_for_no_rounds_message():
+    page = _FakePage(
+        {
+            "player-detail-points": _FakeLocator(
+                text="2025/2026 season AS.com and SofaScore average Hasn't played any round yet",
+                count=1,
+            ),
+        }
+    )
+
+    assert _points_content_is_loaded(page) is True
+
+
+def test_points_content_is_loaded_for_no_rounds_message_with_curly_apostrophe():
+    page = _FakePage(
+        {
+            "player-detail-points": _FakeLocator(
+                text="Hasn’t played any round yet",
+                count=1,
+            ),
+        }
+    )
+
+    assert _points_content_is_loaded(page) is True
+
+
 def test_transform_player_outputs_normalizes_three_payloads():
     stats_rows = [
         {
@@ -80,7 +106,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
             "market_usage_pct": None,
             "season": "2026/2027",
             "name": "ignored duplicate source field",
-            "slug": "ignored-slug",
+            "slug": "player-one",
             "href": "/la-liga/players/ignored-slug",
         }
     ]
@@ -94,6 +120,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
             "events": [{"type": "goal"}],
             "player_name": "Player One",
             "team": "Athletic",
+            "slug": "player-one",
             "scoring_system": "sofascore",
         },
         {
@@ -105,6 +132,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
             "events": [{"type": "goal"}],
             "player_name": "Player One",
             "team": "Athletic",
+            "slug": "player-one",
             "scoring_system": "sofascore",
         },
     ]
@@ -137,6 +165,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
     assert list(value_df.columns) == PLAYER_VALUE_COLUMNS
     assert stats_df.loc[0, "player_name"] == "Player One"
     assert stats_df.loc[0, "team"] == "Athletic"
+    assert stats_df.loc[0, "slug"] == "player-one"
     assert stats_df.loc[0, "status_detail"] is None
     assert stats_df.loc[0, "scoring_system"] == "sofascore"
     assert stats_df.loc[0, "points"] == 42
@@ -144,6 +173,7 @@ def test_transform_player_outputs_normalizes_three_payloads():
     assert stats_df.loc[0, "as_of_date"] == "2026-07-18"
     assert len(matches_df) == 1
     assert matches_df.loc[0, "match_date"] == "2026-08-20"
+    assert matches_df.loc[0, "slug"] == "player-one"
     assert matches_df.loc[0, "scoring_system"] == "sofascore"
     assert matches_df.loc[0, "as_of_date"] == "2026-07-18"
     assert len(value_df) == 1
@@ -176,6 +206,31 @@ def test_transform_player_outputs_defaults_scoring_system_to_sofascore():
     )
 
     assert stats_df.loc[0, "scoring_system"] == "sofascore"
+
+
+def test_transform_player_outputs_keeps_duplicate_names_when_slugs_differ():
+    stats_df, _, _ = transform_player_outputs(
+        [
+            {
+                "player_name": "Moussa Diarra",
+                "team": "Alavés",
+                "slug": "moussa-diarra",
+                "points": 5,
+            },
+            {
+                "player_name": "Moussa Diarra",
+                "team": "Alavés",
+                "slug": "moussa-diarra-2",
+                "points": 2,
+            },
+        ],
+        [],
+        [],
+        as_of_date="2026-07-19",
+    )
+
+    assert len(stats_df) == 2
+    assert set(stats_df["slug"]) == {"moussa-diarra", "moussa-diarra-2"}
 
 
 def test_validate_player_payloads_rejects_missing_columns():

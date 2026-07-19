@@ -15,6 +15,7 @@ def scrape_players_snapshot(
     *,
     max_pages: int | None = None,
     max_players_detail: int | None = None,
+    player_slug: str | None = None,
 ):
     """
     Scrape and normalize player stats, matches, and value history from a logged-in page.
@@ -24,6 +25,7 @@ def scrape_players_snapshot(
         logger,
         max_pages=max_pages,
         max_players_detail=max_players_detail,
+        player_slug=player_slug,
     )
     if not players_list:
         logger.warning("No players extracted; returning empty player payloads.")
@@ -48,6 +50,7 @@ def run_player_pipeline(
     persist: bool = True,
     max_pages: int = 100,
     max_players_detail: int = 1_000,
+    player_slug: str | None = None,
     logger=None,
 ):
     """
@@ -77,6 +80,7 @@ def run_player_pipeline(
             logger,
             max_pages=max_pages,
             max_players_detail=max_players_detail,
+            player_slug=player_slug,
         )
 
         if persist:

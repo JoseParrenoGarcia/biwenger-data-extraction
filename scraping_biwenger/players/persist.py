@@ -23,6 +23,13 @@ PLAYER_TABLES = [
 ]
 
 
+def _optional_text(value):
+    if pd.isna(value):
+        return None
+    text = str(value).strip()
+    return text or None
+
+
 def missing_table_message(table_names: list[str]) -> str:
     quoted = ", ".join(f"'{name}'" for name in table_names)
     return (
@@ -66,9 +73,8 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
             logger.info("No player stats to process.")
         return
 
-    for pname, team, as_of_date, scoring_system in (
-        stats_df[["player_name", "team", "as_of_date", "scoring_system"]]
-        .dropna()
+    for pname, team, slug, as_of_date, scoring_system in (
+        stats_df[["player_name", "team", "slug", "as_of_date", "scoring_system"]]
         .drop_duplicates()
         .itertuples(index=False, name=None)
     ):
@@ -78,7 +84,8 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
             pname,
             team,
             as_of_date,
-            scoring_system,
+            _optional_text(scoring_system),
+            _optional_text(slug),
         )
 
     payload = stats_df.astype(object).where(stats_df.notna(), None).to_dict(orient="records")
@@ -101,8 +108,8 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
         return
 
     to_insert = []
-    for (pname, team, scoring_system), group in matches_df.groupby(
-        ["player_name", "team", "scoring_system"],
+    for (pname, team, slug, scoring_system), group in matches_df.groupby(
+        ["player_name", "team", "slug", "scoring_system"],
         dropna=False,
     ):
         dates = group["match_date"].dropna().unique().tolist()
@@ -115,7 +122,8 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
             pname,
             team,
             dates,
-            scoring_system,
+            _optional_text(scoring_system),
+            _optional_text(slug),
         )
         to_insert.append(group)
 

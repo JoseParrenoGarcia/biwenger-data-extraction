@@ -202,12 +202,15 @@ def delete_stats_for_player_team_day(
     team: str,
     as_of_date: str,
     scoring_system: str | None = None,
+    slug: str | None = None,
 ) -> None:
     query = supabase.table(table_name)\
         .delete()\
-        .eq("player_name", player_name)\
-        .eq("team", team)\
         .eq("as_of_date", as_of_date)
+    if slug:
+        query = query.eq("slug", slug)
+    else:
+        query = query.eq("player_name", player_name).eq("team", team)
     if scoring_system is not None:
         query = query.eq("scoring_system", scoring_system)
     query.execute()
@@ -219,10 +222,11 @@ def delete_matches_for_player_dates(
     team: str,
     dates: List[str],
     scoring_system: str | None = None,
+    slug: str | None = None,
     chunk_size: int = 100,
 ) -> None:
     """
-    Delete existing match rows for (player_name, team) limited to the given match_date list.
+    Delete existing match rows for slug, or fallback (player_name, team), limited to the given match_date list.
     - `dates` must be 'YYYY-MM-DD' strings (normalize before calling).
     - Chunked to keep the SQL IN() list small and avoid timeouts.
     """
@@ -236,9 +240,11 @@ def delete_matches_for_player_dates(
         batch = uniq_dates[i : i + chunk_size]
         query = supabase.table(table_name) \
             .delete() \
-            .eq("player_name", player_name) \
-            .eq("team", team) \
             .in_("match_date", batch)
+        if slug:
+            query = query.eq("slug", slug)
+        else:
+            query = query.eq("player_name", player_name).eq("team", team)
         if scoring_system is not None:
             query = query.eq("scoring_system", scoring_system)
         query.execute()

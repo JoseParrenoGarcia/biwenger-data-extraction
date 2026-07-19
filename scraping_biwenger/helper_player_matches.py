@@ -102,15 +102,56 @@ def _log_timing(logger, label: str, started_at: float) -> None:
         logger.info("%s completed in %.2fs", label, time.time() - started_at)
 
 
+POINTS_TABLE_SEL = "player-detail-points point-list table"
+POINTS_ROOT_SEL = "player-detail-points"
+SCORING_BUTTON_SEL = 'player-detail-points score-selector-btn button[modalmenutitle="Scoring system"]'
+SCORING_BUTTON_FALLBACK_SEL = 'button[modalmenutitle="Scoring system"]'
+NO_ROUNDS_TEXT_RE = re.compile(r"hasn['’]t played any round yet", re.I)
+
+
+def _points_panel_text(page: Page) -> str:
+    return _safe_text(page.locator(POINTS_ROOT_SEL).first)
+
+
+def _points_content_is_loaded(page: Page) -> bool:
+    """
+    True when the Points panel is usable, even if the player has no match table.
+    Some players render "Hasn't played any round yet" instead of point-list rows.
+    """
+    try:
+        if page.locator(POINTS_TABLE_SEL).first.count() > 0:
+            return True
+        if page.locator(SCORING_BUTTON_SEL).first.count() > 0:
+            return True
+        return bool(NO_ROUNDS_TEXT_RE.search(_points_panel_text(page)))
+    except Exception:
+        return False
+
+
+def _wait_for_points_content(page: Page, timeout: int) -> None:
+    page.wait_for_function(
+        """
+        () => {
+            const root = document.querySelector('player-detail-points');
+            if (!root) return false;
+            if (root.querySelector('point-list table')) return true;
+            if (root.querySelector('score-selector-btn button[modalmenutitle="Scoring system"]')) return true;
+            return /hasn['’]t played any round yet/i.test(root.textContent || '');
+        }
+        """,
+        timeout=timeout,
+    )
+
+
 def open_points_tab(page: Page, timeout: int = 10_000, logger=None):
     """
     Ensure the right-hand 'Points' tab is active and loaded.
-    Click the tab header (not the tabpanel) and wait for the table or 'Total' block.
+    Click the tab header (not the tabpanel) and wait for usable Points content.
     Safe to call if already active.
     """
     started_at = time.time()
     # Already visible?
-    if page.locator("player-detail-points point-list table").first.count() > 0:
+    if _points_content_is_loaded(page):
         _log_timing(logger, "Points tab already visible check", started_at)
         return
 
@@ -143,16 +184,12 @@ def open_points_tab(page: Page, timeout: int = 10_000, logger=None):
 
     # Even if we didn't click (maybe already selected), wait for content
     try:
-        page.wait_for_selector(
-            "player-detail-points point-list table, player-detail-points .section.light:has-text('Total')",
-            timeout=timeout,
-            state="visible",
-        )
+        _wait_for_points_content(page, timeout=timeout)
         _log_timing(logger, "Points tab open/wait", started_at)
     except PWTimeout:
         _log_timing(logger, "Points tab open/wait failed", started_at)
         raise RuntimeError(
-            "Points tab did not load its table. Verify the header selector and that the tab is present."
+            "Points tab did not load usable content. Verify the header selector and that the tab is present."
         )
 
 
@@ -176,8 +213,8 @@ def select_scoring_system(
     started_at = time.time()
     open_points_tab(page, timeout=timeout, logger=logger)
 
-    button_selector = 'player-detail-points score-selector-btn button[modalmenutitle="Scoring system"]'
-    fallback_selector = 'button[modalmenutitle="Scoring system"]'
+    button_selector = SCORING_BUTTON_SEL
+    fallback_selector = SCORING_BUTTON_FALLBACK_SEL
 
     button = page.locator(button_selector).first
     if button.count() == 0:
@@ -215,7 +252,7 @@ def select_scoring_system(
         },
         timeout=timeout,
     )
-    page.wait_for_selector("player-detail-points point-list table", timeout=timeout, state="visible")
+    _wait_for_points_content(page, timeout=timeout)
 
     if logger:
         logger.info("Selected scoring system: %s", target_label)
@@ -242,7 +279,12 @@ def scrape_player_matches(page: Page, logger=None) -> List[Dict]:
         return []
 
     # Get the table; if it's not there, just return []
-    tbl = page.locator("player-detail-points point-list table").first
+    if NO_ROUNDS_TEXT_RE.search(_points_panel_text(page)):
+        if logger:
+            logger.info("ℹ️ Player has not played any round yet; no match rows to scrape.")
+        return []
+
+    tbl = page.locator(POINTS_TABLE_SEL).first
     try:
         tbl.wait_for(state="visible", timeout=8000)
     except Exception:

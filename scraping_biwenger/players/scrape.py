@@ -27,10 +27,37 @@ def scrape_player_rows(
     *,
     max_pages: int | None = None,
     max_players_detail: int | None = None,
+    player_slug: str | None = None,
 ) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     """
     Scrape player discovery rows plus detail, match, and value-history rows.
     """
+    if player_slug:
+        slug = player_slug.strip().strip("/")
+        if "/" in slug:
+            slug = slug.rstrip("/").split("/")[-1]
+        selected_players = [
+            {
+                "name": slug,
+                "slug": slug,
+                "href": f"/la-liga/players/{slug}",
+                "open_by_href_only": True,
+            }
+        ]
+        if logger:
+            logger.info(
+                "Targeting one player by slug '%s'; skipping player-list discovery.",
+                slug,
+            )
+        player_detail_rows, match_rows, value_history_rows = scrape_all_players_detail(
+            logger,
+            page,
+            selected_players,
+            max_players=1,
+            collect_matches=True,
+        )
+        return selected_players, player_detail_rows, match_rows, value_history_rows
+
     select_player_table_layout(page, logger=logger)
 
     players_list = extract_all_player_names(
@@ -61,4 +88,3 @@ def scrape_player_rows(
         collect_matches=True,
     )
     return players_list, player_detail_rows, match_rows, value_history_rows
-
