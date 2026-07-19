@@ -53,12 +53,12 @@ The repo has basic unit tests, but they mostly cover the news modules that are c
   - Prefers `.venv/bin/python`.
   - Sends macOS notifications through `osascript`.
   - Runs `python -m scraping_biwenger.runner run_scraping_players`.
-  - Note: `scraping_biwenger.runner` does not parse the `run_scraping_players` argument, so the extra argument is currently ignored by Python code.
+  - `scraping_biwenger.runner` now parses the legacy `run_scraping_players` argument explicitly.
 
 - `bash_scripts/dev_run_scraping_players.sh`
   - Same wrapper pattern.
-  - Runs `python -m scraping_biwenger.dev_get_player_stats run_scraping_players`.
-  - This appears to be a development-only version of the player stats ETL.
+  - Runs `python -m scraping_biwenger.get_player_stats run_scraping_players`.
+  - This is now a development shell wrapper around the standard player stats CLI.
 
 - `bash_scripts/run_scraping_news.sh`
   - Runs `scraping_news/runner.py`.
@@ -120,9 +120,9 @@ The player pipeline runner orchestrates two ETL stages:
 
 It logs total and per-step durations into `logs/runner_scraping_biwenger.log`.
 
-### `scraping_biwenger/scraper_actions_in_biwenger.py`
+### Shared Biwenger helpers
 
-This module contains shared browser and login behavior:
+Shared browser and login behavior now lives under `scraping_biwenger/shared/`:
 
 - Loads credentials from `secrets/biwenger.toml`.
 - Supports multiple credential profiles, currently including default `biwenger` and `biwenger_player_scraper`.
@@ -202,28 +202,27 @@ changed_mask = g["date"].isin(existing["date"]) & (g["market_value_eur"] != g["d
 
 `db_map` maps date to market value, so the expression works mechanically, but the coupling is subtle and should be tested directly.
 
-### Biwenger helper modules
+### Biwenger player modules
 
-- `helper_extract_all_player_names.py`
+Player-specific scraping helpers now live under `scraping_biwenger/players/`:
+
+- `discover.py`
   - Paginates or scrolls the players table and extracts player identity metadata.
 
-- `helper_search_and_open_player.py`
+- `search_and_open.py`
   - Focuses and clears search, types a player name, waits for filtered results, opens player detail, and returns to the table.
 
-- `helper_players_detail.py`
+- `detail.py`
   - Parses the player detail panel. Includes several parsing helpers for integers, floats, percentages, money, status, team, position, and season labels.
 
-- `helper_player_matches.py`
+- `matches.py`
   - Opens the points tab and scrapes match rows, including season, round, date, points, best XI, and events.
 
-- `helper_player_value.py`
+- `value_history.py`
   - Opens the value tab, downloads CSV data, normalizes value history into a dataframe, and attaches player context.
 
-- `helper_pipeline_loop.py`
+- `detail_loop.py`
   - Coordinates detail, match, and value scraping for every player.
-
-- `utils.py`
-  - Contains `_rand_sleep`.
 
 ## News scraping pipeline - removal candidate
 
@@ -816,11 +815,7 @@ The scripts are macOS/launchd-oriented and hardcode a user path. Consider:
 
 ### 9. Address duplicate development modules
 
-`scraping_biwenger/dev_get_player_stats.py` is a near-duplicate of `get_player_stats.py`. Decide whether to:
-
-- delete it
-- turn it into a small wrapper with dev defaults
-- expose dev controls through CLI flags
+The duplicate development player-stats wrapper has been consolidated into the standard `get_player_stats.py` CLI. Development verification code now lives under `scraping_biwenger/dev/`.
 
 ### 10. Tighten dependency management
 
@@ -836,7 +831,7 @@ The requirements file should represent direct imports, not just what happens to 
 6. Create example secret templates.
 7. Add Biwenger table schema documentation.
 8. Split Biwenger persistence helpers out of `supabase_client/utils.py`.
-9. Delete or consolidate `dev_get_player_stats.py`.
+9. Keep development verification commands consolidated under `scraping_biwenger/dev/`.
 10. Add parser-level tests for Biwenger scraping helpers.
 11. Make shell scripts path-portable.
 12. Audit and minimize `requirements.txt`.

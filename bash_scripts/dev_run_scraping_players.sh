@@ -31,7 +31,7 @@ notify() {
 notify "Players scraping started…"
 
 # --- Run your scraper (module exec + required subcommand) ---
-if "$PY" -m scraping_biwenger.dev_get_player_stats run_scraping_players "$@"; then
+if "$PY" -m scraping_biwenger.get_player_stats run_scraping_players "$@"; then
   notify "Players scraping ✅ completed."
   exit 0
 else

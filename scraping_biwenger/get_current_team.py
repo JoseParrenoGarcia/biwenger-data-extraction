@@ -2,16 +2,7 @@ import argparse
 
 import pandas as pd
 
-from scraping_biwenger.current_team.persist import insert_current_team
 from scraping_biwenger.current_team.pipeline import run_current_team_pipeline
-from scraping_biwenger.current_team.scrape import (
-    _mv_change_from_increment,
-    _status_from_element,
-    _to_float_generic,
-    _to_int_generic,
-    _to_int_money,
-    scrape_basic_team_table,
-)
 
 
 def ETL_get_current_team(headless: bool = True, persist: bool = True):

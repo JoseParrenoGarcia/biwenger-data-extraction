@@ -1,7 +1,7 @@
 from scraping_biwenger.players.discover import extract_all_player_names
 from scraping_biwenger.players.detail_loop import scrape_all_players_detail
 from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu
-from scraping_biwenger.utils import _rand_sleep
+from scraping_biwenger.shared.timing import _rand_sleep
 
 
 def select_player_table_layout(page, logger=None) -> None:

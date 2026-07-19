@@ -1,4 +1,4 @@
-from scraping_biwenger.utils import _rand_sleep
+from scraping_biwenger.shared.timing import _rand_sleep
 from typing import List, Optional, Dict
 from playwright.sync_api import Page, TimeoutError as PWTimeout
 import time
