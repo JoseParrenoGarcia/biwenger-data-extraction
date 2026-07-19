@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from scraping_biwenger.helper_player_matches import _get_season_label, _points_content_is_loaded
+from scraping_biwenger.players.matches import _get_season_label, _points_content_is_loaded
 from scraping_biwenger.players.transform import (
     PLAYER_MATCHES_COLUMNS,
     PLAYER_STATS_COLUMNS,
