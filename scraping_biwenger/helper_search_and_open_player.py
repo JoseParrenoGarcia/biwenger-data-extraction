@@ -10,7 +10,6 @@ PLAYER_ROW_ANCHORS_SEL = "table.table.no-swipe tbody tr th[scope='row'] a"
 PLAYER_DETAIL_READY_SEL = "player-detail-stats"
 
 # going back to main page pointers
-PLAYER_TABLE_ROWS_SEL = "table.table.no-swipe tbody tr"
 BACK_CONTAINER_SEL = "div.header .container[role='button'][aria-label='Close']"
 BACK_ICON_SEL = "div.header i.icon.icon-arrow-left"
 
@@ -214,10 +213,18 @@ def clear_search_box_if_present(page: Page) -> None:
     except Exception:
         pass
 
-def click_back_to_players_table(page: Page, timeout_ms: int = 8000) -> bool:
+def _clear_search_box_when_ready(page: Page, timeout_ms: int = 1200) -> None:
+    try:
+        page.wait_for_selector(SEARCH_INPUT_SEL, timeout=timeout_ms, state="visible")
+    except PWTimeout:
+        return
+    clear_search_box_if_present(page)
+
+def click_back_to_players_table(page: Page, timeout_ms: int = 3500) -> bool:
     """
     Click the arrow-back in the player detail header to return to the table.
-    Fallback to go_back() / reload if needed. Waits until table & search reappear.
+    Fallback to go_back() / reload if needed. Waits for player-list anchors
+    and clears search when the search box is ready.
     """
     try:
         # Prefer the container with role=button (larger hitbox)
@@ -230,18 +237,16 @@ def click_back_to_players_table(page: Page, timeout_ms: int = 8000) -> bool:
             page.go_back(wait_until="domcontentloaded")
 
         # Wait until we are back on the table view
-        page.wait_for_selector(PLAYER_TABLE_ROWS_SEL, timeout=timeout_ms)
-        page.wait_for_selector(SEARCH_INPUT_SEL, timeout=timeout_ms)
-        clear_search_box_if_present(page)
+        page.wait_for_selector(PLAYER_ROW_ANCHORS_SEL, timeout=timeout_ms)
+        _clear_search_box_when_ready(page)
         return True
 
     except PWTimeout:
         # Last fallback: hard reload; then try waiting again
         try:
             page.reload(wait_until="domcontentloaded")
-            page.wait_for_selector(PLAYER_TABLE_ROWS_SEL, timeout=timeout_ms)
-            page.wait_for_selector(SEARCH_INPUT_SEL, timeout=timeout_ms)
-            clear_search_box_if_present(page)
+            page.wait_for_selector(PLAYER_ROW_ANCHORS_SEL, timeout=timeout_ms)
+            _clear_search_box_when_ready(page)
             return True
         except Exception:
             return False
