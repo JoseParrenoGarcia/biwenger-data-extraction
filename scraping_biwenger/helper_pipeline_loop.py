@@ -112,6 +112,7 @@ def scrape_all_players_detail(
                 for r in rows:
                     r["player_name"] = detail.get("player_name", "") or name
                     r["team"] = detail.get("team", "")
+                    r["slug"] = slug
                     r["scoring_system"] = scoring_system
                 match_rows.extend(rows)
 
@@ -126,7 +127,11 @@ def scrape_all_players_detail(
             vdf = scrape_value_history_for_player(
                 page,
                 logger=logger,
-                player_ctx={"player_name": name, "team": detail.get("team", ""), "slug": slug},
+                player_ctx={
+                    "player_name": detail.get("player_name", "") or name,
+                    "team": detail.get("team", ""),
+                    "slug": slug,
+                },
                 timeout=7000,
             )
             if not vdf.empty:

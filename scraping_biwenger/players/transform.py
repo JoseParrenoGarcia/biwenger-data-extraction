@@ -6,6 +6,7 @@ import pandas as pd
 PLAYER_STATS_COLUMNS = [
     "player_name",
     "team",
+    "slug",
     "position",
     "status",
     "status_detail",
@@ -32,6 +33,7 @@ PLAYER_MATCHES_COLUMNS = [
     "events",
     "player_name",
     "team",
+    "slug",
     "scoring_system",
     "as_of_date",
 ]
@@ -60,6 +62,7 @@ FLOAT_COLUMNS = [
 ]
 
 OPTIONAL_TEXT_COLUMNS = [
+    "slug",
     "position",
     "status",
     "status_detail",
@@ -109,15 +112,17 @@ def transform_player_outputs(
     if player_detail_df.empty:
         stats_df = pd.DataFrame(columns=PLAYER_STATS_COLUMNS)
     else:
-        player_detail_df = (
-            player_detail_df
-            .drop_duplicates(subset=["player_name"], keep="first")
-            .drop(columns=["name", "slug", "href"], errors="ignore")
+        player_detail_df = player_detail_df.drop(columns=["name", "href"], errors="ignore")
+        for column in ["player_name", "team", "slug"]:
+            if column not in player_detail_df.columns:
+                player_detail_df[column] = None
+        player_detail_df["_player_identity"] = player_detail_df.apply(
+            lambda row: _clean_text(row.get("slug"))
+            or f"{_clean_text(row.get('player_name'))}|{_clean_text(row.get('team'))}",
+            axis=1,
         )
-        stats_df = player_detail_df.drop_duplicates(
-            subset=["player_name", "team"],
-            keep="last",
-        ).copy()
+        stats_df = player_detail_df.drop_duplicates(subset=["_player_identity"], keep="last").copy()
+        stats_df = stats_df.drop(columns=["_player_identity"], errors="ignore")
         stats_df["as_of_date"] = today
         for column in PLAYER_STATS_COLUMNS:
             if column not in stats_df.columns:
@@ -150,10 +155,11 @@ def transform_player_outputs(
         matches_df["_events_dedupe_key"] = matches_df["events"].map(_events_dedupe_key)
         matches_df = matches_df.drop_duplicates(
             subset=[
-                "player_name",
-                "team",
-                "match_date",
-                "season_label",
+            "player_name",
+            "team",
+            "slug",
+            "match_date",
+            "season_label",
                 "round_label",
                 "scoring_system",
                 "points",
