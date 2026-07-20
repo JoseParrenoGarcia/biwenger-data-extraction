@@ -211,8 +211,11 @@ Active Biwenger tables:
 |---|---|---|
 | `biwenger_current_team` | Current squad snapshot | Replace all rows each run |
 | `biwenger_player_stats` | Daily player detail snapshot | Slug-aware delete/insert for the run date |
-| `biwenger_player_matches` | Player match history | Slug-aware delete/insert for scraped match dates |
+| `biwenger_player_matches` | Player match history | Slug-aware delete/insert for season-aware match identities |
 | `biwenger_player_value` | Market value history | Insert only new or changed value rows |
+
+The detailed table contract and persistence semantics are maintained in
+`docs/supabase_table_contracts.md`.
 
 Historical issue #93 tracks slug backfill and future simplification of legacy
 fallback identity logic.

@@ -24,6 +24,7 @@ Important current decisions:
 - The repo is Biwenger-only. Article/news scraping, structured news generation, and the LLM client have been removed.
 - Keep Biwenger and Supabase as the core integration points.
 - Keep `biwenger_current_team` as a replace-every-run current-state table, not a historical table.
+- Supabase table semantics are documented at @docs/supabase_table_contracts.md. Check that contract before changing persistence, migrations, checkpoint replay, or dashboard assumptions.
 - Use the `biwenger_player_scraper` profile for high-volume scraping.
 - Use the personal `biwenger` profile only where needed for current-team extraction.
 - Keep root `scraping_biwenger/` limited to public entrypoints and top-level runner code. Owned implementation should live under `current_team/`, `players/`, `shared/`, or `dev/`.
@@ -54,6 +55,7 @@ Important current decisions:
 - Raw commands are documented in `README.md` and `docs/repo_architecture_audit.md` if Make is not convenient.
 - Do not write to Supabase until dry-run output looks correct and the user explicitly approves a write test. Optional write checks are `make write-players-2` and `make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>`.
 - Supabase schema bootstrap uses the Supabase CLI as a system dependency, not a Python package. Do not add the Supabase CLI to `requirements.txt`.
+- Keep generic Supabase primitives in `supabase_client/`; Biwenger-specific table identity, delete, and delta logic belongs under `scraping_biwenger/current_team/` or `scraping_biwenger/players/`.
 - Player detail DOM notes are available at @docs/player_stats_dom_notes.md. Start there when investigating player scraping selectors, timing, or parser behavior. The raw copied DOM snapshot is at @docs/player_stats_html.txt.
 - If inspecting large copied Biwenger HTML dumps, prefer using subagents or narrow shell searches so the main context is not flooded with raw DOM.
 - Validate dataframe columns and payload schemas before uploads.

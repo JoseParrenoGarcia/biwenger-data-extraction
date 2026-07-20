@@ -71,6 +71,10 @@ python3 -m supabase_client.connection
 If the normal pipeline runs before the migration exists, it should fail with a
 clear message telling you to run the schema bootstrap first.
 
+The active Biwenger table semantics are documented in
+`docs/supabase_table_contracts.md`. Use that document when changing persistence
+or planning dashboard queries.
+
 ## Local Verification
 
 Start with unit tests because they do not need Biwenger, Playwright, or
