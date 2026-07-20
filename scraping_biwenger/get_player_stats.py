@@ -13,6 +13,7 @@ def ETL_get_player_stats(
     headless: bool = True,
     persist: bool = True,
     player_slug: str | None = None,
+    retry_top_players: int = 0,
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
     upload_batch_size: int = 10,
@@ -26,6 +27,7 @@ def ETL_get_player_stats(
         max_pages=max_pages,
         max_players_detail=max_players_detail,
         player_slug=player_slug,
+        retry_top_players=retry_top_players,
         checkpoint_dir=checkpoint_dir,
         checkpoint_enabled=checkpoint_enabled,
         upload_batch_size=upload_batch_size,
@@ -69,6 +71,15 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Scrape one Biwenger player directly by URL slug, "
             "for example 'moussa-diarra-2'. Skips player-list discovery."
+        ),
+    )
+    parser.add_argument(
+        "--retry-top-players",
+        type=int,
+        default=0,
+        help=(
+            "Retry first-pass open/SofaScore/detail failures for players ranked "
+            "within the top N selected players. Default 0 disables retries."
         ),
     )
     parser.add_argument(
@@ -126,6 +137,7 @@ def main() -> None:
         headless=not args.headed,
         persist=not args.dry_run,
         player_slug=args.player_slug,
+        retry_top_players=args.retry_top_players,
         checkpoint_dir=args.checkpoint_dir,
         checkpoint_enabled=not args.no_checkpoint,
         upload_batch_size=args.upload_batch_size,
