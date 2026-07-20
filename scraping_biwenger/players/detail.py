@@ -1,13 +1,15 @@
-from typing import Dict, Optional
-from playwright.sync_api import Page
 import re
 import time
+from typing import Dict, Optional
+
+from playwright.sync_api import Page
 
 from scraping_biwenger.shared.timing import log_timing_debug
 
 # -----------------------------
 # Small parsing helpers
 # -----------------------------
+
 
 def _parse_int(text: str) -> Optional[int]:
     if not text:
@@ -19,6 +21,7 @@ def _parse_int(text: str) -> Optional[int]:
     except Exception:
         return None
 
+
 def _parse_float(text: str) -> Optional[float]:
     if not text:
         return None
@@ -28,6 +31,7 @@ def _parse_float(text: str) -> Optional[float]:
         return float(s) if s not in ("", "-", "--", ".") else None
     except Exception:
         return None
+
 
 def _parse_money(text: str) -> Optional[int]:
     # "€23,020,000" -> 23020000
@@ -39,6 +43,7 @@ def _parse_money(text: str) -> Optional[int]:
         return int(s) if s not in ("", "-", "--") else None
     except Exception:
         return None
+
 
 def _parse_percent(text: str) -> Optional[float]:
     """'23%' -> 23.0  | '3.5 %' -> 3.5"""
@@ -59,6 +64,7 @@ def _log_timing(logger, label: str, started_at: float) -> None:
 # -----------------------------
 # Header fields
 # -----------------------------
+
 
 def scrape_player_name(page: Page, timeout_ms: int = 6000) -> str:
     """
@@ -98,6 +104,7 @@ def scrape_player_name(page: Page, timeout_ms: int = 6000) -> str:
 
     return ""
 
+
 def scrape_team_name(page: Page, timeout_ms: int = 6000) -> str:
     """
     From player-detail header: <team-link><a title="Real Madrid" href="...">
@@ -117,6 +124,7 @@ def scrape_team_name(page: Page, timeout_ms: int = 6000) -> str:
         pass
     return ""
 
+
 def scrape_position(page: Page, timeout_ms: int = 6000) -> str:
     """
     From header: <player-position title="Forward" aria-label="Forward">F</player-position>
@@ -134,9 +142,11 @@ def scrape_position(page: Page, timeout_ms: int = 6000) -> str:
     except Exception:
         return ""
 
+
 # -----------------------------
 # Status
 # -----------------------------
+
 
 def _normalize_status_category(classes: str, text: str) -> str:
     """
@@ -158,6 +168,7 @@ def _normalize_status_category(classes: str, text: str) -> str:
         return "fit"
 
     return "unknown"
+
 
 def scrape_player_status(page: Page, timeout_ms: int = 4000) -> Dict[str, Optional[str]]:
     """
@@ -186,7 +197,7 @@ def scrape_player_status(page: Page, timeout_ms: int = 4000) -> Dict[str, Option
     classes = (status_node.get_attribute("class") or "").strip()
     aria = (status_node.get_attribute("aria-label") or "").strip()
     title = (status_node.get_attribute("title") or "").strip()
-    text = (status_node.inner_text().strip() if status_node.inner_text() else "")
+    text = status_node.inner_text().strip() if status_node.inner_text() else ""
 
     detail = aria or title or text or ""
     status = _normalize_status_category(classes, detail)
@@ -196,9 +207,11 @@ def scrape_player_status(page: Page, timeout_ms: int = 4000) -> Dict[str, Option
         "status_detail": detail if detail else None,
     }
 
+
 # -----------------------------
 # Statistics panel (minimal)
 # -----------------------------
+
 
 def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
     """
@@ -230,10 +243,7 @@ def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
     # Points
     step_started_at = time.time()
     try:
-        pts = (
-            page.locator("player-detail-stats .stat", has_text="Points")
-            .locator("div").first.inner_text().strip()
-        )
+        pts = page.locator("player-detail-stats .stat", has_text="Points").locator("div").first.inner_text().strip()
         stats["points"] = _parse_int(pts) or 0
     except Exception:
         pass
@@ -250,7 +260,9 @@ def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
 
     step_started_at = time.time()
     try:
-        vmin = page.locator("player-detail-stats tr", has_text=re.compile(r"\bMin\b", re.I)).locator("td.tr").inner_text()
+        vmin = (
+            page.locator("player-detail-stats tr", has_text=re.compile(r"\bMin\b", re.I)).locator("td.tr").inner_text()
+        )
         stats["min_value"] = _parse_money(vmin) or 0
     except Exception:
         pass
@@ -258,7 +270,9 @@ def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
 
     step_started_at = time.time()
     try:
-        vmax = page.locator("player-detail-stats tr", has_text=re.compile(r"\bMax\b", re.I)).locator("td.tr").inner_text()
+        vmax = (
+            page.locator("player-detail-stats tr", has_text=re.compile(r"\bMax\b", re.I)).locator("td.tr").inner_text()
+        )
         stats["max_value"] = _parse_money(vmax) or 0
     except Exception:
         pass
@@ -269,7 +283,9 @@ def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
     try:
         mp = (
             page.locator("player-detail-stats .stat", has_text="Matches played")
-            .locator("div").first.inner_text().strip()
+            .locator("div")
+            .first.inner_text()
+            .strip()
         )
         stats["matches_played"] = _parse_int(mp) or 0
     except Exception:
@@ -307,28 +323,48 @@ def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
         stxt = page.locator("player-detail-stats .stat[data-section='Sales'] div").first.inner_text()
         utxt = page.locator("player-detail-stats .stat[data-section='Usage'] div").first.inner_text()
 
-        p = _parse_percent(ptxt); s = _parse_percent(stxt); u = _parse_percent(utxt)
-        if p is not None: stats["market_purchases_pct"] = p
-        if s is not None: stats["market_sales_pct"] = s
-        if u is not None: stats["market_usage_pct"] = u
+        p = _parse_percent(ptxt)
+        s = _parse_percent(stxt)
+        u = _parse_percent(utxt)
+        if p is not None:
+            stats["market_purchases_pct"] = p
+        if s is not None:
+            stats["market_sales_pct"] = s
+        if u is not None:
+            stats["market_usage_pct"] = u
     except Exception:
         # Fallbacks by label text in case attributes change
         try:
-            ptxt = page.locator("player-detail-stats .stat", has_text=re.compile(r"\bPurchases\b", re.I)).locator("div").first.inner_text()
+            ptxt = (
+                page.locator("player-detail-stats .stat", has_text=re.compile(r"\bPurchases\b", re.I))
+                .locator("div")
+                .first.inner_text()
+            )
             p = _parse_percent(ptxt)
-            if p is not None: stats["market_purchases_pct"] = p
+            if p is not None:
+                stats["market_purchases_pct"] = p
         except Exception:
             pass
         try:
-            stxt = page.locator("player-detail-stats .stat", has_text=re.compile(r"\bSales\b", re.I)).locator("div").first.inner_text()
+            stxt = (
+                page.locator("player-detail-stats .stat", has_text=re.compile(r"\bSales\b", re.I))
+                .locator("div")
+                .first.inner_text()
+            )
             s = _parse_percent(stxt)
-            if s is not None: stats["market_sales_pct"] = s
+            if s is not None:
+                stats["market_sales_pct"] = s
         except Exception:
             pass
         try:
-            utxt = page.locator("player-detail-stats .stat", has_text=re.compile(r"\bUsage\b", re.I)).locator("div").first.inner_text()
+            utxt = (
+                page.locator("player-detail-stats .stat", has_text=re.compile(r"\bUsage\b", re.I))
+                .locator("div")
+                .first.inner_text()
+            )
             u = _parse_percent(utxt)
-            if u is not None: stats["market_usage_pct"] = u
+            if u is not None:
+                stats["market_usage_pct"] = u
         except Exception:
             pass
     _log_timing(logger, "Player statistics market percentages parse", step_started_at)
@@ -341,24 +377,27 @@ def scrape_player_statistics(page, timeout_ms: int = 6000, logger=None) -> dict:
 # Season label (minimal, optional)
 # -----------------------------
 
+
 def _get_season_label(page, timeout=3000) -> str:
     # Prefer the explicit attribute in your markup
     btn = page.locator('player-detail-points .section.light button[modalmenutitle="Season"]').first
     if btn.count():
         text = (btn.inner_text(timeout=timeout) or "").strip()
-        return re.sub(r'\s*SEASON\s*', '', text, flags=re.IGNORECASE).strip()
+        return re.sub(r"\s*SEASON\s*", "", text, flags=re.IGNORECASE).strip()
 
     # Fallback: any button whose accessible name contains "season"
     try:
         btn2 = page.get_by_role("button", name=re.compile(r"season", re.I)).first
         text = (btn2.inner_text(timeout=timeout) or "").strip()
-        return re.sub(r'\s*SEASON\s*', '', text, flags=re.IGNORECASE).strip()
+        return re.sub(r"\s*SEASON\s*", "", text, flags=re.IGNORECASE).strip()
     except Exception:
         return ""
+
 
 # -----------------------------
 # Composer
 # -----------------------------
+
 
 def scrape_player_detail(page: Page, logger=None) -> Dict:
     started_at = time.time()
@@ -388,12 +427,12 @@ def scrape_player_detail(page: Page, logger=None) -> Dict:
     _log_timing(logger, "Player detail statistics parse", step_started_at)
 
     detail = {
-        "player_name":     player_name,
-        "team":            team,
-        "position":        position,
+        "player_name": player_name,
+        "team": team,
+        "position": position,
         **status,
         **statistics,
-        "season":          season_label or "",
+        "season": season_label or "",
     }
     _log_timing(logger, "Player detail full parse", started_at)
     return detail

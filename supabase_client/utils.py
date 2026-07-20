@@ -1,8 +1,10 @@
-from typing import List, Dict, Iterable, Any
-from postgrest.exceptions import APIError
 import hashlib
 import itertools
 import time
+from typing import Any, Dict, Iterable, List
+
+from postgrest.exceptions import APIError
+
 
 def _batched(iterable, n):
     """Fallback if Python <3.12. Your 3.13 has itertools.batched, but keep this for safety."""
@@ -12,6 +14,7 @@ def _batched(iterable, n):
         if not chunk:
             return
         yield chunk
+
 
 def check_if_table_exists(supabase, table_name: str) -> bool:
     """
@@ -24,6 +27,7 @@ def check_if_table_exists(supabase, table_name: str) -> bool:
         if "Could not find the table" in str(e):
             return False
         raise
+
 
 def insert_rows_into_table(supabase, table_name: str, rows: List[Dict]) -> None:
     """
@@ -48,6 +52,7 @@ def insert_rows_into_table(supabase, table_name: str, rows: List[Dict]) -> None:
     except Exception as e:
         # This will capture any errors during the insert operation
         raise Exception(f"❌ Supabase insert failed: {str(e)}")
+
 
 def insert_rows_into_table_batched(
     supabase,
@@ -74,6 +79,7 @@ def insert_rows_into_table_batched(
     if json_sanitize:
         try:
             import pandas as pd  # optional; if not available, we silently skip
+
             if isinstance(rows, list) and rows and isinstance(rows[0], dict):
                 df = pd.DataFrame(rows)
                 df = df.where(df.notna(), None)
@@ -111,6 +117,7 @@ def upsert_rows_into_table(supabase, table_name: str, rows: List[Dict], on_confl
         print(f"✅ Upserted {len(rows)} rows into '{table_name}' (conflict target: {on_conflict}).")
     except Exception as e:
         raise Exception(f"❌ Supabase upsert failed: {str(e)}")
+
 
 def compute_content_hash(row: Dict[str, Any], cols: Iterable[str]) -> str:
     def _norm_for_hash(v: Any) -> str:

@@ -1,6 +1,5 @@
-from pathlib import Path
 import tomllib as toml
-
+from pathlib import Path
 
 DEFAULT_ROOT_URL = "https://biwenger.as.com/"
 DEFAULT_APP_URL = "https://biwenger.as.com/app"
@@ -35,18 +34,13 @@ def load_biwenger_credentials(profile: str = "biwenger") -> dict:
 
     if profile not in config:
         available = ", ".join(config.keys())
-        raise ValueError(
-            f"Profile [{profile}] not found in {secrets_path}. "
-            f"Available sections: {available}"
-        )
+        raise ValueError(f"Profile [{profile}] not found in {secrets_path}. Available sections: {available}")
 
     section = config.get(profile, {})
     email = section.get("biwenger_email")
     password = section.get("biwenger_password")
 
     if not email or not password:
-        raise ValueError(
-            f"Missing 'biwenger_email' or 'biwenger_password' in section [{profile}] of {secrets_path}"
-        )
+        raise ValueError(f"Missing 'biwenger_email' or 'biwenger_password' in section [{profile}] of {secrets_path}")
 
     return {"email": email, "password": password}

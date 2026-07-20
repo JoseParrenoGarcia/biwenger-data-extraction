@@ -3,15 +3,17 @@ import os
 from datetime import datetime
 
 
-def get_logger(name: str,
-               log_file: str = "logs/pipeline.log",
-               level=logging.INFO,
-               include_timestamp_in_filename: bool = False,
-               *,
-               file_level=None,
-               console_level=None,
-               file_mode: str = "w",
-               reset_handlers: bool = False):
+def get_logger(
+    name: str,
+    log_file: str = "logs/pipeline.log",
+    level=logging.INFO,
+    include_timestamp_in_filename: bool = False,
+    *,
+    file_level=None,
+    console_level=None,
+    file_mode: str = "w",
+    reset_handlers: bool = False,
+):
     """
     Create and configure a logger with both console and file output.
 
@@ -55,8 +57,7 @@ def get_logger(name: str,
 
     # Enhanced formatter with more detailed information
     formatter = logging.Formatter(
-        '%(asctime)s | %(name)-20s | %(levelname)-8s | %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        "%(asctime)s | %(name)-20s | %(levelname)-8s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
     # Console handler - shows logs in terminal
@@ -65,7 +66,7 @@ def get_logger(name: str,
     console_handler.setLevel(console_level if console_level is not None else level)
 
     # File handler - saves logs to file with UTF-8 encoding for special characters
-    file_handler = logging.FileHandler(log_file, encoding='utf-8', mode=file_mode)
+    file_handler = logging.FileHandler(log_file, encoding="utf-8", mode=file_mode)
     file_handler.setFormatter(formatter)
     file_handler.setLevel(file_level if file_level is not None else level)
 

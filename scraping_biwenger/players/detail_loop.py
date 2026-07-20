@@ -1,28 +1,32 @@
-from typing import Callable, List, Dict, Optional, Tuple
+import random
+import time
+from typing import Callable, Dict, List, Optional, Tuple
+
 from playwright.sync_api import Page
-import random, time
 
-from scraping_biwenger.shared.timing import log_timing_debug
-from scraping_biwenger.players.search_and_open import (
-    open_player_via_search,
-    click_back_to_players_table,
-    clear_search_box_if_present,
-)
 from scraping_biwenger.players.detail import scrape_player_detail
-from scraping_biwenger.players.value_history import open_value_tab, click_download_csv, scrape_value_history_for_player
-
 from scraping_biwenger.players.matches import (
     open_points_tab,
     scrape_player_matches,
     select_scoring_system,
     with_retries,
 )
+from scraping_biwenger.players.search_and_open import (
+    clear_search_box_if_present,
+    click_back_to_players_table,
+    open_player_via_search,
+)
+from scraping_biwenger.players.value_history import scrape_value_history_for_player
+from scraping_biwenger.shared.timing import log_timing_debug
+
 
 def _cooldown(min_ms=300, max_ms=900):
     time.sleep(random.uniform(min_ms / 1000, max_ms / 1000))
 
+
 def _log_timing(logger, label: str, started_at: float, *, player_slug: str = "") -> None:
     log_timing_debug(logger, label, started_at, player_slug=player_slug)
+
 
 def scrape_all_players_detail(
     logger,
@@ -147,18 +151,30 @@ def scrape_all_players_detail(
             detail_started_at = time.time()
             detail = scrape_player_detail(page, logger=logger)
             _log_timing(logger, "Detail scrape", detail_started_at, player_slug=slug)
-            detail.update({
-                "name": name,
-                "slug": slug,
-                "href": player.get("href", ""),
-                "scoring_system": scoring_system,
-            })
+            detail.update(
+                {
+                    "name": name,
+                    "slug": slug,
+                    "href": player.get("href", ""),
+                    "scoring_system": scoring_system,
+                }
+            )
             player_detail_rows.append(detail)
             processed += 1
             logger.debug(
                 "Stats scraped for %s: %s",
                 name,
-                {k: detail.get(k) for k in ['points','value','matches_played','average','market_purchases_pct','market_sales_pct']},
+                {
+                    k: detail.get(k)
+                    for k in [
+                        "points",
+                        "value",
+                        "matches_played",
+                        "average",
+                        "market_purchases_pct",
+                        "market_sales_pct",
+                    ]
+                },
             )
         except Exception as e:
             logger.exception(f"Failed scraping stats for '{name}': {e}")
@@ -185,11 +201,16 @@ def scrape_all_players_detail(
                 matches_started_at = time.time()
                 # your own helpers with a light retry
                 _ = open_points_tab(page, logger=logger)  # safe if already active
-                rows = with_retries(
-                    lambda: scrape_player_matches(page, logger=logger),
-                    validate=lambda r: r is not None and len(r) > 0,
-                    attempts=2, base_sleep=0.6, logger=logger
-                ) or []
+                rows = (
+                    with_retries(
+                        lambda: scrape_player_matches(page, logger=logger),
+                        validate=lambda r: r is not None and len(r) > 0,
+                        attempts=2,
+                        base_sleep=0.6,
+                        logger=logger,
+                    )
+                    or []
+                )
 
                 # enrich each row with player context
                 for r in rows:
@@ -268,7 +289,9 @@ def scrape_all_players_detail(
         if processed % 20 == 0 and processed > 0:
             _cooldown(500, 1500)
 
-    logger.info(f"🏁 Done. Players processed: {processed}. "
-                f"Detail rows: {len(player_detail_rows)}, Match rows: {len(match_rows)}")
+    logger.info(
+        f"🏁 Done. Players processed: {processed}. "
+        f"Detail rows: {len(player_detail_rows)}, Match rows: {len(match_rows)}"
+    )
 
     return player_detail_rows, match_rows, value_history_rows

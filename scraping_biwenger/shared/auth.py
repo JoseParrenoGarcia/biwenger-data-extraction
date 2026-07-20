@@ -101,7 +101,7 @@ def click_play_now(page, logger=None) -> None:
         'a.btn.primary.xl:has-text("Play now!")',
         'a[routerlink="/login"]',
         'a[href="/login"]',
-        'text=/^Play now!$/',
+        "text=/^Play now!$/",
     ]
 
     for sel in candidates:

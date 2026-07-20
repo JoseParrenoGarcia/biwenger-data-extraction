@@ -13,7 +13,6 @@ from scraping_biwenger.players.transform import (
     PLAYER_VALUE_COLUMNS,
 )
 
-
 DEFAULT_CHECKPOINT_ROOT = "run_artifacts/player_runs"
 
 

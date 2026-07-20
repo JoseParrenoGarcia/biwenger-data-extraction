@@ -1,8 +1,11 @@
-from playwright.sync_api import Page, TimeoutError as PWTimeout
-from typing import Dict
-from scraping_biwenger.shared.timing import _rand_sleep, log_timing_debug
 import random
 import time
+from typing import Dict
+
+from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PWTimeout
+
+from scraping_biwenger.shared.timing import _rand_sleep, log_timing_debug
 
 # search and select pointers
 SEARCH_INPUT_SEL = "player-filter input[placeholder='Search player']"
@@ -26,10 +29,12 @@ def focus_and_clear_search_box(page: Page, timeout_ms: int = 5000) -> None:
         inp.press("Backspace")
     _rand_sleep(0.1, 0.25)
 
+
 def type_player_name(page: Page, name: str) -> None:
     inp = page.locator(SEARCH_INPUT_SEL)
     inp.type(name, delay=random.uniform(20, 60))  # human-ish typing
     _rand_sleep(0.15, 0.3)
+
 
 def wait_table_filtered_for_name(page: Page, name: str, timeout_ms: int = 6000) -> bool:
     """
@@ -53,6 +58,7 @@ def wait_table_filtered_for_name(page: Page, name: str, timeout_ms: int = 6000) 
         _rand_sleep(0.1, 0.25)
     return False
 
+
 def click_matching_player_row(page: Page, name: str) -> bool:
     """
     Prefer exact name match (case-insensitive) among the visible rows; otherwise click first row.
@@ -73,6 +79,7 @@ def click_matching_player_row(page: Page, name: str) -> bool:
     rows.nth(target_idx).click()
     return True
 
+
 def wait_player_detail_loaded(page: Page, timeout_ms: int = 8000) -> bool:
     try:
         page.wait_for_selector(PLAYER_DETAIL_READY_SEL, timeout=timeout_ms)
@@ -80,10 +87,14 @@ def wait_player_detail_loaded(page: Page, timeout_ms: int = 8000) -> bool:
     except PWTimeout:
         return False
 
+
 def _log_timing(logger, label: str, started_at: float, *, player_slug: str = "") -> None:
     log_timing_debug(logger, label, started_at, player_slug=player_slug)
 
-def open_player_via_search(logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com") -> bool:
+
+def open_player_via_search(
+    logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com"
+) -> bool:
     """
     Try to open a player's detail page via the search box.
     Falls back to href navigation if the search path fails.
@@ -189,12 +200,15 @@ def open_player_via_search(logger, page: Page, player: Dict[str, str], base_url:
                 page.goto(base_url + href, wait_until="domcontentloaded")
                 if wait_player_detail_loaded(page, timeout_ms=8000):
                     logger.debug("Opened via fallback href after exception: %s", href)
-                    _log_timing(logger, "Player fallback href open after exception", fallback_started_at, player_slug=slug)
+                    _log_timing(
+                        logger, "Player fallback href open after exception", fallback_started_at, player_slug=slug
+                    )
                     _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
                     return True
             except Exception:
                 pass
         return False
+
 
 def clear_search_box_if_present(page: Page) -> None:
     """
@@ -213,12 +227,14 @@ def clear_search_box_if_present(page: Page) -> None:
     except Exception:
         pass
 
+
 def _clear_search_box_when_ready(page: Page, timeout_ms: int = 1200) -> None:
     try:
         page.wait_for_selector(SEARCH_INPUT_SEL, timeout=timeout_ms, state="visible")
     except PWTimeout:
         return
     clear_search_box_if_present(page)
+
 
 def click_back_to_players_table(page: Page, timeout_ms: int = 3500) -> bool:
     """

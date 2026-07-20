@@ -1,6 +1,6 @@
-import time
 import random
 import re
+import time
 
 
 def _timing_stage(label: str) -> str:

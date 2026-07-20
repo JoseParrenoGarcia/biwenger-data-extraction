@@ -1,9 +1,8 @@
-from scraping_biwenger.players.discover import extract_all_player_names
 from scraping_biwenger.players.detail_loop import scrape_all_players_detail
+from scraping_biwenger.players.discover import extract_all_player_names
 from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
 from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu
 from scraping_biwenger.shared.timing import _rand_sleep
-
 
 RETRYABLE_DETAIL_ERROR_STAGES = {
     "open_player",

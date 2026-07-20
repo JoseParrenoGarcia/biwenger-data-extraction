@@ -1,2 +1,1 @@
 """Player scraping pipeline package."""
-

@@ -6,7 +6,6 @@ from scraping_biwenger.players.html_parsers import (
 )
 from scraping_biwenger.players.value_history import parse_value_csv_text
 
-
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "biwenger"
 
 

@@ -10,14 +10,13 @@ from scraping_biwenger.players.checkpoints import (
     cleanup_old_player_runs,
     read_player_checkpoint,
 )
-from scraping_biwenger.players.pipeline import _concat_frames, upload_player_checkpoint
-from scraping_biwenger.players.pipeline import run_player_pipeline
-from scraping_biwenger.shared.timing import log_timing_debug
+from scraping_biwenger.players.pipeline import _concat_frames, run_player_pipeline, upload_player_checkpoint
 from scraping_biwenger.players.transform import (
     PLAYER_MATCHES_COLUMNS,
     PLAYER_STATS_COLUMNS,
     PLAYER_VALUE_COLUMNS,
 )
+from scraping_biwenger.shared.timing import log_timing_debug
 
 
 def test_player_checkpoint_writes_metadata_and_payloads(tmp_path):
@@ -242,8 +241,12 @@ def test_run_player_pipeline_replays_checkpoint_after_batch_upload_failure(tmp_p
         if len(calls) == 1:
             raise RuntimeError("Supabase temporarily unavailable")
 
-    monkeypatch.setattr("scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"})
-    monkeypatch.setattr("scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies)
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"}
+    )
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies
+    )
     monkeypatch.setattr("scraping_biwenger.players.pipeline.perform_login", lambda page, email, password, logger: None)
     monkeypatch.setattr("scraping_biwenger.players.pipeline.scrape_players_snapshot", fake_scrape_players_snapshot)
     monkeypatch.setattr("scraping_biwenger.players.pipeline.persist_player_outputs", fake_persist)
@@ -324,8 +327,12 @@ def test_run_player_pipeline_writes_log_inside_checkpoint_run_dir(tmp_path, monk
             pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
         )
 
-    monkeypatch.setattr("scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"})
-    monkeypatch.setattr("scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies)
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"}
+    )
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies
+    )
     monkeypatch.setattr("scraping_biwenger.players.pipeline.perform_login", lambda page, email, password, logger: None)
     monkeypatch.setattr("scraping_biwenger.players.pipeline.scrape_players_snapshot", fake_scrape_players_snapshot)
 

@@ -1,23 +1,18 @@
 import pandas as pd
 
-from supabase_client.connection import get_supabase_client
-
 from scraping_biwenger.current_team.repository import (
     clear_current_team_snapshot,
     current_team_table_exists,
     insert_current_team_rows,
 )
 from scraping_biwenger.current_team.transform import validate_current_team_payload
-
+from supabase_client.connection import get_supabase_client
 
 DEFAULT_CURRENT_TEAM_TABLE = "biwenger_current_team"
 
 
 def missing_table_message(table_name: str) -> str:
-    return (
-        f"Supabase table '{table_name}' does not exist. "
-        "Run the schema bootstrap before uploading data."
-    )
+    return f"Supabase table '{table_name}' does not exist. Run the schema bootstrap before uploading data."
 
 
 def replace_current_team(

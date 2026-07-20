@@ -1,6 +1,8 @@
 import os
+
 import toml
-from supabase import create_client, Client
+
+from supabase import Client, create_client
 
 
 def get_supabase_client(secrets_path_override: str = None) -> Client:

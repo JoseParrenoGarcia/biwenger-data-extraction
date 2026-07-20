@@ -66,14 +66,7 @@ def test_transform_current_team_normalizes_payload_types():
 
 
 def test_transform_current_team_keeps_optional_fields_nullable():
-    raw_df = pd.DataFrame(
-        [
-            {
-                column: None
-                for column in CURRENT_TEAM_COLUMNS
-            }
-        ]
-    )
+    raw_df = pd.DataFrame([{column: None for column in CURRENT_TEAM_COLUMNS}])
     raw_df.loc[0, "name"] = "Nyland"
     raw_df.loc[0, "status"] = "Fit"
 

@@ -1,8 +1,8 @@
 import pandas as pd
 
 from scraping_biwenger.players.persist import persist_player_matches, persist_player_values
-from scraping_biwenger.players.transform import PLAYER_MATCHES_COLUMNS, PLAYER_VALUE_COLUMNS
 from scraping_biwenger.players.repository import delete_matches_for_season_identities
+from scraping_biwenger.players.transform import PLAYER_MATCHES_COLUMNS, PLAYER_VALUE_COLUMNS
 
 
 class FakeQuery:
