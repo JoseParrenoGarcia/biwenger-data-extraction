@@ -1,8 +1,12 @@
 import pandas as pd
 
 from supabase_client.connection import get_supabase_client
-from supabase_client.utils import check_if_table_exists, insert_rows_into_table
 
+from scraping_biwenger.current_team.repository import (
+    clear_current_team_snapshot,
+    current_team_table_exists,
+    insert_current_team_rows,
+)
 from scraping_biwenger.current_team.transform import validate_current_team_payload
 
 
@@ -26,13 +30,13 @@ def replace_current_team(
     """
     supabase = get_supabase_client()
 
-    if not check_if_table_exists(supabase, table_name):
+    if not current_team_table_exists(supabase, table_name):
         message = missing_table_message(table_name)
         if logger:
             logger.error(message)
         raise RuntimeError(message)
 
-    supabase.table(table_name).delete().neq("id", 0).execute()
+    clear_current_team_snapshot(supabase, table_name)
     if logger:
         logger.info("Cleared existing rows from '%s'.", table_name)
 
@@ -51,13 +55,12 @@ def insert_current_team(
     validate_current_team_payload(df)
     supabase = supabase or get_supabase_client()
 
-    if not check_if_table_exists(supabase, table_name):
+    if not current_team_table_exists(supabase, table_name):
         message = missing_table_message(table_name)
         if logger:
             logger.error(message)
         raise RuntimeError(message)
 
-    rows = df.astype(object).where(pd.notna(df), None).to_dict(orient="records")
-    insert_rows_into_table(supabase, table_name=table_name, rows=rows)
+    insert_current_team_rows(supabase, table_name, df)
     if logger:
-        logger.info("Inserted %s rows into '%s'.", len(rows), table_name)
+        logger.info("Inserted %s rows into '%s'.", len(df), table_name)

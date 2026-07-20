@@ -1,14 +1,14 @@
 import pandas as pd
 
 from supabase_client.connection import get_supabase_client
-from supabase_client.utils import (
-    check_if_table_exists,
-    delete_matches_for_player_dates,
-    delete_matches_for_player_identities,
-    delete_rows_for_slug_dates,
-    delete_stats_for_player_team_day,
-    fetch_existing_values_for_slug,
-    insert_rows_into_table_batched,
+from scraping_biwenger.players.repository import (
+    delete_matches_for_legacy_dates,
+    delete_matches_for_season_identities,
+    delete_stats_snapshot,
+    delete_value_history_dates,
+    fetch_existing_value_history,
+    insert_player_rows_batched,
+    player_table_exists,
 )
 
 from scraping_biwenger.players.transform import validate_player_payloads
@@ -40,7 +40,7 @@ def missing_table_message(table_names: list[str]) -> str:
 
 
 def assert_player_tables_exist(supabase, logger=None) -> None:
-    missing = [table_name for table_name in PLAYER_TABLES if not check_if_table_exists(supabase, table_name)]
+    missing = [table_name for table_name in PLAYER_TABLES if not player_table_exists(supabase, table_name)]
     if missing:
         message = missing_table_message(missing)
         if logger:
@@ -79,7 +79,7 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
         .drop_duplicates()
         .itertuples(index=False, name=None)
     ):
-        delete_stats_for_player_team_day(
+        delete_stats_snapshot(
             supabase,
             PLAYER_STATS_TABLE,
             pname,
@@ -90,13 +90,10 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
         )
 
     payload = stats_df.astype(object).where(stats_df.notna(), None).to_dict(orient="records")
-    insert_rows_into_table_batched(
+    insert_player_rows_batched(
         supabase,
         table_name=PLAYER_STATS_TABLE,
         rows=payload,
-        chunk_size=1000,
-        sleep_s=0.03,
-        returning="minimal",
     )
     if logger:
         logger.info("Upserted %s player stat rows into '%s'.", len(payload), PLAYER_STATS_TABLE)
@@ -130,20 +127,19 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
             identity_df = group[identity_columns].drop_duplicates().astype(object)
             identity_df = identity_df.where(identity_df.notna(), None)
             identities = identity_df.to_dict(orient="records")
-            delete_matches_for_player_identities(
+            delete_matches_for_season_identities(
                 supabase,
                 PLAYER_MATCHES_TABLE,
                 identities,
             )
         else:
-            delete_matches_for_player_dates(
+            delete_matches_for_legacy_dates(
                 supabase,
                 PLAYER_MATCHES_TABLE,
                 pname,
                 team,
                 dates,
                 scoring_text,
-                None,
             )
         to_insert.append(group)
 
@@ -154,13 +150,10 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
 
     payload_df = pd.concat(to_insert, ignore_index=True)
     payload_df = payload_df.astype(object).where(payload_df.notna(), None)
-    insert_rows_into_table_batched(
+    insert_player_rows_batched(
         supabase,
         table_name=PLAYER_MATCHES_TABLE,
         rows=payload_df.to_dict(orient="records"),
-        chunk_size=1000,
-        sleep_s=0.03,
-        returning="minimal",
     )
     if logger:
         logger.info("Upserted %s match rows into '%s'.", len(payload_df), PLAYER_MATCHES_TABLE)
@@ -179,7 +172,7 @@ def persist_player_values(value_history_df: pd.DataFrame, *, supabase, logger=No
             continue
         min_d = group["date"].min()
         max_d = group["date"].max()
-        existing = fetch_existing_values_for_slug(
+        existing = fetch_existing_value_history(
             supabase,
             PLAYER_VALUE_TABLE,
             slug,
@@ -196,7 +189,7 @@ def persist_player_values(value_history_df: pd.DataFrame, *, supabase, logger=No
 
         changed_rows = group.loc[changed_mask]
         if not changed_rows.empty:
-            delete_rows_for_slug_dates(
+            delete_value_history_dates(
                 supabase,
                 PLAYER_VALUE_TABLE,
                 slug,
@@ -215,13 +208,10 @@ def persist_player_values(value_history_df: pd.DataFrame, *, supabase, logger=No
 
     payload_df = pd.concat(to_insert_all, ignore_index=True)
     payload_df = payload_df.astype(object).where(payload_df.notna(), None)
-    insert_rows_into_table_batched(
+    insert_player_rows_batched(
         supabase,
         PLAYER_VALUE_TABLE,
         payload_df.to_dict(orient="records"),
-        chunk_size=1000,
-        sleep_s=0.03,
-        returning="minimal",
     )
     if logger:
         logger.info("Inserted %s new or changed value history rows into '%s'.", len(payload_df), PLAYER_VALUE_TABLE)

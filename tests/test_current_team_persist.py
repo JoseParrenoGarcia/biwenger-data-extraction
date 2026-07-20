@@ -47,7 +47,7 @@ def test_missing_table_message_points_to_bootstrap():
 
 
 def test_insert_current_team_fails_clearly_when_table_is_missing(monkeypatch):
-    monkeypatch.setattr(persist, "check_if_table_exists", lambda supabase, table_name: False)
+    monkeypatch.setattr(persist, "current_team_table_exists", lambda supabase, table_name: False)
 
     with pytest.raises(RuntimeError, match="Run the schema bootstrap"):
         persist.insert_current_team(

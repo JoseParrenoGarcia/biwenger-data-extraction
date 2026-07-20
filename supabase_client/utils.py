@@ -1,10 +1,8 @@
-from typing import List, Dict, Iterable, Any, Union
+from typing import List, Dict, Iterable, Any
 from postgrest.exceptions import APIError
 import hashlib
 import itertools
 import time
-import pandas as pd
-import math
 
 def _batched(iterable, n):
     """Fallback if Python <3.12. Your 3.13 has itertools.batched, but keep this for safety."""
@@ -44,8 +42,7 @@ def insert_rows_into_table(supabase, table_name: str, rows: List[Dict]) -> None:
         return
 
     try:
-        # Newer Supabase libraries might have slightly different error handling
-        result = supabase.table(table_name).insert(rows).execute()
+        supabase.table(table_name).insert(rows).execute()
         print(f"✅ Inserted {len(rows)} rows into '{table_name}' successfully.")
 
     except Exception as e:
@@ -127,167 +124,3 @@ def compute_content_hash(row: Dict[str, Any], cols: Iterable[str]) -> str:
     parts = [_norm_for_hash(row.get(c)) for c in cols]
     payload = "|".join(parts)
     return hashlib.md5(payload.encode("utf-8")).hexdigest()
-
-def fetch_existing_values_for_slug(
-    supabase, table_name: str, slug: str, min_date: str, max_date: str, page_size: int = 2000
-) -> pd.DataFrame:
-    rows: List[Dict] = []
-    start = 0
-    while True:
-        res = (
-            supabase.table(table_name)
-            .select("date, market_value_eur")
-            .eq("slug", slug)
-            .gte("date", min_date)
-            .lte("date", max_date)
-            .range(start, start + page_size - 1)
-            .execute()
-        )
-        data = getattr(res, "data", None) or []
-        if not data: break
-        rows.extend(data)
-        if len(data) < page_size: break
-        start += page_size
-
-    df = pd.DataFrame(rows)
-    if df.empty:
-        return pd.DataFrame(columns=["date", "market_value_eur"])
-    df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
-    df["market_value_eur"] = pd.to_numeric(df["market_value_eur"], errors="coerce")
-    return df[["date", "market_value_eur"]]
-
-def delete_rows_for_slug_dates(
-    supabase, table_name: str, slug: str, dates: List[str]
-) -> None:
-    # dates is a small list (<= 365), safe for IN()
-    if not dates: return
-    supabase.table(table_name).delete().eq("slug", slug).in_("date", dates).execute()
-
-def compute_value_delta_for_slug(
-    new_df: pd.DataFrame,  # columns: date, market_value_eur, slug, (player_name, team)
-    existing_df: pd.DataFrame,  # columns: date, market_value_eur
-) -> pd.DataFrame:
-    """
-    Keep only rows where (date) doesn't exist in DB or value differs from DB.
-    Assumes 'date' is 'YYYY-MM-DD' string and values are numeric.
-    """
-    if new_df.empty:
-        return new_df
-
-    # De-dup within the incoming set (keep last seen per date)
-    new_df = (
-        new_df.copy()
-        .sort_values("date")
-        .drop_duplicates(subset=["date"], keep="last")
-    )
-    # If DB empty → everything is delta
-    if existing_df is None or existing_df.empty:
-        return new_df
-
-    merged = new_df.merge(
-        existing_df.rename(columns={"market_value_eur": "market_value_eur_db"}),
-        on="date",
-        how="left",
-    )
-    delta = merged[
-        merged["market_value_eur_db"].isna()
-        | (merged["market_value_eur"] != merged["market_value_eur_db"])
-    ].drop(columns=["market_value_eur_db"])
-    return delta.reset_index(drop=True)
-
-def delete_stats_for_player_team_day(
-    supabase,
-    table_name: str,
-    player_name: str,
-    team: str,
-    as_of_date: str,
-    scoring_system: str | None = None,
-    slug: str | None = None,
-) -> None:
-    query = supabase.table(table_name)\
-        .delete()\
-        .eq("as_of_date", as_of_date)
-    if slug:
-        query = query.eq("slug", slug)
-    else:
-        query = query.eq("player_name", player_name).eq("team", team)
-    if scoring_system is not None:
-        query = query.eq("scoring_system", scoring_system)
-    query.execute()
-
-def delete_matches_for_player_dates(
-    supabase,
-    table_name: str,
-    player_name: str,
-    team: str,
-    dates: List[str],
-    scoring_system: str | None = None,
-    slug: str | None = None,
-    chunk_size: int = 100,
-) -> None:
-    """
-    Delete existing match rows for slug, or fallback (player_name, team), limited to the given match_date list.
-    - `dates` must be 'YYYY-MM-DD' strings (normalize before calling).
-    - Chunked to keep the SQL IN() list small and avoid timeouts.
-    """
-    if not dates:
-        return
-
-    # dedupe + drop falsy
-    uniq_dates = sorted({d for d in dates if d})
-
-    for i in range(0, len(uniq_dates), chunk_size):
-        batch = uniq_dates[i : i + chunk_size]
-        query = supabase.table(table_name) \
-            .delete() \
-            .in_("match_date", batch)
-        if slug:
-            query = query.eq("slug", slug)
-        else:
-            query = query.eq("player_name", player_name).eq("team", team)
-        if scoring_system is not None:
-            query = query.eq("scoring_system", scoring_system)
-        query.execute()
-
-def delete_matches_for_player_identities(
-    supabase,
-    table_name: str,
-    identities: List[Dict[str, str]],
-    chunk_size: int = 100,
-) -> None:
-    """
-    Delete existing match rows for exact season-aware player match identities.
-
-    Each identity must include:
-      - slug
-      - season_label
-      - round_label
-      - match_date
-      - scoring_system
-    """
-    clean_identities = [
-        identity
-        for identity in identities
-        if identity.get("slug")
-        and identity.get("season_label")
-        and identity.get("round_label")
-        and identity.get("match_date")
-        and identity.get("scoring_system")
-    ]
-    if not clean_identities:
-        return
-
-    # PostgREST cannot express tuple IN() cleanly via this client, so delete
-    # exact identities one by one. This is still small per player scrape.
-    for batch in _batched(clean_identities, chunk_size):
-        for identity in batch:
-            (
-                supabase.table(table_name)
-                .delete()
-                .eq("slug", identity["slug"])
-                .eq("season_label", identity["season_label"])
-                .eq("round_label", identity["round_label"])
-                .eq("match_date", identity["match_date"])
-                .eq("scoring_system", identity["scoring_system"])
-                .execute()
-            )
