@@ -38,7 +38,9 @@ Important current decisions:
 - Prefer small, reviewable changes with clear rationale.
 - Before deleting code, identify entry points, imports, tests, scripts, schemas, and docs that reference it.
 - Avoid touching secrets or printing secret values.
-- Treat `secrets/` as off-limits unless the user explicitly asks for safe example templates.
+- `secrets/` is off-limits to all AI agents (Claude, Codex, and any other agent working in this repo). Agents may inspect only `secrets/*.example.toml`. If non-secret structure or details are needed, ask the user rather than opening real files under `secrets/`.
+- In this repo, Claude Code enforces this with a project-local `PreToolUse` hook (see "Active Hooks" in `CLAUDE.md`) that blocks tool calls touching real `secrets/` files. Codex does not currently have an equivalent project hook here; its protection is this `AGENTS.md` rule plus normal sandbox/session discipline — do not rely on tooling to catch a real-secret read for Codex.
+- Never paste real secret values into issues, logs, docs, commit messages, or PR descriptions.
 - Do not commit or rely on generated logs.
 - Do not commit to Git unless told so. And always create new branches, never to main.
 
