@@ -7,6 +7,8 @@ import time
 import random
 from datetime import datetime
 
+from scraping_biwenger.shared.timing import log_timing_debug
+
 # -----------------------------
 # Small safe helpers
 # -----------------------------
@@ -98,8 +100,7 @@ def _get_season_label(page: Page) -> str:
 # -----------------------------
 
 def _log_timing(logger, label: str, started_at: float) -> None:
-    if logger:
-        logger.info("%s completed in %.2fs", label, time.time() - started_at)
+    log_timing_debug(logger, label, started_at)
 
 
 POINTS_TABLE_SEL = "player-detail-points point-list table"
@@ -224,7 +225,7 @@ def select_scoring_system(
     target_key = _normalize_scoring_system_label(target_label)
     if _normalize_scoring_system_label(current_label) == target_key:
         if logger:
-            logger.info("Scoring system already selected: %s", current_label)
+            logger.debug("Scoring system already selected: %s", current_label)
         _log_timing(logger, "Scoring system selection", started_at)
         return target_key
 
@@ -255,7 +256,7 @@ def select_scoring_system(
     _wait_for_points_content(page, timeout=timeout)
 
     if logger:
-        logger.info("Selected scoring system: %s", target_label)
+        logger.debug("Selected scoring system: %s", target_label)
     _log_timing(logger, "Scoring system selection", started_at)
     return target_key
 
@@ -281,14 +282,14 @@ def scrape_player_matches(page: Page, logger=None) -> List[Dict]:
     # Get the table; if it's not there, just return []
     if NO_ROUNDS_TEXT_RE.search(_points_panel_text(page)):
         if logger:
-            logger.info("ℹ️ Player has not played any round yet; no match rows to scrape.")
+            logger.debug("Player has not played any round yet; no match rows to scrape.")
         return []
 
     tbl = page.locator(POINTS_TABLE_SEL).first
     try:
         tbl.wait_for(state="visible", timeout=8000)
     except Exception:
-        if logger: logger.info("ℹ️ No per-match table visible for this player; skipping matches.")
+        if logger: logger.debug("No per-match table visible for this player; skipping matches.")
         return []
 
     season_label = _get_season_label(page)

@@ -1,6 +1,7 @@
 import json
+import shutil
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -94,6 +95,7 @@ class PlayerRunCheckpoint:
         self.errors_path = self.run_dir / "errors.jsonl"
         self.upload_errors_path = self.run_dir / "upload_errors.jsonl"
         self.metadata_path = self.run_dir / "metadata.json"
+        self.run_log_path = self.run_dir / "run.log"
 
         self._ensure_files()
         if metadata is not None:
@@ -187,3 +189,34 @@ def read_player_checkpoint(run_dir: str | Path) -> PlayerCheckpointPayload:
         matches_df=dataframe_from_rows(match_rows, PLAYER_MATCHES_COLUMNS),
         value_history_df=dataframe_from_rows(value_rows, PLAYER_VALUE_COLUMNS),
     )
+
+
+def cleanup_old_player_runs(
+    root_dir: str | Path = DEFAULT_CHECKPOINT_ROOT,
+    *,
+    retention_days: int = 7,
+    now: datetime | None = None,
+) -> list[Path]:
+    """
+    Delete checkpoint run directories older than retention_days.
+
+    Only direct child directories of root_dir are considered. Files are ignored.
+    """
+    root_path = Path(root_dir)
+    if retention_days < 0 or not root_path.exists():
+        return []
+
+    now = now or datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=retention_days)
+    deleted: list[Path] = []
+
+    for run_path in root_path.iterdir():
+        if not run_path.is_dir():
+            continue
+        modified_at = datetime.fromtimestamp(run_path.stat().st_mtime, timezone.utc)
+        if modified_at >= cutoff:
+            continue
+        shutil.rmtree(run_path)
+        deleted.append(run_path)
+
+    return deleted
