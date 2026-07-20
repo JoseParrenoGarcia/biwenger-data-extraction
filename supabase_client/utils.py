@@ -248,3 +248,46 @@ def delete_matches_for_player_dates(
         if scoring_system is not None:
             query = query.eq("scoring_system", scoring_system)
         query.execute()
+
+def delete_matches_for_player_identities(
+    supabase,
+    table_name: str,
+    identities: List[Dict[str, str]],
+    chunk_size: int = 100,
+) -> None:
+    """
+    Delete existing match rows for exact season-aware player match identities.
+
+    Each identity must include:
+      - slug
+      - season_label
+      - round_label
+      - match_date
+      - scoring_system
+    """
+    clean_identities = [
+        identity
+        for identity in identities
+        if identity.get("slug")
+        and identity.get("season_label")
+        and identity.get("round_label")
+        and identity.get("match_date")
+        and identity.get("scoring_system")
+    ]
+    if not clean_identities:
+        return
+
+    # PostgREST cannot express tuple IN() cleanly via this client, so delete
+    # exact identities one by one. This is still small per player scrape.
+    for batch in _batched(clean_identities, chunk_size):
+        for identity in batch:
+            (
+                supabase.table(table_name)
+                .delete()
+                .eq("slug", identity["slug"])
+                .eq("season_label", identity["season_label"])
+                .eq("round_label", identity["round_label"])
+                .eq("match_date", identity["match_date"])
+                .eq("scoring_system", identity["scoring_system"])
+                .execute()
+            )

@@ -1,5 +1,3 @@
-import json
-
 import pandas as pd
 
 
@@ -86,13 +84,6 @@ def _clean_text(value):
     return text or None
 
 
-def _events_dedupe_key(value) -> str:
-    try:
-        return json.dumps(value, sort_keys=True)
-    except TypeError:
-        return str(value)
-
-
 def transform_player_outputs(
     player_detail_rows: list[dict],
     match_rows: list[dict],
@@ -152,22 +143,18 @@ def transform_player_outputs(
         matches_df["scoring_system"] = matches_df["scoring_system"].map(_clean_text).fillna("sofascore")
         matches_df["match_date"] = pd.to_datetime(matches_df["match_date"], errors="coerce").dt.strftime("%Y-%m-%d")
         matches_df["points"] = pd.to_numeric(matches_df["points"], errors="coerce")
-        matches_df["_events_dedupe_key"] = matches_df["events"].map(_events_dedupe_key)
         matches_df = matches_df.drop_duplicates(
             subset=[
-            "player_name",
-            "team",
-            "slug",
-            "match_date",
-            "season_label",
+                "player_name",
+                "team",
+                "slug",
+                "season_label",
                 "round_label",
+                "match_date",
                 "scoring_system",
-                "points",
-                "best_xi",
-                "_events_dedupe_key",
             ],
             keep="last",
-        ).drop(columns=["_events_dedupe_key"]).reset_index(drop=True)
+        ).reset_index(drop=True)
 
     value_history_df = pd.DataFrame(value_history_rows)
     if value_history_df.empty:

@@ -208,6 +208,78 @@ def test_transform_player_outputs_defaults_scoring_system_to_sofascore():
     assert stats_df.loc[0, "scoring_system"] == "sofascore"
 
 
+def test_transform_player_matches_dedupes_by_season_aware_identity_keep_latest():
+    _, matches_df, _ = transform_player_outputs(
+        [],
+        [
+            {
+                "season_label": "2025/2026",
+                "round_label": "R1",
+                "match_date": "2025-08-19",
+                "points": 8,
+                "best_xi": False,
+                "events": "Yellow card",
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": "mbappe",
+                "scoring_system": "sofascore",
+            },
+            {
+                "season_label": "2025/2026",
+                "round_label": "R1",
+                "match_date": "2025-08-19",
+                "points": 10,
+                "best_xi": True,
+                "events": "Goal",
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": "mbappe",
+                "scoring_system": "sofascore",
+            },
+        ],
+        [],
+        as_of_date="2026-07-20",
+    )
+
+    assert len(matches_df) == 1
+    assert matches_df.loc[0, "points"] == 10
+    assert bool(matches_df.loc[0, "best_xi"]) is True
+    assert matches_df.loc[0, "events"] == "Goal"
+
+
+def test_transform_player_matches_keeps_same_round_across_seasons():
+    _, matches_df, _ = transform_player_outputs(
+        [],
+        [
+            {
+                "season_label": "2025/2026",
+                "round_label": "R1",
+                "match_date": "2025-08-19",
+                "points": 8,
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": "mbappe",
+                "scoring_system": "sofascore",
+            },
+            {
+                "season_label": "2026/2027",
+                "round_label": "R1",
+                "match_date": "2026-08-15",
+                "points": 0,
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": "mbappe",
+                "scoring_system": "sofascore",
+            },
+        ],
+        [],
+        as_of_date="2026-07-20",
+    )
+
+    assert len(matches_df) == 2
+    assert set(matches_df["season_label"]) == {"2025/2026", "2026/2027"}
+
+
 def test_transform_player_outputs_keeps_duplicate_names_when_slugs_differ():
     stats_df, _, _ = transform_player_outputs(
         [

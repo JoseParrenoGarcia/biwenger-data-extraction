@@ -4,6 +4,7 @@ from supabase_client.connection import get_supabase_client
 from supabase_client.utils import (
     check_if_table_exists,
     delete_matches_for_player_dates,
+    delete_matches_for_player_identities,
     delete_rows_for_slug_dates,
     delete_stats_for_player_team_day,
     fetch_existing_values_for_slug,
@@ -116,15 +117,34 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
         if not dates:
             continue
 
-        delete_matches_for_player_dates(
-            supabase,
-            PLAYER_MATCHES_TABLE,
-            pname,
-            team,
-            dates,
-            _optional_text(scoring_system),
-            _optional_text(slug),
-        )
+        slug_text = _optional_text(slug)
+        scoring_text = _optional_text(scoring_system)
+        if slug_text:
+            identity_columns = [
+                "slug",
+                "season_label",
+                "round_label",
+                "match_date",
+                "scoring_system",
+            ]
+            identity_df = group[identity_columns].drop_duplicates().astype(object)
+            identity_df = identity_df.where(identity_df.notna(), None)
+            identities = identity_df.to_dict(orient="records")
+            delete_matches_for_player_identities(
+                supabase,
+                PLAYER_MATCHES_TABLE,
+                identities,
+            )
+        else:
+            delete_matches_for_player_dates(
+                supabase,
+                PLAYER_MATCHES_TABLE,
+                pname,
+                team,
+                dates,
+                scoring_text,
+                None,
+            )
         to_insert.append(group)
 
     if not to_insert:
