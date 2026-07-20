@@ -17,6 +17,8 @@ def ETL_get_player_stats(
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
     upload_batch_size: int = 10,
+    debug_log: bool = False,
+    run_retention_days: int = 7,
 ):
     """
     Backward-compatible entry point for the player ETL.
@@ -31,6 +33,8 @@ def ETL_get_player_stats(
         checkpoint_dir=checkpoint_dir,
         checkpoint_enabled=checkpoint_enabled,
         upload_batch_size=upload_batch_size,
+        debug_log=debug_log,
+        run_retention_days=run_retention_days,
     )
     ETL_get_player_stats.last_checkpoint_dir = getattr(run_player_pipeline, "last_checkpoint_dir", None)
     return result
@@ -99,6 +103,17 @@ def parse_args() -> argparse.Namespace:
         help="Number of checkpointed players between Supabase upload attempts.",
     )
     parser.add_argument(
+        "--debug-log",
+        action="store_true",
+        help="Include detailed player scrape timing records in the run log.",
+    )
+    parser.add_argument(
+        "--run-retention-days",
+        type=int,
+        default=7,
+        help="Delete player run artifact directories older than this many days before a new scrape run.",
+    )
+    parser.add_argument(
         "--upload-checkpoint",
         help="Upload a saved player checkpoint run directory to Supabase and skip Biwenger scraping.",
     )
@@ -141,6 +156,8 @@ def main() -> None:
         checkpoint_dir=args.checkpoint_dir,
         checkpoint_enabled=not args.no_checkpoint,
         upload_batch_size=args.upload_batch_size,
+        debug_log=args.debug_log,
+        run_retention_days=args.run_retention_days,
     )
     if args.dry_run:
         print("\nDRY RUN ONLY: no Supabase rows were written.")

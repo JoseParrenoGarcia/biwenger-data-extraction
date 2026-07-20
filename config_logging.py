@@ -6,7 +6,12 @@ from datetime import datetime
 def get_logger(name: str,
                log_file: str = "logs/pipeline.log",
                level=logging.INFO,
-               include_timestamp_in_filename: bool = False):
+               include_timestamp_in_filename: bool = False,
+               *,
+               file_level=None,
+               console_level=None,
+               file_mode: str = "w",
+               reset_handlers: bool = False):
     """
     Create and configure a logger with both console and file output.
 
@@ -30,7 +35,11 @@ def get_logger(name: str,
     logger.setLevel(level)
 
     # Avoid adding handlers twice - prevents duplicate log messages
-    if logger.hasHandlers():
+    if reset_handlers:
+        for handler in list(logger.handlers):
+            logger.removeHandler(handler)
+            handler.close()
+    elif logger.hasHandlers():
         return logger
 
     # Add timestamp to filename if requested (useful for multiple runs)
@@ -53,12 +62,12 @@ def get_logger(name: str,
     # Console handler - shows logs in terminal
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
-    console_handler.setLevel(level)  # Respect the logging level
+    console_handler.setLevel(console_level if console_level is not None else level)
 
     # File handler - saves logs to file with UTF-8 encoding for special characters
-    file_handler = logging.FileHandler(log_file, encoding='utf-8', mode='w')
+    file_handler = logging.FileHandler(log_file, encoding='utf-8', mode=file_mode)
     file_handler.setFormatter(formatter)
-    file_handler.setLevel(level)
+    file_handler.setLevel(file_level if file_level is not None else level)
 
     # Add both handlers to the logger
     logger.addHandler(console_handler)

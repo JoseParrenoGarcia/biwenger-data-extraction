@@ -3,6 +3,8 @@ from playwright.sync_api import Page
 import re
 import time
 
+from scraping_biwenger.shared.timing import log_timing_debug
+
 # -----------------------------
 # Small parsing helpers
 # -----------------------------
@@ -51,8 +53,7 @@ def _parse_percent(text: str) -> Optional[float]:
 
 
 def _log_timing(logger, label: str, started_at: float) -> None:
-    if logger:
-        logger.info("%s completed in %.2fs", label, time.time() - started_at)
+    log_timing_debug(logger, label, started_at)
 
 
 # -----------------------------

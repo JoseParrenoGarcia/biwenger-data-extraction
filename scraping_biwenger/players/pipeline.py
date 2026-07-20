@@ -1,9 +1,12 @@
 from config_logging import get_logger
+import logging
+from pathlib import Path
 import pandas as pd
 
 from scraping_biwenger.players.checkpoints import (
     DEFAULT_CHECKPOINT_ROOT,
     PlayerRunCheckpoint,
+    cleanup_old_player_runs,
     read_player_checkpoint,
 )
 from scraping_biwenger.players.persist import persist_player_outputs
@@ -70,10 +73,14 @@ def scrape_players_snapshot(
 
 
 def upload_player_checkpoint(run_dir: str, *, logger=None, supabase=None):
-    logger = logger or get_logger(
-        "ETL_get_player_stats",
-        log_file="logs/ETL_get_player_stats.log",
-    )
+    if logger is None:
+        run_path = Path(run_dir)
+        log_file = run_path / "upload.log" if run_path.is_dir() else Path("logs/ETL_get_player_stats.log")
+        logger = get_logger(
+            "ETL_get_player_stats",
+            log_file=str(log_file),
+            reset_handlers=True,
+        )
     payload = read_player_checkpoint(run_dir)
     logger.info(
         "Uploading player checkpoint from %s: %s stats rows, %s match rows, %s value rows.",
@@ -104,25 +111,21 @@ def run_player_pipeline(
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
     upload_batch_size: int = 10,
+    debug_log: bool = False,
+    run_retention_days: int = 7,
     logger=None,
 ):
     """
     Login to Biwenger, scrape player data, and optionally persist it.
     """
-    logger = logger or get_logger(
-        "ETL_get_player_stats",
-        log_file="logs/ETL_get_player_stats.log",
-    )
-    logger.info("=" * 70)
-    logger.info("Starting ETL: get_player_stats")
-    logger.info("=" * 70)
-
-    creds = load_biwenger_credentials(profile="biwenger_player_scraper")
-    logger.info("Credentials loaded successfully for profile 'biwenger_player_scraper'.")
-
     as_of_date = pd.Timestamp.utcnow().date().isoformat()
     checkpoint = None
+    deleted_old_runs = []
     if checkpoint_enabled:
+        deleted_old_runs = cleanup_old_player_runs(
+            checkpoint_dir,
+            retention_days=run_retention_days,
+        )
         checkpoint = PlayerRunCheckpoint(
             root_dir=checkpoint_dir,
             metadata={
@@ -134,13 +137,48 @@ def run_player_pipeline(
                 "player_slug": player_slug,
                 "retry_top_players": retry_top_players,
                 "upload_batch_size": upload_batch_size,
+                "debug_log": debug_log,
+                "run_retention_days": run_retention_days,
             },
         )
+        if logger is None:
+            logger = get_logger(
+                "ETL_get_player_stats",
+                log_file=str(checkpoint.run_log_path),
+                level=logging.DEBUG if debug_log else logging.INFO,
+                file_level=logging.DEBUG if debug_log else logging.INFO,
+                console_level=logging.INFO,
+                reset_handlers=True,
+            )
         logger.info("Player run checkpoint enabled: %s", checkpoint.run_dir)
         run_player_pipeline.last_checkpoint_dir = str(checkpoint.run_dir)
     else:
+        logger = logger or get_logger(
+            "ETL_get_player_stats",
+            log_file="logs/ETL_get_player_stats.log",
+            level=logging.DEBUG if debug_log else logging.INFO,
+            file_level=logging.DEBUG if debug_log else logging.INFO,
+            console_level=logging.INFO,
+            reset_handlers=True,
+        )
         logger.info("Player run checkpoint disabled.")
         run_player_pipeline.last_checkpoint_dir = None
+
+    logger.info("=" * 70)
+    logger.info("Starting ETL: get_player_stats")
+    logger.info("=" * 70)
+    if checkpoint_enabled and deleted_old_runs:
+        logger.info(
+            "Cleaned up %s old player run artifact directories older than %s days: %s",
+            len(deleted_old_runs),
+            run_retention_days,
+            ", ".join(path.name for path in deleted_old_runs),
+        )
+    elif checkpoint_enabled:
+        logger.info("No old player run artifacts to clean up older than %s days.", run_retention_days)
+
+    creds = load_biwenger_credentials(profile="biwenger_player_scraper")
+    logger.info("Credentials loaded successfully for profile 'biwenger_player_scraper'.")
 
     upload_batch_size = max(1, upload_batch_size)
     batch_number = 0
@@ -223,8 +261,10 @@ def run_player_pipeline(
                 matches_df=matches_df,
                 value_history_df=value_history_df,
             )
-            logger.info(
-                "Checkpointed player %s: %s stats rows, %s match rows, %s value rows.",
+            player["_checkpoint_status"] = "ok"
+            player["_checkpoint_counts"] = counts
+            logger.debug(
+                "Checkpointed player %s | stats=%s matches=%s values=%s",
                 player.get("slug") or player.get("name"),
                 counts["stats"],
                 counts["matches"],

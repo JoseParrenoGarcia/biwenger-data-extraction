@@ -1,13 +1,18 @@
 import json
+import logging
+import os
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 
 from scraping_biwenger.players.checkpoints import (
     PlayerRunCheckpoint,
+    cleanup_old_player_runs,
     read_player_checkpoint,
 )
 from scraping_biwenger.players.pipeline import _concat_frames, upload_player_checkpoint
 from scraping_biwenger.players.pipeline import run_player_pipeline
+from scraping_biwenger.shared.timing import log_timing_debug
 from scraping_biwenger.players.transform import (
     PLAYER_MATCHES_COLUMNS,
     PLAYER_STATS_COLUMNS,
@@ -146,6 +151,23 @@ def test_upload_player_checkpoint_uses_existing_persistence_path(tmp_path, monke
     assert value_df.empty
 
 
+def test_upload_player_checkpoint_writes_upload_log_inside_run_dir(tmp_path, monkeypatch):
+    checkpoint = PlayerRunCheckpoint(root_dir=tmp_path, run_id="upload-log-run", metadata={})
+    calls = []
+
+    def fake_persist(stats_df, matches_df, value_history_df, *, logger=None, supabase=None):
+        calls.append(logger)
+
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.persist_player_outputs", fake_persist)
+
+    upload_player_checkpoint(str(checkpoint.run_dir))
+
+    upload_log = checkpoint.run_dir / "upload.log"
+    assert len(calls) == 1
+    assert upload_log.exists()
+    assert "Uploading player checkpoint from" in upload_log.read_text(encoding="utf-8")
+
+
 def test_concat_frames_returns_expected_empty_shape():
     df = _concat_frames([], PLAYER_STATS_COLUMNS)
 
@@ -170,6 +192,9 @@ def test_run_player_pipeline_replays_checkpoint_after_batch_upload_failure(tmp_p
 
     class FakeLogger:
         def info(self, *args, **kwargs):
+            pass
+
+        def debug(self, *args, **kwargs):
             pass
 
         def warning(self, *args, **kwargs):
@@ -236,3 +261,83 @@ def test_run_player_pipeline_replays_checkpoint_after_batch_upload_failure(tmp_p
     assert calls == [1, 1]
     run_dir = next(tmp_path.iterdir())
     assert (run_dir / "upload_errors.jsonl").read_text(encoding="utf-8").count("\n") == 1
+
+
+def test_cleanup_old_player_runs_deletes_only_expired_directories(tmp_path):
+    old_run = tmp_path / "old-run"
+    recent_run = tmp_path / "recent-run"
+    loose_file = tmp_path / "not-a-run.txt"
+    old_run.mkdir()
+    recent_run.mkdir()
+    loose_file.write_text("keep me", encoding="utf-8")
+
+    now = datetime(2026, 7, 20, tzinfo=timezone.utc)
+    old_mtime = (now - timedelta(days=8)).timestamp()
+    recent_mtime = (now - timedelta(days=2)).timestamp()
+    os.utime(old_run, (old_mtime, old_mtime))
+    os.utime(recent_run, (recent_mtime, recent_mtime))
+
+    deleted = cleanup_old_player_runs(tmp_path, retention_days=7, now=now)
+
+    assert [path.name for path in deleted] == ["old-run"]
+    assert not old_run.exists()
+    assert recent_run.exists()
+    assert loose_file.exists()
+
+
+def test_timing_records_are_debug_only(caplog):
+    logger = logging.getLogger("test-player-timing")
+    logger.handlers = []
+    logger.propagate = True
+    logger.setLevel(logging.DEBUG)
+
+    with caplog.at_level(logging.INFO, logger="test-player-timing"):
+        log_timing_debug(logger, "Player statistics points parse", 0, player_slug="kita")
+    assert "TIMING" not in caplog.text
+
+    caplog.clear()
+    with caplog.at_level(logging.DEBUG, logger="test-player-timing"):
+        log_timing_debug(logger, "Player statistics points parse", 0, player_slug="kita")
+    assert "TIMING stage=player_statistics_points_parse player_slug=kita" in caplog.text
+
+
+def test_run_player_pipeline_writes_log_inside_checkpoint_run_dir(tmp_path, monkeypatch):
+    class FakeBrowser:
+        def close(self):
+            pass
+
+    class FakeContext:
+        def close(self):
+            pass
+
+    class FakePlaywright:
+        def stop(self):
+            pass
+
+    def fake_start_browser_accept_cookies(*, headless, logger):
+        return FakePlaywright(), FakeBrowser(), FakeContext(), object()
+
+    def fake_scrape_players_snapshot(page, logger, **kwargs):
+        return (
+            pd.DataFrame(columns=PLAYER_STATS_COLUMNS),
+            pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+            pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+        )
+
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"})
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.perform_login", lambda page, email, password, logger: None)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.scrape_players_snapshot", fake_scrape_players_snapshot)
+
+    run_player_pipeline(
+        headless=True,
+        persist=False,
+        max_pages=1,
+        max_players_detail=1,
+        checkpoint_dir=str(tmp_path),
+    )
+
+    run_dir = next(path for path in tmp_path.iterdir() if path.is_dir())
+    run_log = run_dir / "run.log"
+    assert run_log.exists()
+    assert "Starting ETL: get_player_stats" in run_log.read_text(encoding="utf-8")
