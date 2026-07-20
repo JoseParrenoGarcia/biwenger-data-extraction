@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 PLAYER_STATS_COLUMNS = [
     "player_name",
     "team",
@@ -108,8 +107,9 @@ def transform_player_outputs(
             if column not in player_detail_df.columns:
                 player_detail_df[column] = None
         player_detail_df["_player_identity"] = player_detail_df.apply(
-            lambda row: _clean_text(row.get("slug"))
-            or f"{_clean_text(row.get('player_name'))}|{_clean_text(row.get('team'))}",
+            lambda row: (
+                _clean_text(row.get("slug")) or f"{_clean_text(row.get('player_name'))}|{_clean_text(row.get('team'))}"
+            ),
             axis=1,
         )
         stats_df = player_detail_df.drop_duplicates(subset=["_player_identity"], keep="last").copy()

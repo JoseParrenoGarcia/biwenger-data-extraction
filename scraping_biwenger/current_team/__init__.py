@@ -1,2 +1,1 @@
 """Current-team scraping pipeline."""
-

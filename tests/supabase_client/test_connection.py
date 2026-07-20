@@ -1,11 +1,12 @@
 import pytest
-import os
+
 from supabase_client.connection import get_supabase_client
 
 # =============================================================================
 # 🧪 UNIT TESTS — test file loading and error handling logic
 # These do not use real secrets or connect to Supabase
 # =============================================================================
+
 
 def test_missing_file_raises_file_not_found():
     """

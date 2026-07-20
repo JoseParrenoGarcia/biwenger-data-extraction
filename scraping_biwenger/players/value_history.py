@@ -1,12 +1,15 @@
 # scraping_biwenger/players/value_history.py
 
 from __future__ import annotations
-from typing import Optional, Dict
-from io import StringIO
+
 import re
 import time
+from io import StringIO
+from typing import Dict, Optional
+
 import pandas as pd
-from playwright.sync_api import Page, Download, TimeoutError as PWTimeout
+from playwright.sync_api import Download, Page
+from playwright.sync_api import TimeoutError as PWTimeout
 
 from scraping_biwenger.shared.timing import log_timing_debug
 
@@ -16,8 +19,10 @@ VALUE_TAB = "tab[header='Value'], [role='tab']:has-text('Value')"
 CHART_CANVAS = "chart-js canvas"
 TOOLS = "chart-js .tools segmented-control"
 
+
 def _log_timing(logger, label: str, started_at: float, *, player_slug: str = "") -> None:
     log_timing_debug(logger, label, started_at, player_slug=player_slug)
+
 
 def _hover_chart_to_reveal_tools(page: Page, timeout: float = 3000) -> None:
     # Hover the canvas to reveal the segmented-control with the CSV/PNG buttons.
@@ -25,6 +30,7 @@ def _hover_chart_to_reveal_tools(page: Page, timeout: float = 3000) -> None:
     page.locator(CHART_CANVAS).hover()
     # The tools often fade in; give them a moment.
     page.locator(TOOLS).wait_for(state="visible", timeout=timeout)
+
 
 def open_value_tab(page: Page, timeout: float = 5000) -> bool:
     """
@@ -43,6 +49,7 @@ def open_value_tab(page: Page, timeout: float = 5000) -> bool:
     except PWTimeout:
         return False
 
+
 def click_download_csv(page: Page, timeout: float = 5000) -> Optional[Download]:
     """
     Hover chart → click CSV button → return Playwright Download handle.
@@ -53,6 +60,7 @@ def click_download_csv(page: Page, timeout: float = 5000) -> Optional[Download]:
     with page.expect_download(timeout=timeout) as dl_info:
         page.locator(CSV_BTN).click()
     return dl_info.value
+
 
 def parse_value_csv_text(csv_text: str) -> pd.DataFrame:
     """
@@ -75,16 +83,19 @@ def parse_value_csv_text(csv_text: str) -> pd.DataFrame:
     df.columns = [str(c).lower().strip() for c in df.columns]
     date_col = next((c for c in df.columns if "date" in c), df.columns[0])
     # value header is usually missing → ends up as 'unnamed: 1'
-    val_col = next((c for c in df.columns if any(k in c for k in ("value","precio","price","valor"))),
-                   df.columns[-1])
+    val_col = next(
+        (c for c in df.columns if any(k in c for k in ("value", "precio", "price", "valor"))), df.columns[-1]
+    )
 
     # 3) Clean dates: drop parenthetical TZ name and 'GMT', then parse with utc=True
     import re
+
     def _clean_date(s):
-        if pd.isna(s): return None
+        if pd.isna(s):
+            return None
         s = str(s)
-        s = re.sub(r"\s*\([^)]*\)", "", s)   # remove " (Central European Summer Time)"
-        s = s.replace("GMT", "").strip()     # "GMT+0200" → "+0200"
+        s = re.sub(r"\s*\([^)]*\)", "", s)  # remove " (Central European Summer Time)"
+        s = s.replace("GMT", "").strip()  # "GMT+0200" → "+0200"
         return s
 
     dt = pd.to_datetime(df[date_col].map(_clean_date), errors="coerce", utc=True)
@@ -92,10 +103,12 @@ def parse_value_csv_text(csv_text: str) -> pd.DataFrame:
     # 4) Numeric value
     vals = pd.to_numeric(df[val_col], errors="coerce")
 
-    out = pd.DataFrame({
-        "date": dt.dt.strftime("%Y-%m-%d"),  # string, JSON-safe
-        "market_value_eur": pd.to_numeric(vals, errors="coerce")
-    })
+    out = pd.DataFrame(
+        {
+            "date": dt.dt.strftime("%Y-%m-%d"),  # string, JSON-safe
+            "market_value_eur": pd.to_numeric(vals, errors="coerce"),
+        }
+    )
 
     out = out.dropna(subset=["date", "market_value_eur"]).reset_index(drop=True)
     return out[["date", "market_value_eur"]]
@@ -130,7 +143,8 @@ def scrape_value_history_for_player(
     ok = open_value_tab(page, timeout=timeout)
     _log_timing(logger, "Value tab open/wait", step_started_at, player_slug=player_slug)
     if not ok:
-        if logger: logger.warning("Could not open Value tab.")
+        if logger:
+            logger.warning("Could not open Value tab.")
         return pd.DataFrame(columns=["date", "market_value_eur"])
 
     try:
@@ -139,7 +153,8 @@ def scrape_value_history_for_player(
         _log_timing(logger, "Value CSV download", step_started_at, player_slug=player_slug)
     except PWTimeout:
         _log_timing(logger, "Value CSV download failed", step_started_at, player_slug=player_slug)
-        if logger: logger.warning("CSV download did not start in time.")
+        if logger:
+            logger.warning("CSV download did not start in time.")
         return pd.DataFrame(columns=["date", "market_value_eur"])
 
     step_started_at = time.time()

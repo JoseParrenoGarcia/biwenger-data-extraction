@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 CURRENT_TEAM_COLUMNS = [
     "name",
     "position_short",
@@ -84,13 +83,7 @@ def transform_current_team(raw_df: pd.DataFrame) -> pd.DataFrame:
 
     for column in OPTIONAL_TEXT_COLUMNS:
         df[column] = df[column].map(
-            lambda value: (
-                stripped
-                if (stripped := str(value).strip())
-                else None
-            )
-            if pd.notna(value)
-            else None
+            lambda value: (stripped if (stripped := str(value).strip()) else None) if pd.notna(value) else None
         )
 
     for column in INTEGER_COLUMNS:

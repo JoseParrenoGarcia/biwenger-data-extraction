@@ -1,13 +1,16 @@
-from scraping_biwenger.shared.timing import _rand_sleep
-from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
-from typing import List, Optional, Dict
-from playwright.sync_api import Page, TimeoutError as PWTimeout
 import time
+from typing import Dict, List, Optional
 
+from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PWTimeout
+
+from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
+from scraping_biwenger.shared.timing import _rand_sleep
 
 PAGINATION_UL_SEL = "pagination ul"
 NEXT_LI_SEL = "pagination ul li:has-text('›')"
 PLAYER_ANCHORS_SEL = "table.table.no-swipe tbody tr th[scope='row'] a"
+
 
 def is_next_enabled(page: Page) -> bool:
     """
@@ -29,6 +32,7 @@ def is_next_enabled(page: Page) -> bool:
     classes = (li.first.get_attribute("class") or "").strip()
     return "disabled" not in classes
 
+
 def click_next_if_enabled(page: Page) -> bool:
     """
     Clicks '›' if enabled. Returns True if clicked, False otherwise.
@@ -38,6 +42,7 @@ def click_next_if_enabled(page: Page) -> bool:
     # Click the <a> inside that LI
     page.locator(f"{NEXT_LI_SEL} a").first.click()
     return True
+
 
 def get_first_row_key(page: Page) -> Optional[str]:
     """
@@ -59,6 +64,7 @@ def get_first_row_key(page: Page) -> Optional[str]:
     text = first.inner_text().strip()
     return text or None
 
+
 def wait_for_table_change(page: Page, previous_first_key: Optional[str], timeout_ms: int = 10000) -> None:
     """
     Spin-wait until the first-row key changes (Angular re-render done).
@@ -70,6 +76,7 @@ def wait_for_table_change(page: Page, previous_first_key: Optional[str], timeout
             return
         _rand_sleep(0.12, 0.3)
     # If no change, let the caller decide what to do next.
+
 
 def extract_players_from_current_table(page: Page) -> List[Dict[str, str]]:
     """
@@ -87,6 +94,7 @@ def extract_players_from_current_table(page: Page) -> List[Dict[str, str]]:
         slug = href.rstrip("/").split("/")[-1] if href else ""
         out.append({"name": name, "slug": slug, "href": href})
     return out
+
 
 def extract_all_player_names(logger, page: Page, max_pages: Optional[int] = None) -> List[Dict[str, str]]:
     """

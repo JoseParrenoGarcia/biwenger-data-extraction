@@ -78,10 +78,7 @@ def verify_players(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description=(
-            "Dry-run Biwenger scraping without writing to Supabase. "
-            "Use this as a refactor smoke test."
-        )
+        description=("Dry-run Biwenger scraping without writing to Supabase. Use this as a refactor smoke test.")
     )
     parser.add_argument(
         "--max-players",

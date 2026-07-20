@@ -20,6 +20,20 @@ test:
 	@echo "🧪 Running unit tests..."
 	$(PYTHON) -m pytest
 
+.PHONY: lint
+lint:
+	@echo "🔎 Running Ruff lint..."
+	$(PYTHON) -m ruff check .
+
+.PHONY: format-check
+format-check:
+	@echo "🧹 Checking Ruff formatting..."
+	$(PYTHON) -m ruff format --check .
+
+.PHONY: ci
+ci: lint format-check test
+	@echo "✅ Local CI checks completed."
+
 .PHONY: dry-run-team
 dry-run-team:
 	@echo "👥 Running headed current-team dry run..."

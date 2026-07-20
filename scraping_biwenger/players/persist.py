@@ -1,6 +1,5 @@
 import pandas as pd
 
-from supabase_client.connection import get_supabase_client
 from scraping_biwenger.players.repository import (
     delete_matches_for_legacy_dates,
     delete_matches_for_season_identities,
@@ -10,9 +9,8 @@ from scraping_biwenger.players.repository import (
     insert_player_rows_batched,
     player_table_exists,
 )
-
 from scraping_biwenger.players.transform import validate_player_payloads
-
+from supabase_client.connection import get_supabase_client
 
 PLAYER_STATS_TABLE = "biwenger_player_stats"
 PLAYER_MATCHES_TABLE = "biwenger_player_matches"
@@ -33,10 +31,7 @@ def _optional_text(value):
 
 def missing_table_message(table_names: list[str]) -> str:
     quoted = ", ".join(f"'{name}'" for name in table_names)
-    return (
-        f"Supabase player table(s) missing: {quoted}. "
-        "Run `supabase db push` before uploading player data."
-    )
+    return f"Supabase player table(s) missing: {quoted}. Run `supabase db push` before uploading player data."
 
 
 def assert_player_tables_exist(supabase, logger=None) -> None:
@@ -183,9 +178,7 @@ def persist_player_values(value_history_df: pd.DataFrame, *, supabase, logger=No
 
         group = group.sort_values("date").drop_duplicates(subset=["date"], keep="last")
         new_mask = ~group["date"].isin(existing["date"])
-        changed_mask = group["date"].isin(existing["date"]) & (
-            group["market_value_eur"] != group["date"].map(db_map)
-        )
+        changed_mask = group["date"].isin(existing["date"]) & (group["market_value_eur"] != group["date"].map(db_map))
 
         changed_rows = group.loc[changed_mask]
         if not changed_rows.empty:

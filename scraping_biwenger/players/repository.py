@@ -47,11 +47,7 @@ def delete_matches_for_legacy_dates(
     for i in range(0, len(uniq_dates), chunk_size):
         batch = uniq_dates[i : i + chunk_size]
         query = (
-            supabase.table(table_name)
-            .delete()
-            .in_("match_date", batch)
-            .eq("player_name", player_name)
-            .eq("team", team)
+            supabase.table(table_name).delete().in_("match_date", batch).eq("player_name", player_name).eq("team", team)
         )
         if scoring_system is not None:
             query = query.eq("scoring_system", scoring_system)

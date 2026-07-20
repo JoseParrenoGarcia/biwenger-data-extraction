@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from html.parser import HTMLParser
 import re
 from typing import Optional
 
@@ -12,68 +10,8 @@ from scraping_biwenger.players.detail import (
     _parse_money,
     _parse_percent,
 )
-from scraping_biwenger.players.matches import _to_date_iso, _to_int, NO_ROUNDS_TEXT_RE
-
-
-@dataclass
-class HtmlNode:
-    tag: str
-    attrs: dict[str, str] = field(default_factory=dict)
-    children: list["HtmlNode"] = field(default_factory=list)
-    text_parts: list[str] = field(default_factory=list)
-
-    def text(self) -> str:
-        parts = list(self.text_parts)
-        for child in self.children:
-            parts.append(child.text())
-        return re.sub(r"\s+", " ", " ".join(parts)).strip()
-
-    def first_child_text(self, tag: str) -> str:
-        for child in self.children:
-            if child.tag == tag:
-                return child.text()
-        return ""
-
-    def find_all(self, tag: str | None = None) -> list["HtmlNode"]:
-        matches = []
-        for child in self.children:
-            if tag is None or child.tag == tag:
-                matches.append(child)
-            matches.extend(child.find_all(tag))
-        return matches
-
-    def first(self, tag: str) -> Optional["HtmlNode"]:
-        matches = self.find_all(tag)
-        return matches[0] if matches else None
-
-
-class _MiniHtmlParser(HTMLParser):
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.root = HtmlNode("root")
-        self.stack = [self.root]
-
-    def handle_starttag(self, tag, attrs):
-        node = HtmlNode(tag.lower(), {key.lower(): value or "" for key, value in attrs})
-        self.stack[-1].children.append(node)
-        self.stack.append(node)
-
-    def handle_endtag(self, tag):
-        tag = tag.lower()
-        for idx in range(len(self.stack) - 1, 0, -1):
-            if self.stack[idx].tag == tag:
-                del self.stack[idx:]
-                return
-
-    def handle_data(self, data):
-        if data.strip():
-            self.stack[-1].text_parts.append(data)
-
-
-def parse_html_fragment(html: str) -> HtmlNode:
-    parser = _MiniHtmlParser()
-    parser.feed(html or "")
-    return parser.root
+from scraping_biwenger.players.matches import NO_ROUNDS_TEXT_RE, _to_date_iso, _to_int
+from scraping_biwenger.shared.html import HtmlNode, parse_html_fragment
 
 
 def _class_contains(node: HtmlNode, value: str) -> bool:
@@ -138,10 +76,7 @@ def parse_player_detail_html(html: str) -> dict:
     status = "fit"
     if status_node:
         status_detail = (
-            status_node.attrs.get("aria-label")
-            or status_node.attrs.get("title")
-            or status_node.text()
-            or None
+            status_node.attrs.get("aria-label") or status_node.attrs.get("title") or status_node.text() or None
         )
         status = _normalize_status_category(status_node.attrs.get("class", ""), status_detail or "")
 
@@ -153,9 +88,7 @@ def parse_player_detail_html(html: str) -> dict:
         "player_name": player_name,
         "team": (team_link.attrs.get("title") if team_link else "") or "",
         "position": (
-            position_node.attrs.get("title")
-            or position_node.attrs.get("aria-label")
-            or position_node.text()
+            position_node.attrs.get("title") or position_node.attrs.get("aria-label") or position_node.text()
             if position_node
             else ""
         ),
@@ -190,26 +123,14 @@ def parse_player_matches_html(html: str) -> list[dict]:
         if not bar:
             continue
         round_link = next(
-            (
-                node
-                for node in tr.find_all("a")
-                if (node.attrs.get("title") or "").lower().startswith("round")
-            ),
+            (node for node in tr.find_all("a") if (node.attrs.get("title") or "").lower().startswith("round")),
             None,
         )
         meta = next(
-            (
-                node
-                for node in tr.find_all("meta")
-                if node.attrs.get("itemprop") == "startDate"
-            ),
+            (node for node in tr.find_all("meta") if node.attrs.get("itemprop") == "startDate"),
             None,
         )
-        events = [
-            node.attrs["title"].strip()
-            for node in tr.find_all("span")
-            if node.attrs.get("title")
-        ]
+        events = [node.attrs["title"].strip() for node in tr.find_all("span") if node.attrs.get("title")]
         round_label = round_link.text() if round_link else ""
         if not round_label:
             continue

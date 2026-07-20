@@ -1,8 +1,9 @@
-from config_logging import get_logger
 import logging
 from pathlib import Path
+
 import pandas as pd
 
+from config_logging import get_logger
 from scraping_biwenger.players.checkpoints import (
     DEFAULT_CHECKPOINT_ROOT,
     PlayerRunCheckpoint,

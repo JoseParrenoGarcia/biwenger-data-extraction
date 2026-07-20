@@ -38,7 +38,7 @@ news generation, or LLM client code. The active codebase is organized around:
 |-- bash_scripts/                 macOS/launchd-friendly wrapper scripts
 |-- launchd/                      Local LaunchAgent templates and setup notes
 |-- docs/                         Architecture and copied Biwenger DOM notes
-|-- tests/                        Unit tests for transforms, persistence, secrets
+|-- tests/                        Unit tests for parsers, transforms, persistence, secrets
 |-- secrets/                      Ignored local secrets plus safe example templates
 |-- logs/                         Ignored runtime logs
 |-- requirements.txt              Python dependencies
@@ -253,6 +253,18 @@ navigation, transform, or persistence refactors.
 .venv/bin/python -m pytest
 ```
 
+### Local CI Hardening
+
+Run this before commits for normal code, parser, persistence, and documentation
+changes:
+
+```bash
+make ci
+```
+
+This runs Ruff linting, Ruff formatting checks, and pytest without external
+services. Browser dry-runs and Supabase write checks remain opt-in.
+
 ### Current-Team Smoke Test
 
 Use headed dry-run unless intentionally testing headless:
@@ -350,16 +362,14 @@ structured parsers, or subagents for focused inspection.
 
 The main architecture cleanup is now largely complete. Remaining valuable work:
 
-1. Add parser-level tests for current-team HTML, player detail HTML, match row
-   parsing, and value CSV normalization. Tracked by issues #68 and #71.
-2. Improve README with the full testing ladder, scheduler notes, and table
+1. Improve README with the full testing ladder, scheduler notes, and table
    semantics. Covered across issues #70, #71, #73, and #100.
-3. Make shell scripts path-portable instead of hardcoding local paths. Tracked
+2. Make shell scripts path-portable instead of hardcoding local paths. Tracked
    by issue #73.
-4. Revisit player slug backfill so legacy duplicate-protection fallback logic can
+3. Revisit player slug backfill so legacy duplicate-protection fallback logic can
    be simplified. Tracked by issue #93.
-5. Audit `requirements.txt` around direct imports and remove any remaining stale
-   dependencies. Tracked by issue #68.
+4. Audit `requirements.txt` around direct imports and remove any remaining stale
+   dependencies if future imports change.
 
 ## Open Questions
 

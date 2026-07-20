@@ -85,8 +85,15 @@ Start with unit tests because they do not need Biwenger, Playwright, or
 Supabase:
 
 ```bash
+make ci
 make test
+make lint
+make format-check
 ```
+
+`make ci` is the default local pre-commit check for normal code, parser,
+persistence, and documentation changes. It runs Ruff linting, Ruff formatting
+checks, and pytest without external services.
 
 For browser verification, headed dry-runs are the default safe mode. They log in,
 scrape, print samples, checkpoint player outputs locally, and do not write to

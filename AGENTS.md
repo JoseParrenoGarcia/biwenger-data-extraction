@@ -54,6 +54,7 @@ Important current decisions:
 - For riskier player selector, navigation, timing, or parser changes, also run `make dry-run-players-15`.
 - For current-team scraper changes, run `make dry-run-team`.
 - Raw commands are documented in `README.md` and `docs/repo_architecture_audit.md` if Make is not convenient.
+- Before committing normal code, parser, persistence, or documentation changes, run `make ci` by default. It covers Ruff linting, Ruff format checks, and pytest. Fix issues locally before committing where practical.
 - Do not write to Supabase until dry-run output looks correct and the user explicitly approves a write test. Optional write checks are `make write-players-2` and `make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>`.
 - Supabase schema bootstrap uses the Supabase CLI as a system dependency, not a Python package. Do not add the Supabase CLI to `requirements.txt`.
 - Keep generic Supabase primitives in `supabase_client/`; Biwenger-specific table identity, delete, and delta logic belongs under `scraping_biwenger/current_team/` or `scraping_biwenger/players/`.

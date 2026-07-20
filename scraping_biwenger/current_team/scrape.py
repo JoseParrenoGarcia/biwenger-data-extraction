@@ -31,13 +31,7 @@ def _to_int_money(text: str) -> int:
     if text is None:
         return 0
 
-    t = (
-        text.replace("€", "")
-        .replace("\u2212", "-")
-        .replace(",", "")
-        .replace(".", "")
-        .strip()
-    )
+    t = text.replace("€", "").replace("\u2212", "-").replace(",", "").replace(".", "").strip()
 
     num_re = re.compile(r"[-\d]+")
     matches = num_re.findall(t)
