@@ -43,6 +43,49 @@ def accept_cookies_if_present(page, logger=None) -> bool:
     return False
 
 
+def dismiss_app_popups_if_present(page, logger=None, timeout_ms: int = 800) -> bool:
+    """
+    Best-effort dismissal for Biwenger app-level marketing dialogs.
+
+    These pop-ups are intermittent and can block app table controls after login.
+    Returns True only when a visible dialog was closed.
+    """
+    dialog_selector = "ng-component[role='dialog'][aria-modal='true']"
+    close_selectors = [
+        f"{dialog_selector} button.close-button",
+        f"{dialog_selector} button[aria-label='Close']",
+        f"{dialog_selector} button[title='Close']",
+    ]
+
+    try:
+        page.wait_for_selector(dialog_selector, timeout=timeout_ms, state="visible")
+    except PWTimeout:
+        if logger:
+            logger.debug("No Biwenger app pop-up detected.")
+        return False
+    except Exception:
+        if logger:
+            logger.debug("Biwenger app pop-up check failed before detecting a dialog.")
+        return False
+
+    for selector in close_selectors:
+        try:
+            page.locator(selector).first.click(timeout=1200)
+            try:
+                page.wait_for_selector(dialog_selector, timeout=1500, state="detached")
+            except Exception:
+                pass
+            if logger:
+                logger.info("Dismissed Biwenger app pop-up with selector %s.", selector)
+            return True
+        except Exception:
+            continue
+
+    if logger:
+        logger.warning("Biwenger app pop-up was visible but no close selector worked.")
+    return False
+
+
 def click_play_now(page, logger=None) -> None:
     started_at = time.perf_counter()
     if logger:
@@ -138,4 +181,5 @@ def perform_login(page, email: str, password: str, logger=None):
         logger.info("Navigating directly to Biwenger app page: %s", DEFAULT_APP_URL)
     page.goto(DEFAULT_APP_URL, wait_until="domcontentloaded")
     _log_timing(logger, "Landed on Biwenger app page", app_started_at)
+    dismiss_app_popups_if_present(page, logger=logger)
     _log_timing(logger, "Biwenger login flow completed", started_at)

@@ -91,6 +91,40 @@ data_section=Usage text=12%
 - `player-detail-points`: match-by-match points table.
 - `player-detail-next-games`: upcoming fixtures.
 
+## App-Level Pop-Ups
+
+Biwenger can show app-level marketing pop-ups after login or while navigating to
+the app. These are not part of the player detail page, but they can block table
+layout buttons and player rows, causing discovery to time out with zero players.
+
+Known example from `docs/player_stats_html.txt`:
+
+```html
+<ng-component role="dialog" aria-modal="true">
+  <button title="Close" aria-label="Close" class="close-button">×</button>
+  <in-app-message>...</in-app-message>
+</ng-component>
+```
+
+Useful detection selectors:
+
+- Dialog root: `ng-component[role="dialog"][aria-modal="true"]`
+- Message component: `ng-component[role="dialog"] in-app-message`
+- Close button: `ng-component[role="dialog"] button.close-button`
+- Accessible close fallback:
+  `ng-component[role="dialog"] button[aria-label="Close"]`
+- Title fallback:
+  `ng-component[role="dialog"] button[title="Close"]`
+
+Recommended scraper behavior:
+
+1. Add a shared, safe `dismiss_app_popups_if_present()` helper.
+2. Call it after login/app navigation and before table layout selection.
+3. Call it again if a table/list wait times out before declaring zero rows.
+4. Treat dismissal as best-effort: log whether a pop-up was dismissed, but do
+   not fail if no pop-up exists.
+5. Keep the helper generic for app-level dialogs, not player-specific.
+
 ## Known Selectors
 
 Header:
@@ -179,4 +213,3 @@ For future scraper improvements, prefer root-level DOM extraction:
 
 This is preferable to many independent locator reads because each locator call
 can carry its own waiting behavior and can accidentally introduce timeout cost.
-

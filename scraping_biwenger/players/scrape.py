@@ -1,5 +1,6 @@
 from scraping_biwenger.players.discover import extract_all_player_names
 from scraping_biwenger.players.detail_loop import scrape_all_players_detail
+from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
 from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu
 from scraping_biwenger.shared.timing import _rand_sleep
 
@@ -16,6 +17,7 @@ def select_player_table_layout(page, logger=None) -> None:
     Navigate to the players tab and select table layout.
     """
     click_tab_in_horizontal_main_menu(page, "players", logger=logger)
+    dismiss_app_popups_if_present(page, logger=logger)
     _rand_sleep(0.5, 1.5)
 
     try:
