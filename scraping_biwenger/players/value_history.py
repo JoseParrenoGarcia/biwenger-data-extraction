@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import Optional, Dict
+from io import StringIO
 import re
 import time
 import pandas as pd
@@ -53,19 +54,16 @@ def click_download_csv(page: Page, timeout: float = 5000) -> Optional[Download]:
         page.locator(CSV_BTN).click()
     return dl_info.value
 
-def _read_price_csv_to_df(download: Download) -> pd.DataFrame:
+def parse_value_csv_text(csv_text: str) -> pd.DataFrame:
     """
-    Convert the downloaded CSV file to a normalized DataFrame with:
+    Convert Biwenger value CSV text to a normalized DataFrame with:
       ['date', 'market_value_eur']
-    Handles Biwenger's 'Date;' header and timezone strings.
+    Handles Biwenger's 'Date;' header, missing value headers, and timezone strings.
     """
-    path = download.path()
-
-    # 1) Read with BOM handling and delimiter sniff
     df = None
     for sep in (";", ",", "\t"):
         try:
-            df = pd.read_csv(path, sep=sep, engine="python", encoding="utf-8-sig")
+            df = pd.read_csv(StringIO(csv_text or ""), sep=sep, engine="python")
             if df.shape[1] >= 2:
                 break
         except Exception:
@@ -101,6 +99,19 @@ def _read_price_csv_to_df(download: Download) -> pd.DataFrame:
 
     out = out.dropna(subset=["date", "market_value_eur"]).reset_index(drop=True)
     return out[["date", "market_value_eur"]]
+
+
+def _read_price_csv_to_df(download: Download) -> pd.DataFrame:
+    """
+    Convert the downloaded CSV file to a normalized DataFrame with:
+      ['date', 'market_value_eur']
+    """
+    path = download.path()
+    try:
+        with open(path, "r", encoding="utf-8-sig") as fh:
+            return parse_value_csv_text(fh.read())
+    except Exception:
+        return pd.DataFrame(columns=["date", "market_value_eur"])
 
 
 def scrape_value_history_for_player(

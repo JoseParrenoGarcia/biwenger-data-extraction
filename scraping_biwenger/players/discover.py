@@ -1,4 +1,5 @@
 from scraping_biwenger.shared.timing import _rand_sleep
+from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
 from typing import List, Optional, Dict
 from playwright.sync_api import Page, TimeoutError as PWTimeout
 import time
@@ -107,7 +108,13 @@ def extract_all_player_names(logger, page: Page, max_pages: Optional[int] = None
     try:
         page_idx = 1
         # small initial wait to make sure table is ready
-        page.wait_for_selector("table.table.no-swipe tbody tr", timeout=8000)
+        try:
+            page.wait_for_selector("table.table.no-swipe tbody tr", timeout=8000)
+        except PWTimeout:
+            dismissed = dismiss_app_popups_if_present(page, logger=logger)
+            if dismissed and logger:
+                logger.info("Retrying player table wait after dismissing app pop-up.")
+            page.wait_for_selector("table.table.no-swipe tbody tr", timeout=8000)
 
         while True:
             # Extract on current page

@@ -2,9 +2,13 @@
 
 Biwenger-only data extraction repository focused on scraping fantasy football data from the Biwenger app and writing validated player/team outputs to Supabase.
 
-The repository no longer performs football news scraping, article extraction, structured news generation, or LLM-based article enrichment.
+The repository no longer performs football news scraping, article extraction,
+structured news generation, or LLM-based article enrichment.
 
-Runtime logs are written under `logs/` and are intentionally ignored by Git.
+Current-team logs are written under `logs/`. Player scrape runs write local
+artifacts under `run_artifacts/player_runs/<run_id>/`, including `run.log`,
+upload-ready JSONL files, and any structured error files. Generated logs and
+run artifacts are intentionally ignored by Git.
 
 ## Local Setup
 
@@ -66,3 +70,40 @@ python3 -m supabase_client.connection
 
 If the normal pipeline runs before the migration exists, it should fail with a
 clear message telling you to run the schema bootstrap first.
+
+## Local Verification
+
+Start with unit tests because they do not need Biwenger, Playwright, or
+Supabase:
+
+```bash
+make test
+```
+
+For browser verification, headed dry-runs are the default safe mode. They log in,
+scrape, print samples, checkpoint player outputs locally, and do not write to
+Supabase:
+
+```bash
+make dry-run-players-2
+make dry-run-player-kita
+make dry-run-player-mbappe
+make dry-run-team
+```
+
+Use `make dry-run-players-15` before merging riskier player selector,
+navigation, timing, or parser changes. Use `make dry-run-ladder` for the basic
+player checks, and `make dry-run-ladder-broad` when you also want current-team
+and the 15-player smoke test.
+
+Supabase write tests should only be run after dry-run output looks correct and
+the user explicitly approves writing rows:
+
+```bash
+make write-players-2
+make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>
+```
+
+`write-players-2` performs a small headed scrape and writes to Supabase.
+`upload-checkpoint` skips Biwenger entirely and uploads rows already saved in a
+checkpoint run folder.

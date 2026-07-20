@@ -47,14 +47,12 @@ Important current decisions:
 - Prefer parser-level tests that do not require Biwenger, Playwright, or Supabase.
 - Make test runs easy, for example limited runs with a small number of players.
 - For scraper refactors, preserve behavior with a local dry-run path before changing persistence.
-- Prefer verification modes that can scrape the full current team and a limited number of players while printing outputs without writing to Supabase.
-- For player scraper changes, use the required dry-run ladder:
-  - targeted problem player: `.venv/bin/python -m scraping_biwenger.get_player_stats --headed --dry-run --player-slug kazunari-kita`
-  - targeted no-round player: `.venv/bin/python -m scraping_biwenger.get_player_stats --headed --dry-run --player-slug moussa-diarra-2`
-  - normal limited run: `.venv/bin/python -m scraping_biwenger.get_player_stats --headed --dry-run --max-player-pages 1 --max-players 2`
-  - broader limited run before merging risky selector/navigation changes: `.venv/bin/python -m scraping_biwenger.get_player_stats --headed --dry-run --max-player-pages 2 --max-players 15`
-- For current-team scraper changes, run `.venv/bin/python -m scraping_biwenger.get_current_team --headed --dry-run`.
-- Do not write to Supabase until dry-run output looks correct and the user explicitly approves a write test.
+- Prefer headed dry-runs that print outputs and do not write to Supabase.
+- For player scraper changes, use `make dry-run-ladder` by default. It covers unit tests, `kazunari-kita`, `mbappe`, and a normal 2-player dry-run.
+- For riskier player selector, navigation, timing, or parser changes, also run `make dry-run-players-15`.
+- For current-team scraper changes, run `make dry-run-team`.
+- Raw commands are documented in `README.md` and `docs/repo_architecture_audit.md` if Make is not convenient.
+- Do not write to Supabase until dry-run output looks correct and the user explicitly approves a write test. Optional write checks are `make write-players-2` and `make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>`.
 - Supabase schema bootstrap uses the Supabase CLI as a system dependency, not a Python package. Do not add the Supabase CLI to `requirements.txt`.
 - Player detail DOM notes are available at @docs/player_stats_dom_notes.md. Start there when investigating player scraping selectors, timing, or parser behavior. The raw copied DOM snapshot is at @docs/player_stats_html.txt.
 - If inspecting large copied Biwenger HTML dumps, prefer using subagents or narrow shell searches so the main context is not flooded with raw DOM.
