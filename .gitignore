@@ -11,6 +11,7 @@ logs/*
 */logs/*
 !logs/.gitkeep
 !*/logs/.gitkeep
+run_artifacts/
 
 # Ignore environment files
 .env

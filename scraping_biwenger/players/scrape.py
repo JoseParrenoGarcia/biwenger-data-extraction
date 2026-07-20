@@ -28,6 +28,8 @@ def scrape_player_rows(
     max_pages: int | None = None,
     max_players_detail: int | None = None,
     player_slug: str | None = None,
+    on_player_payload=None,
+    on_player_error=None,
 ) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     """
     Scrape player discovery rows plus detail, match, and value-history rows.
@@ -55,6 +57,8 @@ def scrape_player_rows(
             selected_players,
             max_players=1,
             collect_matches=True,
+            on_player_payload=on_player_payload,
+            on_player_error=on_player_error,
         )
         return selected_players, player_detail_rows, match_rows, value_history_rows
 
@@ -86,5 +90,7 @@ def scrape_player_rows(
         selected_players,
         max_players=max_players_detail,
         collect_matches=True,
+        on_player_payload=on_player_payload,
+        on_player_error=on_player_error,
     )
     return players_list, player_detail_rows, match_rows, value_history_rows
