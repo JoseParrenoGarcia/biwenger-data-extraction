@@ -220,7 +220,9 @@ The detailed table contract and persistence semantics are maintained in
 Historical issue #93 tracks slug backfill and future simplification of legacy
 fallback identity logic.
 
-Issue #86 tracks making Supabase migrations the single schema source of truth.
+Supabase migrations under `supabase/migrations/` are the single executable
+schema source of truth. The table contract document explains semantics; it does
+not replace migrations.
 
 ## Logging And Verification
 
@@ -348,21 +350,15 @@ structured parsers, or subagents for focused inspection.
 
 The main architecture cleanup is now largely complete. Remaining valuable work:
 
-1. Move Biwenger-specific Supabase write helpers out of `supabase_client/utils.py`
-   into owned persistence modules or repositories. Tracked by issue #70.
-2. Make Supabase migrations the single schema source of truth and archive or
-   replace `supabase_client/supabase_schema_reference.sql`. Tracked by issue #86.
-3. Add parser-level tests for current-team HTML, player detail HTML, match row
+1. Add parser-level tests for current-team HTML, player detail HTML, match row
    parsing, and value CSV normalization. Tracked by issues #68 and #71.
-4. Improve README with the full testing ladder, scheduler notes, and table
+2. Improve README with the full testing ladder, scheduler notes, and table
    semantics. Covered across issues #70, #71, #73, and #100.
-5. Make shell scripts path-portable instead of hardcoding local paths. Tracked
+3. Make shell scripts path-portable instead of hardcoding local paths. Tracked
    by issue #73.
-6. Revisit player slug backfill so legacy duplicate-protection fallback logic can
+4. Revisit player slug backfill so legacy duplicate-protection fallback logic can
    be simplified. Tracked by issue #93.
-7. Review whether logger files should overwrite, append, or be timestamped per
-   run. Tracked by issue #72.
-8. Audit `requirements.txt` around direct imports and remove any remaining stale
+5. Audit `requirements.txt` around direct imports and remove any remaining stale
    dependencies. Tracked by issue #68.
 
 ## Open Questions

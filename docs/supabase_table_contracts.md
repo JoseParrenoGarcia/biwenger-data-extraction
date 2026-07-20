@@ -3,8 +3,8 @@
 Date: 2026-07-20
 
 This document describes the semantic contract for the active Biwenger tables.
-Supabase migrations remain the executable schema history. This document is the
-human-facing contract for agents and future dashboard work.
+Supabase migrations are the only executable schema source of truth. This
+document is the human-facing contract for agents and future dashboard work.
 
 Runtime scraping must not perform DDL. Apply schema changes through
 `supabase/migrations/` with `supabase db push`.
@@ -206,9 +206,10 @@ fixed before running larger production uploads.
 
 ## Migration And Reference Policy
 
-Executable schema changes belong in `supabase/migrations/`.
+Executable schema changes belong only in new timestamped files under
+`supabase/migrations/`.
 
-`supabase_client/supabase_schema_reference.sql` is a readable snapshot for quick
-inspection only. When migrations change active table contracts, update this
-contract document and either update or retire the reference snapshot. Issue #86
-tracks making migrations the only schema source of truth.
+Do not edit historical migrations after they have been pushed to Supabase.
+Create a follow-up migration instead, then update this contract document when
+the active table semantics change. The repo intentionally does not maintain a
+separate schema snapshot SQL file.
