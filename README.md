@@ -62,6 +62,10 @@ supabase db push
 The Supabase CLI is a system tool, not a Python package, so it is intentionally
 not listed in `requirements.txt`.
 
+Schema changes must be made as new timestamped SQL files under
+`supabase/migrations/`. Do not edit already-pushed migrations or maintain a
+separate schema snapshot SQL file.
+
 After the migration is applied, verify the anon connection:
 
 ```bash

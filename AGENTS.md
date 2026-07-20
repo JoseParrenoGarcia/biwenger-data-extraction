@@ -25,6 +25,7 @@ Important current decisions:
 - Keep Biwenger and Supabase as the core integration points.
 - Keep `biwenger_current_team` as a replace-every-run current-state table, not a historical table.
 - Supabase table semantics are documented at @docs/supabase_table_contracts.md. Check that contract before changing persistence, migrations, checkpoint replay, or dashboard assumptions.
+- Supabase migrations under @supabase/migrations/ are the only executable schema source of truth. Add new timestamped migrations for schema changes; do not edit already-pushed migrations or recreate duplicate schema snapshot SQL files.
 - Use the `biwenger_player_scraper` profile for high-volume scraping.
 - Use the personal `biwenger` profile only where needed for current-team extraction.
 - Keep root `scraping_biwenger/` limited to public entrypoints and top-level runner code. Owned implementation should live under `current_team/`, `players/`, `shared/`, or `dev/`.
