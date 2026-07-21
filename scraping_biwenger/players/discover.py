@@ -96,16 +96,23 @@ def extract_players_from_current_table(page: Page) -> List[Dict[str, str]]:
     return out
 
 
-def extract_all_player_names(logger, page: Page, max_pages: Optional[int] = None) -> List[Dict[str, str]]:
+def extract_all_player_names(
+    logger,
+    page: Page,
+    max_pages: Optional[int] = None,
+    max_players: Optional[int] = None,
+) -> List[Dict[str, str]]:
     """
     Iterate the players table by clicking '›' until it becomes disabled (last page),
-    or until `max_pages` pages have been processed. Extracts {name, slug, href}
-    per row and returns a de-duplicated list (by slug, else by (name, href)).
+    or until `max_pages` pages have been processed / `max_players` unique players
+    have been collected. Extracts {name, slug, href} per row and returns a
+    de-duplicated list (by slug, else by (name, href)).
 
     Args:
         logger: your configured logger
         page: Playwright Page already on the Players table view
         max_pages: optional cap on number of pages to process (1-based). If None, runs to the end.
+        max_players: optional cap on number of unique players to collect.
 
     Returns:
         List[Dict[str, str]] with keys: name, slug, href
@@ -129,12 +136,18 @@ def extract_all_player_names(logger, page: Page, max_pages: Optional[int] = None
             players = extract_players_from_current_table(page)
             added = 0
             for p in players:
+                if max_players is not None and len(players_all) >= max_players:
+                    break
                 key = p.get("slug") or (p.get("name"), p.get("href"))
                 if key not in seen:
                     players_all.append(p)
                     seen.add(key)
                     added += 1
             logger.info(f"🧾 Page {page_idx}: got {len(players)} rows, +{added} new (total {len(players_all)}).")
+
+            if max_players is not None and len(players_all) >= max_players:
+                logger.info(f"⛔ Reached max_players={max_players}. Pagination discovery stopping early.")
+                break
 
             # Stop after max_pages if requested
             if max_pages is not None and page_idx >= max_pages:
