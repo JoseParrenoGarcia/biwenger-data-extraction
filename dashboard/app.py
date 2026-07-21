@@ -7,39 +7,16 @@ Run with:
 
 import streamlit as st
 
-from dashboard.queries import (
-    fetch_all_player_matches,
-    fetch_all_player_stats,
-    fetch_all_value_history,
-    fetch_current_team,
+from dashboard.data import (
+    load_all_matches,
+    load_all_player_stats,
+    load_all_value_history,
+    load_current_team,
 )
 
 st.set_page_config(page_title="Biwenger Dashboard", layout="wide")
 st.title("Biwenger Dashboard")
 st.caption("Read-only view. All stats use the SofaScore scoring system.")
-
-# ── Cached data loaders (one Supabase round-trip per table per session) ───────
-
-
-@st.cache_data(ttl=300)
-def _load_player_stats():
-    return fetch_all_player_stats()
-
-
-@st.cache_data(ttl=300)
-def _load_current_team():
-    return fetch_current_team()
-
-
-@st.cache_data(ttl=300)
-def _load_all_matches():
-    return fetch_all_player_matches()
-
-
-@st.cache_data(ttl=300)
-def _load_all_value_history():
-    return fetch_all_value_history()
-
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 
@@ -51,7 +28,7 @@ tab_stats, tab_team, tab_matches, tab_value = st.tabs(
 with tab_stats:
     st.subheader("Latest Player Stats")
     with st.spinner("Loading…"):
-        df_stats = _load_player_stats()
+        df_stats = load_all_player_stats()
     if df_stats.empty:
         st.info("No player stats found.")
     else:
@@ -61,7 +38,7 @@ with tab_stats:
 with tab_team:
     st.subheader("Current Team Snapshot")
     with st.spinner("Loading…"):
-        df_team = _load_current_team()
+        df_team = load_current_team()
     if df_team.empty:
         st.info("No current-team data found.")
     else:
@@ -72,7 +49,7 @@ with tab_matches:
     st.subheader("Match History")
     slug_filter = st.text_input("Filter by player slug (leave blank for all)")
     with st.spinner("Loading…"):
-        df_matches = _load_all_matches()
+        df_matches = load_all_matches()
     if slug_filter:
         df_matches = df_matches[df_matches["slug"] == slug_filter]
     if df_matches.empty:
@@ -85,7 +62,7 @@ with tab_value:
     st.subheader("Market Value History")
     slug_filter_val = st.text_input("Filter by player slug (leave blank for all)", key="val_slug")
     with st.spinner("Loading…"):
-        df_value = _load_all_value_history()
+        df_value = load_all_value_history()
     if slug_filter_val:
         df_value = df_value[df_value["slug"] == slug_filter_val]
     if df_value.empty:

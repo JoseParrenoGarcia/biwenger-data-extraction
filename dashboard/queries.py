@@ -9,7 +9,7 @@ import pandas as pd
 
 from supabase_client.connection import get_supabase_client
 
-SCORING_SYSTEM = "SofaScore"
+SCORING_SYSTEM = "sofascore"
 
 STATS_TABLE = "biwenger_player_stats"
 MATCHES_TABLE = "biwenger_player_matches"
@@ -162,6 +162,35 @@ def fetch_value_player_index(supabase=None) -> pd.DataFrame:
     df["date"] = pd.to_datetime(df["date"])
     # Most-recent row per slug → gives current team name.
     return df.drop_duplicates(subset=["slug"]).reset_index(drop=True)
+
+
+def fetch_stats_history_for_players(
+    player_names: list[str],
+    cutoff_date: str | None = None,
+    supabase=None,
+) -> pd.DataFrame:
+    """
+    Return all stats snapshots for the given player names (one row per scrape
+    date), scoped to SofaScore.
+
+    Uses player_name as the join key because slug is not yet backfilled for
+    most rows in biwenger_player_stats. Once slugs are backfilled, this query
+    can be extended to prefer slug-based lookup.
+    """
+    client = _client(supabase)
+    q = (
+        client.table(STATS_TABLE)
+        .select("slug, player_name, team, as_of_date, market_purchases_pct, market_sales_pct")
+        .eq("scoring_system", SCORING_SYSTEM)
+        .in_("player_name", player_names)
+    )
+    if cutoff_date:
+        q = q.gte("as_of_date", cutoff_date)
+    response = q.order("as_of_date", desc=False).execute()
+    df = pd.DataFrame(response.data)
+    if not df.empty:
+        df["as_of_date"] = pd.to_datetime(df["as_of_date"])
+    return df
 
 
 def fetch_all_value_history(supabase=None) -> pd.DataFrame:
