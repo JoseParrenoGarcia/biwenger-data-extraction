@@ -212,7 +212,7 @@ def _build_scatter(
                     y=grp[y_col],
                     mode="markers",
                     marker=dict(
-                        size=26,
+                        size=18,
                         color=POSITION_COLOURS.get(pos, "#6b7280"),
                         opacity=_HALO_OPACITY,
                         line=dict(width=0),
