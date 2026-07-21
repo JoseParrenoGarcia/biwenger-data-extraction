@@ -11,16 +11,16 @@ Run manually with:
 import pytest
 
 from dashboard.queries import (
+    fetch_all_player_matches,
+    fetch_all_player_stats,
+    fetch_all_value_history,
     fetch_current_team,
-    fetch_latest_player_stats,
-    fetch_player_matches,
-    fetch_value_history,
 )
 
 
 @pytest.mark.integration
-def test_fetch_latest_player_stats_returns_dataframe():
-    df = fetch_latest_player_stats()
+def test_fetch_all_player_stats_returns_dataframe():
+    df = fetch_all_player_stats()
     # Returns a DataFrame (may be empty if DB has no rows yet)
     assert hasattr(df, "columns")
     if not df.empty:
@@ -43,8 +43,8 @@ def test_fetch_current_team_returns_dataframe():
 
 
 @pytest.mark.integration
-def test_fetch_player_matches_returns_dataframe():
-    df = fetch_player_matches()
+def test_fetch_all_player_matches_returns_dataframe():
+    df = fetch_all_player_matches()
     assert hasattr(df, "columns")
     if not df.empty:
         assert "slug" in df.columns
@@ -53,21 +53,21 @@ def test_fetch_player_matches_returns_dataframe():
 
 
 @pytest.mark.integration
-def test_fetch_player_matches_slug_filter():
-    # A broad fetch first to find a known slug to filter on
-    df_all = fetch_player_matches()
+def test_fetch_all_player_matches_local_slug_filter():
+    # Fetch all then filter locally — mirrors the app pattern
+    df_all = fetch_all_player_matches()
     if df_all.empty or df_all["slug"].dropna().empty:
         pytest.skip("No slugged match rows in DB — skipping slug-filter test")
 
     test_slug = df_all["slug"].dropna().iloc[0]
-    df_filtered = fetch_player_matches(slug=test_slug)
+    df_filtered = df_all[df_all["slug"] == test_slug]
     assert not df_filtered.empty
     assert (df_filtered["slug"] == test_slug).all()
 
 
 @pytest.mark.integration
-def test_fetch_value_history_returns_dataframe():
-    df = fetch_value_history()
+def test_fetch_all_value_history_returns_dataframe():
+    df = fetch_all_value_history()
     assert hasattr(df, "columns")
     if not df.empty:
         assert "slug" in df.columns
@@ -76,12 +76,13 @@ def test_fetch_value_history_returns_dataframe():
 
 
 @pytest.mark.integration
-def test_fetch_value_history_slug_filter():
-    df_all = fetch_value_history()
+def test_fetch_all_value_history_local_slug_filter():
+    # Fetch all then filter locally — mirrors the app pattern
+    df_all = fetch_all_value_history()
     if df_all.empty:
         pytest.skip("No value history rows in DB — skipping slug-filter test")
 
     test_slug = df_all["slug"].iloc[0]
-    df_filtered = fetch_value_history(slug=test_slug)
+    df_filtered = df_all[df_all["slug"] == test_slug]
     assert not df_filtered.empty
     assert (df_filtered["slug"] == test_slug).all()

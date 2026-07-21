@@ -21,10 +21,12 @@ def _client(supabase=None):
     return supabase if supabase is not None else get_supabase_client()
 
 
-def fetch_latest_player_stats(supabase=None) -> pd.DataFrame:
+def fetch_all_player_stats(supabase=None) -> pd.DataFrame:
     """
     Return the most recent stats snapshot per player (by slug where present,
     else by player_name + team), scoped to SofaScore.
+
+    Full table is returned — callers filter locally.
     """
     client = _client(supabase)
     response = (
@@ -60,27 +62,29 @@ def fetch_current_team(supabase=None) -> pd.DataFrame:
     return pd.DataFrame(response.data)
 
 
-def fetch_player_matches(supabase=None, slug: str | None = None) -> pd.DataFrame:
+def fetch_all_player_matches(supabase=None) -> pd.DataFrame:
     """
-    Return match history scoped to SofaScore.
-    Optionally filter to a single player by slug.
+    Return full match history scoped to SofaScore.
+
+    Full table is returned — callers filter locally.
     """
     client = _client(supabase)
-    query = client.table(MATCHES_TABLE).select("*").eq("scoring_system", SCORING_SYSTEM)
-    if slug is not None:
-        query = query.eq("slug", slug)
-    response = query.order("match_date", desc=True).execute()
+    response = (
+        client.table(MATCHES_TABLE)
+        .select("*")
+        .eq("scoring_system", SCORING_SYSTEM)
+        .order("match_date", desc=True)
+        .execute()
+    )
     return pd.DataFrame(response.data)
 
 
-def fetch_value_history(supabase=None, slug: str | None = None) -> pd.DataFrame:
+def fetch_all_value_history(supabase=None) -> pd.DataFrame:
     """
-    Return market-value history from biwenger_player_value.
-    Optionally filter to a single player by slug.
+    Return full market-value history from biwenger_player_value.
+
+    Full table is returned — callers filter locally.
     """
     client = _client(supabase)
-    query = client.table(VALUE_TABLE).select("*")
-    if slug is not None:
-        query = query.eq("slug", slug)
-    response = query.order("date", desc=True).execute()
+    response = client.table(VALUE_TABLE).select("*").order("date", desc=True).execute()
     return pd.DataFrame(response.data)
