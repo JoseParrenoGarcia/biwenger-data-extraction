@@ -18,7 +18,7 @@ scrape-players:
 .PHONY: test
 test:
 	@echo "🧪 Running unit tests..."
-	$(PYTHON) -m pytest
+	$(PYTHON) -m pytest -m "not integration"
 
 .PHONY: lint
 lint:
@@ -77,6 +77,20 @@ upload-checkpoint:
 	@test -n "$(CHECKPOINT_DIR)" || (echo "Set CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>"; exit 1)
 	@echo "⬆️  Uploading checkpoint $(CHECKPOINT_DIR) to Supabase without scraping..."
 	$(PYTHON) -m scraping_biwenger.get_player_stats --upload-checkpoint "$(CHECKPOINT_DIR)"
+
+# ────────────────────────────────────────────────────────────────
+# DASHBOARD TARGETS
+# ────────────────────────────────────────────────────────────────
+
+.PHONY: dashboard
+dashboard:
+	@echo "📊 Starting Biwenger dashboard..."
+	$(PYTHON) -m streamlit run dashboard/app.py
+
+.PHONY: test-integration
+test-integration:
+	@echo "🔌 Running integration tests (requires live Supabase)..."
+	$(PYTHON) -m pytest -m integration tests/test_dashboard_queries.py -v
 
 
 # ────────────────────────────────────────────────────────────────

@@ -23,6 +23,7 @@ venv/
 
 # Ignore IDE/project files
 .idea/
+.vscode/
 
 # Secrets
 secrets/*

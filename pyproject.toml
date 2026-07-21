@@ -4,3 +4,8 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests that require a live Supabase connection (deselect with '-m not integration')",
+]
