@@ -342,10 +342,21 @@ st.plotly_chart(fig, width="stretch")
 
 st.subheader("Player table")
 
-# Show only columns that exist
-available_cols = [c for c in _TABLE_COLUMNS if c in df.columns]
+# Quick-filter: reuse position/team/player selections already set above
+df_table_src = df.copy()
+if highlight_team_only:
+    df_table_src = df_table_src[df_table_src["is_current_team"]]
+elif sel_players:
+    df_table_src = df_table_src[
+        df_table_src["is_current_team"] | df_table_src["player_name"].isin(sel_players)
+    ]
+
+available_cols = [c for c in _TABLE_COLUMNS if c in df_table_src.columns]
 df_table = (
-    df[available_cols].rename(columns=_TABLE_LABELS).sort_values("Pts/100k", ascending=False).reset_index(drop=True)
+    df_table_src[available_cols]
+    .rename(columns=_TABLE_LABELS)
+    .sort_values("Pts/100k", ascending=False)
+    .reset_index(drop=True)
 )
 
 st.dataframe(df_table, width="stretch")
