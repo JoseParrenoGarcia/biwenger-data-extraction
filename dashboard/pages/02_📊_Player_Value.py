@@ -347,9 +347,7 @@ df_table_src = df.copy()
 if highlight_team_only:
     df_table_src = df_table_src[df_table_src["is_current_team"]]
 elif sel_players:
-    df_table_src = df_table_src[
-        df_table_src["is_current_team"] | df_table_src["player_name"].isin(sel_players)
-    ]
+    df_table_src = df_table_src[df_table_src["is_current_team"] | df_table_src["player_name"].isin(sel_players)]
 
 available_cols = [c for c in _TABLE_COLUMNS if c in df_table_src.columns]
 df_table = (
