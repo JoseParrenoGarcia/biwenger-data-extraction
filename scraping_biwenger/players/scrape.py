@@ -70,6 +70,7 @@ def scrape_player_rows(
             logger=logger,
             page=page,
             max_pages=max_pages,
+            max_players=max_players_detail,
         )
         if max_players_detail is not None:
             selected_players = players_list[:max_players_detail]
