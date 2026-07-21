@@ -60,10 +60,21 @@ def fetch_all_player_stats(supabase=None) -> pd.DataFrame:
 
     # Keep only the latest snapshot per player identity.
     df["as_of_date"] = pd.to_datetime(df["as_of_date"])
-    slug_rows = df[df["slug"].notna() & (df["slug"].str.strip() != "")]
-    legacy_rows = df[df["slug"].isna() | (df["slug"].str.strip() == "")]
+    has_slug = df["slug"].notna() & (df["slug"].str.strip() != "")
+    slug_rows = df[has_slug]
+    legacy_rows = df[~has_slug]
 
     latest_slug = slug_rows.sort_values("as_of_date", ascending=False).drop_duplicates(subset=["slug"])
+
+    # Exclude players already covered by a slugged row so a player with mixed
+    # slug/null rows (e.g. Mbappé) does not appear twice.
+    slug_player_keys = set(zip(latest_slug["player_name"].str.strip(), latest_slug["team"].str.strip()))
+    legacy_rows = legacy_rows[
+        ~legacy_rows.apply(
+            lambda r: (str(r["player_name"]).strip(), str(r["team"]).strip()) in slug_player_keys,
+            axis=1,
+        )
+    ]
     latest_legacy = legacy_rows.sort_values("as_of_date", ascending=False).drop_duplicates(
         subset=["player_name", "team"]
     )
