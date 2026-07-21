@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.biwenger.players</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/ABSOLUTE/PATH/TO/biwenger-data-extraction/bash_scripts/run_players.sh</string>
+  </array>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>10</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/biwenger.players.launchd.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/biwenger.players.launchd.stderr.log</string>
+
+  <!-- Optional safe manual-test limits:
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>BIWENGER_MAX_PLAYER_PAGES</key>
+    <string>1</string>
+    <key>BIWENGER_MAX_PLAYERS</key>
+    <string>2</string>
+  </dict>
+  -->
+</dict>
+</plist>

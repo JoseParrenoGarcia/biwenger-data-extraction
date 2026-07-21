@@ -13,7 +13,17 @@ PYTHON ?= .venv/bin/python
 .PHONY: scrape-players
 scrape-players:
 	@echo "🔁 Running Biwenger player scraping pipeline..."
-	bash bash_scripts/run_scraping_players.sh
+	bash bash_scripts/run_players.sh
+
+.PHONY: scrape-current-team
+scrape-current-team:
+	@echo "👥 Running Biwenger current-team scraping pipeline..."
+	bash bash_scripts/run_current_team.sh
+
+.PHONY: scheduler-test-players-2
+scheduler-test-players-2:
+	@echo "🔁 Running scheduler-shaped 2-player player scrape..."
+	BIWENGER_MAX_PLAYER_PAGES=1 BIWENGER_MAX_PLAYERS=2 bash bash_scripts/run_players.sh
 
 .PHONY: test
 test:

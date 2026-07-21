@@ -35,8 +35,8 @@ news generation, or LLM client code. The active codebase is organized around:
 |-- supabase/
 |   `-- migrations/               Supabase CLI migrations for Biwenger tables
 |-- supabase_client/              Supabase connection and write helpers
-|-- bash_scripts/                 macOS/launchd-friendly wrapper scripts
-|-- launchd/                      Local LaunchAgent templates and setup notes
+|-- bash_scripts/                 Path-portable macOS/launchd-friendly jobs
+|-- launchd/                      Local LaunchAgent examples and setup notes
 |-- docs/                         Architecture and copied Biwenger DOM notes
 |-- tests/                        Unit tests for parsers, transforms, persistence, secrets
 |-- secrets/                      Ignored local secrets plus safe example templates
@@ -364,11 +364,9 @@ The main architecture cleanup is now largely complete. Remaining valuable work:
 
 1. Improve README with the full testing ladder, scheduler notes, and table
    semantics. Covered across issues #70, #71, #73, and #100.
-2. Make shell scripts path-portable instead of hardcoding local paths. Tracked
-   by issue #73.
-3. Revisit player slug backfill so legacy duplicate-protection fallback logic can
+2. Revisit player slug backfill so legacy duplicate-protection fallback logic can
    be simplified. Tracked by issue #93.
-4. Audit `requirements.txt` around direct imports and remove any remaining stale
+3. Audit `requirements.txt` around direct imports and remove any remaining stale
    dependencies if future imports change.
 
 ## Open Questions
@@ -379,5 +377,5 @@ The main architecture cleanup is now largely complete. Remaining valuable work:
 2. Should full production runs stay headed because Biwenger is more reliable
    that way, or should headless be investigated again after selector stability
    improves? Tracked by issue #100.
-3. Should the launchd/macOS scripts remain the production scheduler, or should
-   the repo also support a portable Linux/server schedule? Tracked by issue #73.
+3. Should the repo eventually support a portable Linux/server schedule in
+   addition to the current macOS LaunchAgent path? Tracked by issue #73.

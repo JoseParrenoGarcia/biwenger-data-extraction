@@ -18,6 +18,10 @@ run_artifacts/
 .venv/
 venv/
 
+# Pytest and linting caches
+.pytest_cache/
+.ruff_cache/
+
 # Ignore Streamlit secrets
 .streamlit/secrets.toml
 

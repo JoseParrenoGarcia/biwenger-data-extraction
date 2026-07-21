@@ -122,3 +122,27 @@ make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>
 `write-players-2` performs a small headed scrape and writes to Supabase.
 `upload-checkpoint` skips Biwenger entirely and uploads rows already saved in a
 checkpoint run folder.
+
+## Local Scheduling
+
+macOS scheduling is handled with LaunchAgents that call repo-owned scripts:
+
+```bash
+bash bash_scripts/run_current_team.sh
+bash bash_scripts/run_players.sh
+```
+
+The jobs are intentionally separate because current-team and player scraping use
+different credentials, runtime profiles, and recovery behavior. The player
+script runs headed, checkpoints every player, uploads in batches of 10, and
+retries first-pass failures for the top 150 selected players by default.
+
+LaunchAgent templates live under `launchd/` and run daily at 10:00 by default:
+
+```text
+launchd/com.biwenger.current-team.plist.example
+launchd/com.biwenger.players.plist.example
+```
+
+Setup, manual trigger, notification checks, temporary 2-player scheduler tests,
+and log inspection are documented in `launchd/launchagent_test_guide.md`.
