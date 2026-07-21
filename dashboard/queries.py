@@ -21,6 +21,24 @@ def _client(supabase=None):
     return supabase if supabase is not None else get_supabase_client()
 
 
+def _paginate(query_factory, page_size: int = 1000) -> list[dict]:
+    """Page through all rows of a Supabase query in ``page_size`` chunks.
+
+    ``query_factory`` must be a zero-argument callable that returns a fresh
+    Supabase query builder each time (so ``.range()`` can be appended per
+    page without mutating a shared object).
+    """
+    all_rows: list[dict] = []
+    offset = 0
+    while True:
+        result = query_factory().range(offset, offset + page_size - 1).execute()
+        all_rows.extend(result.data)
+        if len(result.data) < page_size:
+            break
+        offset += page_size
+    return all_rows
+
+
 def fetch_all_player_stats(supabase=None) -> pd.DataFrame:
     """
     Return the most recent stats snapshot per player (by slug where present,
@@ -62,29 +80,96 @@ def fetch_current_team(supabase=None) -> pd.DataFrame:
     return pd.DataFrame(response.data)
 
 
-def fetch_all_player_matches(supabase=None) -> pd.DataFrame:
+def fetch_player_roster(supabase=None) -> pd.DataFrame:
     """
-    Return full match history scoped to SofaScore.
+    Return one row per slugged player (slug, player_name, team, position)
+    from the most recent SofaScore stats snapshot.
 
-    Full table is returned — callers filter locally.
+    Used to populate player-selector dropdowns. Much cheaper than loading
+    the full value-history table.
     """
     client = _client(supabase)
     response = (
-        client.table(MATCHES_TABLE)
-        .select("*")
+        client.table(STATS_TABLE)
+        .select("slug, player_name, team, position")
         .eq("scoring_system", SCORING_SYSTEM)
-        .order("match_date", desc=True)
+        .not_.is_("slug", "null")
+        .order("as_of_date", desc=True)
         .execute()
     )
-    return pd.DataFrame(response.data)
+    df = pd.DataFrame(response.data)
+    if df.empty:
+        return df
+    # One row per slug — keep the most recent stats snapshot.
+    return df.drop_duplicates(subset=["slug"]).reset_index(drop=True)
+
+
+def fetch_value_history_for_slugs(
+    slugs: list[str],
+    cutoff_date: str | None = None,
+    supabase=None,
+) -> pd.DataFrame:
+    """
+    Return market-value rows for the given slugs, optionally filtered to
+    dates on or after ``cutoff_date`` (ISO string, e.g. ``"2026-06-21"``).
+
+    Paginates automatically so no rows are silently dropped.
+    """
+    client = _client(supabase)
+
+    def _q():
+        q = client.table(VALUE_TABLE).select("*").in_("slug", slugs)
+        if cutoff_date:
+            q = q.gte("date", cutoff_date)
+        return q.order("date", desc=False)
+
+    rows = _paginate(_q)
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df["date"] = pd.to_datetime(df["date"])
+    return df
+
+
+def fetch_all_player_matches(supabase=None) -> pd.DataFrame:
+    """
+    Return full match history scoped to SofaScore.
+    Paginates automatically so no rows are silently dropped.
+    Full table is returned — callers filter locally.
+    """
+    client = _client(supabase)
+    rows = _paginate(
+        lambda: (
+            client.table(MATCHES_TABLE).select("*").eq("scoring_system", SCORING_SYSTEM).order("match_date", desc=True)
+        )
+    )
+    return pd.DataFrame(rows)
+
+
+def fetch_value_player_index(supabase=None) -> pd.DataFrame:
+    """
+    Return one row per player from ``biwenger_player_value``, containing only
+    ``slug``, ``player_name``, and ``team``.
+
+    Used to populate the player-selector dropdown cheaply — three columns
+    instead of the full 118K-row table.  Deduplication keeps the most recent
+    row per slug (latest ``date``), which gives the up-to-date team name.
+    """
+    client = _client(supabase)
+    rows = _paginate(lambda: client.table(VALUE_TABLE).select("slug, player_name, team, date").order("date", desc=True))
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    df["date"] = pd.to_datetime(df["date"])
+    # Most-recent row per slug → gives current team name.
+    return df.drop_duplicates(subset=["slug"]).reset_index(drop=True)
 
 
 def fetch_all_value_history(supabase=None) -> pd.DataFrame:
     """
     Return full market-value history from biwenger_player_value.
-
+    Paginates automatically so no rows are silently dropped.
     Full table is returned — callers filter locally.
     """
     client = _client(supabase)
-    response = client.table(VALUE_TABLE).select("*").order("date", desc=True).execute()
-    return pd.DataFrame(response.data)
+    rows = _paginate(lambda: client.table(VALUE_TABLE).select("*").order("date", desc=True))
+    return pd.DataFrame(rows)

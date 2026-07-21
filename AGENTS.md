@@ -64,3 +64,9 @@ Important current decisions:
 - If inspecting large copied Biwenger HTML dumps, prefer using subagents or narrow shell searches so the main context is not flooded with raw DOM.
 - Validate dataframe columns and payload schemas before uploads.
 - Keep local automation simple and documented.
+
+## Streamlit API Conventions
+
+- Never use `use_container_width` on `st.dataframe()`, `st.plotly_chart()`, or any other Streamlit component. It was deprecated after 2025-12-31.
+- Use `width='stretch'` instead of `use_container_width=True`.
+- Use `width='content'` instead of `use_container_width=False`.

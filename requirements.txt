@@ -5,3 +5,4 @@ toml==0.10.2
 supabase==2.18.1
 ruff>=0.12,<1.0
 streamlit>=1.35,<2.0
+plotly>=5.0,<6.0
