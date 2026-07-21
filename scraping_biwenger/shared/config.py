@@ -3,16 +3,39 @@ from pathlib import Path
 
 DEFAULT_ROOT_URL = "https://biwenger.as.com/"
 DEFAULT_APP_URL = "https://biwenger.as.com/app"
+CURRENT_TEAM_PROFILE = "biwenger"
+PLAYER_SCRAPER_PROFILE = "biwenger_player_scraper"
+
+_EXPECTED_PROFILE_BY_USE_CASE = {
+    "current_team": CURRENT_TEAM_PROFILE,
+    "player_scraping": PLAYER_SCRAPER_PROFILE,
+}
 
 
-def load_biwenger_credentials(profile: str = "biwenger") -> dict:
+def assert_biwenger_profile_allowed(*, use_case: str, profile: str) -> None:
+    """
+    Guard against accidentally using the personal Biwenger account for bulk scraping.
+    """
+    expected_profile = _EXPECTED_PROFILE_BY_USE_CASE.get(use_case)
+    if expected_profile is None:
+        allowed = ", ".join(sorted(_EXPECTED_PROFILE_BY_USE_CASE))
+        raise ValueError(f"Unknown Biwenger credential use case '{use_case}'. Expected one of: {allowed}")
+
+    if profile != expected_profile:
+        raise ValueError(
+            f"Unsafe Biwenger credential profile '{profile}' for use case '{use_case}'. "
+            f"Use '{expected_profile}' instead."
+        )
+
+
+def load_biwenger_credentials(profile: str = CURRENT_TEAM_PROFILE) -> dict:
     """
     Load Biwenger credentials from secrets/biwenger.toml.
 
     Args:
         profile: Which section to read. Usually:
-                 - "biwenger" (your main account)
-                 - "biwenger_player_scraper" (secondary account)
+                 - "biwenger" (personal/current-team only)
+                 - "biwenger_player_scraper" (high-volume player scraper account)
 
     Returns:
         dict: {"email": str, "password": str}
