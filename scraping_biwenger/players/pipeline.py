@@ -20,7 +20,11 @@ from scraping_biwenger.players.transform import (
 )
 from scraping_biwenger.shared.auth import perform_login
 from scraping_biwenger.shared.browser_session import start_browser_accept_cookies
-from scraping_biwenger.shared.config import load_biwenger_credentials
+from scraping_biwenger.shared.config import (
+    PLAYER_SCRAPER_PROFILE,
+    assert_biwenger_profile_allowed,
+    load_biwenger_credentials,
+)
 
 
 def _concat_frames(frames: list[pd.DataFrame], columns: list[str]) -> pd.DataFrame:
@@ -178,8 +182,9 @@ def run_player_pipeline(
     elif checkpoint_enabled:
         logger.info("No old player run artifacts to clean up older than %s days.", run_retention_days)
 
-    creds = load_biwenger_credentials(profile="biwenger_player_scraper")
-    logger.info("Credentials loaded successfully for profile 'biwenger_player_scraper'.")
+    assert_biwenger_profile_allowed(use_case="player_scraping", profile=PLAYER_SCRAPER_PROFILE)
+    creds = load_biwenger_credentials(profile=PLAYER_SCRAPER_PROFILE)
+    logger.info("Credentials loaded successfully for profile '%s'.", PLAYER_SCRAPER_PROFILE)
 
     upload_batch_size = max(1, upload_batch_size)
     batch_number = 0

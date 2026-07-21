@@ -33,8 +33,12 @@ cp secrets/supabase.example.toml secrets/supabase.toml
 
 Fill in `secrets/biwenger.toml` with both Biwenger credential profiles:
 
-- `[biwenger]` is used for current-team extraction.
-- `[biwenger_player_scraper]` is used for high-volume player scraping.
+- `[biwenger]` is the personal account and is used for current-team extraction only.
+- `[biwenger_player_scraper]` is the dedicated scraper/test account and is used
+  for high-volume player scraping.
+
+The player pipeline has a code guardrail to avoid accidentally running bulk
+scraping with the personal `[biwenger]` profile.
 
 Fill in `secrets/supabase.toml` with the Supabase project URL and anon key.
 

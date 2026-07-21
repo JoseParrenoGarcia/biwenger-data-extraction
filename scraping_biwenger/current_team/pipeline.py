@@ -4,7 +4,11 @@ from scraping_biwenger.current_team.scrape import scrape_basic_team_table
 from scraping_biwenger.current_team.transform import transform_current_team
 from scraping_biwenger.shared.auth import dismiss_app_popups_if_present, perform_login
 from scraping_biwenger.shared.browser_session import start_browser_accept_cookies
-from scraping_biwenger.shared.config import load_biwenger_credentials
+from scraping_biwenger.shared.config import (
+    CURRENT_TEAM_PROFILE,
+    assert_biwenger_profile_allowed,
+    load_biwenger_credentials,
+)
 from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu, scroll_into_view
 
 
@@ -66,8 +70,9 @@ def run_current_team_pipeline(
     logger.info("Starting ETL: get_current_team")
     logger.info("=" * 70)
 
-    creds = load_biwenger_credentials(profile="biwenger")
-    logger.info("Credentials loaded successfully for profile 'biwenger'.")
+    assert_biwenger_profile_allowed(use_case="current_team", profile=CURRENT_TEAM_PROFILE)
+    creds = load_biwenger_credentials(profile=CURRENT_TEAM_PROFILE)
+    logger.info("Credentials loaded successfully for profile '%s'.", CURRENT_TEAM_PROFILE)
 
     pw, browser, context, page = start_browser_accept_cookies(
         headless=headless,
