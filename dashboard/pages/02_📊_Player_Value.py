@@ -33,7 +33,7 @@ st.set_page_config(layout="wide", page_title="Player Value Comparison")
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 _TEAM_BORDER_COLOUR = "#111827"  # thick black → "I own this"
-_SEL_BORDER_COLOUR = "#f59e0b"  # gold → "I'm looking at this"
+_HALO_OPACITY = 0.28  # selected-player bloom opacity
 
 _AXIS_OPTIONS: dict[str, str] = {
     "Market value (€)": "value",
@@ -198,11 +198,30 @@ def _build_scatter(
     team_mask = is_team & ~is_selected
     sel_mask = is_selected  # gold wins even if on team
 
-    def _opacity(mask: pd.Series) -> list[float]:
-        """If highlight_team_only, dim non-team non-selected rows further."""
-        if not highlight_team_only:
-            return [1.0] * mask.sum()
-        return [1.0] * mask.sum()
+    def _add_halo_layer(sub: pd.DataFrame) -> None:
+        """Large semi-transparent bloom in position colour — rendered before the crisp dot."""
+        if sub.empty:
+            return
+        for pos in POSITION_ORDER:
+            grp = sub[sub["position_display"] == pos]
+            if grp.empty:
+                continue
+            fig.add_trace(
+                go.Scatter(
+                    x=grp[x_col],
+                    y=grp[y_col],
+                    mode="markers",
+                    marker=dict(
+                        size=26,
+                        color=POSITION_COLOURS.get(pos, "#6b7280"),
+                        opacity=_HALO_OPACITY,
+                        line=dict(width=0),
+                    ),
+                    hoverinfo="skip",
+                    showlegend=False,
+                    legendgroup=pos,
+                )
+            )
 
     def _add_layer(
         sub: pd.DataFrame,
@@ -235,9 +254,7 @@ def _build_scatter(
                 marker=marker,
                 text=grp["player_name"].tolist() if show_labels else None,
                 textposition="top center",
-                textfont=dict(
-                    size=10, color=_SEL_BORDER_COLOUR if border_color == _SEL_BORDER_COLOUR else _TEAM_BORDER_COLOUR
-                ),
+                textfont=dict(size=10, color="#374151"),
                 hovertext=hover_texts,
                 hoverinfo="text",
                 name=pos,
@@ -250,7 +267,11 @@ def _build_scatter(
     bg_opacity = 0.08 if highlight_team_only else 0.25
     _add_layer(df[bg_mask], size=7, border_color=None, border_width=0, opacity=bg_opacity)
     _add_layer(df[team_mask], size=11, border_color=_TEAM_BORDER_COLOUR, border_width=2.5, opacity=1.0)
-    _add_layer(df[sel_mask], size=14, border_color=_SEL_BORDER_COLOUR, border_width=3, opacity=1.0, show_labels=True)
+    # Selected: halo bloom first, then crisp dot + label on top
+    _add_halo_layer(df[sel_mask])
+    _add_layer(
+        df[sel_mask], size=11, border_color="rgba(255,255,255,0.9)", border_width=1.5, opacity=1.0, show_labels=True
+    )
 
     # ── Position legend entries (dummy invisible traces) ──────────────────────
     for pos in POSITION_ORDER:
@@ -286,8 +307,8 @@ def _build_scatter(
                 x=[None],
                 y=[None],
                 mode="markers",
-                marker=dict(size=13, color="grey", line=dict(width=3, color=_SEL_BORDER_COLOUR)),
-                name="Selected",
+                marker=dict(size=18, color="rgba(107,114,128,0.28)", line=dict(width=0)),
+                name="Selected (glow)",
                 showlegend=True,
             )
         )
