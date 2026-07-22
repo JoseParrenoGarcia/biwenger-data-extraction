@@ -19,6 +19,7 @@ def ETL_get_player_stats(
     upload_batch_size: int = 10,
     debug_log: bool = False,
     run_retention_days: int = 7,
+    terminal_ui: bool = False,
 ):
     """
     Backward-compatible entry point for the player ETL.
@@ -35,6 +36,7 @@ def ETL_get_player_stats(
         upload_batch_size=upload_batch_size,
         debug_log=debug_log,
         run_retention_days=run_retention_days,
+        terminal_ui=terminal_ui,
     )
     ETL_get_player_stats.last_checkpoint_dir = getattr(run_player_pipeline, "last_checkpoint_dir", None)
     return result
@@ -114,6 +116,11 @@ def parse_args() -> argparse.Namespace:
         help="Delete player run artifact directories older than this many days before a new scrape run.",
     )
     parser.add_argument(
+        "--terminal-ui",
+        action="store_true",
+        help="Show a live terminal dashboard for manual player runs.",
+    )
+    parser.add_argument(
         "--upload-checkpoint",
         help="Upload a saved player checkpoint run directory to Supabase and skip Biwenger scraping.",
     )
@@ -130,6 +137,28 @@ def _print_df(title: str, df: pd.DataFrame, max_rows: int = 20) -> None:
         print("(empty)")
         return
     print(df.head(max_rows).to_string(index=False))
+
+
+def _print_dry_run_summary(
+    stats_df: pd.DataFrame,
+    matches_df: pd.DataFrame,
+    value_history_df: pd.DataFrame,
+    *,
+    checkpoint_dir: str | None = None,
+    terminal_ui: bool = False,
+    max_rows: int = 20,
+) -> None:
+    print("\nDRY RUN ONLY: no Supabase rows were written.")
+    if checkpoint_dir:
+        print(f"Checkpoint directory: {checkpoint_dir}")
+
+    if terminal_ui:
+        print(f"Summary: {len(stats_df)} stats rows, {len(matches_df)} match rows, {len(value_history_df)} value rows.")
+        return
+
+    _print_df("Player Stats - Dry Run", stats_df, max_rows=max_rows)
+    _print_df("Player Matches - Dry Run", matches_df, max_rows=20)
+    _print_df("Player Value History - Dry Run", value_history_df, max_rows=20)
 
 
 def main() -> None:
@@ -158,15 +187,18 @@ def main() -> None:
         upload_batch_size=args.upload_batch_size,
         debug_log=args.debug_log,
         run_retention_days=args.run_retention_days,
+        terminal_ui=args.terminal_ui,
     )
     if args.dry_run:
-        print("\nDRY RUN ONLY: no Supabase rows were written.")
         checkpoint_dir = getattr(ETL_get_player_stats, "last_checkpoint_dir", None)
-        if checkpoint_dir:
-            print(f"Checkpoint directory: {checkpoint_dir}")
-        _print_df("Player Stats - Dry Run", stats_df, max_rows=args.max_players)
-        _print_df("Player Matches - Dry Run", matches_df, max_rows=20)
-        _print_df("Player Value History - Dry Run", value_history_df, max_rows=20)
+        _print_dry_run_summary(
+            stats_df,
+            matches_df,
+            value_history_df,
+            checkpoint_dir=checkpoint_dir,
+            terminal_ui=args.terminal_ui,
+            max_rows=args.max_players,
+        )
 
 
 if __name__ == "__main__":

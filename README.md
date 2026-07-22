@@ -104,6 +104,10 @@ scrape, print samples, checkpoint player outputs locally, and do not write to
 Supabase:
 
 ```bash
+make run-players-ui
+make run-players-ui-popup
+make run-players-ui-write-2
+make run-players-ui-popup-write-2
 make dry-run-players-2
 make dry-run-player-kita
 make dry-run-player-mbappe
@@ -118,6 +122,18 @@ player checks, `make dry-run-player-regressions` for targeted known-problem
 players, and `make dry-run-ladder-broad` when you also want current-team and
 the 15-player smoke test.
 
+`make run-players-ui` launches the same safe 2-player dry-run but with the new
+live terminal dashboard. This UI is intended for manual interactive runs only;
+scheduled jobs should keep relying on `run.log` and checkpoint artifacts.
+`make run-players-ui-popup` opens that same UI run in a separate macOS Terminal
+window, which is handy if you want to leave it floating while keeping your
+current shell free.
+`make run-players-ui-write-2` runs the same UI flow but writes the 2-player
+sample to Supabase, and `make run-players-ui-full` is the full headed UI write
+run for production-style manual usage.
+The popup equivalents are `make run-players-ui-popup-write-2` and
+`make run-players-ui-popup-full`.
+
 Recommended player dry-run scenarios:
 
 - `kazunari-kita`: no-round / sparse-data case.
@@ -131,9 +147,13 @@ the user explicitly approves writing rows:
 
 ```bash
 make write-players-2
+make run-players-ui-write-2
+make run-players-ui-full
 make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>
 ```
 
 `write-players-2` performs a small headed scrape and writes to Supabase.
+`run-players-ui-write-2` does the same with the live UI, and
+`run-players-ui-full` is the full headed UI write command.
 `upload-checkpoint` skips Biwenger entirely and uploads rows already saved in a
 checkpoint run folder.

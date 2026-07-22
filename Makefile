@@ -64,6 +64,36 @@ dry-run-players-2:
 	@echo "🔎 Running headed 2-player dry run..."
 	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --dry-run --max-player-pages 1 --max-players 2
 
+.PHONY: run-players-ui
+run-players-ui:
+	@echo "🖥️  Running headed 2-player dry run with terminal UI..."
+	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --dry-run --terminal-ui --max-player-pages 1 --max-players 2
+
+.PHONY: run-players-ui-write-2
+run-players-ui-write-2:
+	@echo "🖥️  Running headed 2-player scrape with terminal UI and Supabase writes..."
+	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --terminal-ui --max-player-pages 1 --max-players 2 --upload-batch-size 10
+
+.PHONY: run-players-ui-full
+run-players-ui-full:
+	@echo "🖥️  Running headed full player scrape with terminal UI and Supabase writes..."
+	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --terminal-ui --upload-batch-size 10
+
+.PHONY: run-players-ui-popup
+run-players-ui-popup:
+	@echo "🪟 Opening a separate Terminal window for the player UI dry run..."
+	bash bash_scripts/run_players_ui_popup.sh
+
+.PHONY: run-players-ui-popup-write-2
+run-players-ui-popup-write-2:
+	@echo "🪟 Opening a separate Terminal window for the 2-player UI write run..."
+	bash bash_scripts/run_players_ui_popup.sh --headed --terminal-ui --max-player-pages 1 --max-players 2 --upload-batch-size 10
+
+.PHONY: run-players-ui-popup-full
+run-players-ui-popup-full:
+	@echo "🪟 Opening a separate Terminal window for the full UI write run..."
+	bash bash_scripts/run_players_ui_popup.sh --headed --terminal-ui --upload-batch-size 10
+
 .PHONY: dry-run-players-15
 dry-run-players-15:
 	@echo "🔎 Running headed 15-player dry run..."

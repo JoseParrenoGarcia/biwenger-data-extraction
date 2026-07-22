@@ -39,6 +39,7 @@ def scrape_player_rows(
     retry_top_players: int = 0,
     on_player_payload=None,
     on_player_error=None,
+    on_event=None,
 ) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     """
     Scrape player discovery rows plus detail, match, and value-history rows.
@@ -133,6 +134,14 @@ def scrape_player_rows(
                 player.get("rank"),
                 stage,
             )
+        if on_event:
+            on_event(
+                "retry_queued",
+                player_name=player.get("name", ""),
+                player_slug=player.get("slug", ""),
+                rank=player.get("rank"),
+                stage=stage,
+            )
 
     player_detail_rows, match_rows, value_history_rows = scrape_all_players_detail(
         logger,
@@ -142,6 +151,7 @@ def scrape_player_rows(
         collect_matches=True,
         on_player_payload=on_player_payload,
         on_player_error=handle_player_error,
+        on_player_event=on_event,
     )
 
     if retry_candidates:
@@ -152,6 +162,12 @@ def scrape_player_rows(
                 len(retry_players),
                 retry_top_players,
             )
+        if on_event:
+            on_event(
+                "retry_pass_started",
+                retry_count=len(retry_players),
+                retry_top_players=retry_top_players,
+            )
         retry_detail_rows, retry_match_rows, retry_value_history_rows = scrape_all_players_detail(
             logger,
             page,
@@ -160,6 +176,7 @@ def scrape_player_rows(
             collect_matches=True,
             on_player_payload=on_player_payload,
             on_player_error=on_player_error,
+            on_player_event=on_event,
         )
         player_detail_rows.extend(retry_detail_rows)
         match_rows.extend(retry_match_rows)
@@ -171,6 +188,13 @@ def scrape_player_rows(
                 "Retry pass completed: %s recovered players, %s still failed.",
                 recovered,
                 failed,
+            )
+        if on_event:
+            on_event(
+                "retry_pass_finished",
+                retry_count=len(retry_players),
+                recovered_count=recovered,
+                failed_count=failed,
             )
 
     return players_list, player_detail_rows, match_rows, value_history_rows

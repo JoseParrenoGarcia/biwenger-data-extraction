@@ -11,7 +11,9 @@ from scraping_biwenger.players.checkpoints import (
     read_player_checkpoint,
 )
 from scraping_biwenger.players.persist import persist_player_outputs
+from scraping_biwenger.players.run_events import build_event_emitter
 from scraping_biwenger.players.scrape import scrape_player_rows
+from scraping_biwenger.players.terminal_ui import PlayerRunTerminalUI
 from scraping_biwenger.players.transform import (
     PLAYER_MATCHES_COLUMNS,
     PLAYER_STATS_COLUMNS,
@@ -45,6 +47,7 @@ def scrape_players_snapshot(
     as_of_date: str | None = None,
     on_player_payload=None,
     on_player_error=None,
+    on_event=None,
 ):
     """
     Scrape and normalize player stats, matches, and value history from a logged-in page.
@@ -58,6 +61,7 @@ def scrape_players_snapshot(
         retry_top_players=retry_top_players,
         on_player_payload=on_player_payload,
         on_player_error=on_player_error,
+        on_event=on_event,
     )
     if not players_list:
         logger.warning("No players extracted; returning empty player payloads.")
@@ -118,6 +122,7 @@ def run_player_pipeline(
     upload_batch_size: int = 10,
     debug_log: bool = False,
     run_retention_days: int = 7,
+    terminal_ui: bool = False,
     logger=None,
 ):
     """
@@ -126,6 +131,8 @@ def run_player_pipeline(
     as_of_date = pd.Timestamp.utcnow().date().isoformat()
     checkpoint = None
     deleted_old_runs = []
+    ui = PlayerRunTerminalUI() if terminal_ui else None
+    event_emitter = build_event_emitter(ui.handle_event if ui else None)
     if checkpoint_enabled:
         deleted_old_runs = cleanup_old_player_runs(
             checkpoint_dir,
@@ -144,6 +151,7 @@ def run_player_pipeline(
                 "upload_batch_size": upload_batch_size,
                 "debug_log": debug_log,
                 "run_retention_days": run_retention_days,
+                "terminal_ui": terminal_ui,
             },
         )
         if logger is None:
@@ -152,7 +160,7 @@ def run_player_pipeline(
                 log_file=str(checkpoint.run_log_path),
                 level=logging.DEBUG if debug_log else logging.INFO,
                 file_level=logging.DEBUG if debug_log else logging.INFO,
-                console_level=logging.INFO,
+                console_level=logging.WARNING if terminal_ui else logging.INFO,
                 reset_handlers=True,
             )
         logger.info("Player run checkpoint enabled: %s", checkpoint.run_dir)
@@ -163,7 +171,7 @@ def run_player_pipeline(
             log_file="logs/ETL_get_player_stats.log",
             level=logging.DEBUG if debug_log else logging.INFO,
             file_level=logging.DEBUG if debug_log else logging.INFO,
-            console_level=logging.INFO,
+            console_level=logging.WARNING if terminal_ui else logging.INFO,
             reset_handlers=True,
         )
         logger.info("Player run checkpoint disabled.")
@@ -185,6 +193,17 @@ def run_player_pipeline(
     assert_biwenger_profile_allowed(use_case="player_scraping", profile=PLAYER_SCRAPER_PROFILE)
     creds = load_biwenger_credentials(profile=PLAYER_SCRAPER_PROFILE)
     logger.info("Credentials loaded successfully for profile '%s'.", PLAYER_SCRAPER_PROFILE)
+    event_emitter.emit(
+        "run_started",
+        run_id=checkpoint.run_id if checkpoint else "",
+        run_dir=str(checkpoint.run_dir) if checkpoint else "",
+        dry_run=not persist,
+        headed=not headless,
+        max_pages=max_pages,
+        max_players_detail=max_players_detail,
+        retry_top_players=retry_top_players,
+        upload_batch_size=upload_batch_size,
+    )
 
     upload_batch_size = max(1, upload_batch_size)
     batch_number = 0
@@ -203,6 +222,14 @@ def run_player_pipeline(
             return
 
         batch_number += 1
+        event_emitter.emit(
+            "batch_upload_started",
+            batch_number=batch_number,
+            reason=reason,
+            stats_rows=len(stats_df),
+            match_rows=len(matches_df),
+            value_rows=len(value_history_df),
+        )
         logger.info(
             "Uploading player batch %s (%s): %s stats rows, %s match rows, %s value rows.",
             batch_number,
@@ -219,9 +246,24 @@ def run_player_pipeline(
                 logger=logger,
             )
             logger.info("Player batch %s upload completed.", batch_number)
+            event_emitter.emit(
+                "batch_upload_finished",
+                batch_number=batch_number,
+                stats_rows=len(stats_df),
+                match_rows=len(matches_df),
+                value_rows=len(value_history_df),
+            )
         except Exception as exc:
             batch_upload_failed = True
             logger.exception("Player batch %s upload failed; continuing with local checkpoints.", batch_number)
+            event_emitter.emit(
+                "batch_upload_failed",
+                batch_number=batch_number,
+                stats_rows=len(stats_df),
+                match_rows=len(matches_df),
+                value_rows=len(value_history_df),
+                message=str(exc),
+            )
             if checkpoint:
                 checkpoint.append_upload_error(
                     batch_number=batch_number,
@@ -276,6 +318,15 @@ def run_player_pipeline(
                 counts["matches"],
                 counts["values"],
             )
+            event_emitter.emit(
+                "checkpoint_written",
+                player_name=player.get("name", ""),
+                player_slug=player.get("slug", ""),
+                stats_rows=counts["stats"],
+                match_rows=counts["matches"],
+                value_rows=counts["values"],
+                processed_count=processed_count,
+            )
 
         if persist and checkpoint:
             pending_stats.append(stats_df)
@@ -306,6 +357,7 @@ def run_player_pipeline(
             as_of_date=as_of_date,
             on_player_payload=on_player_payload if checkpoint else None,
             on_player_error=on_player_error if checkpoint else None,
+            on_event=event_emitter.emit,
         )
 
         if persist and checkpoint:
@@ -321,8 +373,17 @@ def run_player_pipeline(
         else:
             logger.info("Skipping Supabase persistence for player dry run.")
 
+        event_emitter.emit(
+            "run_finished",
+            summary=(f"done stats={len(stats_df)} matches={len(matches_df)} values={len(value_history_df)}"),
+            stats_rows=len(stats_df),
+            match_rows=len(matches_df),
+            value_rows=len(value_history_df),
+        )
         return stats_df, matches_df, value_history_df
     finally:
+        if ui:
+            ui.close()
         try:
             context.close()
         except Exception:
