@@ -114,40 +114,48 @@ def _open_player_via_href(
     return False
 
 
-def open_player_via_search(
-    logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com"
-) -> bool:
+def open_player_via_href(logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com") -> bool:
     """
-    Try to open a player's detail page via the search box.
-    Falls back to href navigation if the search path fails.
+    Open a player's detail page directly via its discovered href.
     Returns True if player detail seems loaded.
     """
     name = (player.get("name") or "").strip()
     slug = (player.get("slug") or "").strip()
     href = player.get("href") or ""
+    if not href:
+        logger.warning("open_player_via_href: missing href for '%s'.", name or slug or "unknown player")
+        return False
+
+    try:
+        return _open_player_via_href(
+            logger,
+            page,
+            name=name,
+            slug=slug,
+            href=href,
+            base_url=base_url,
+            timing_label="Player direct href open",
+            success_log="Opened player '%s' via direct href: %s",
+        )
+    except Exception as e:
+        logger.exception(f"Error opening direct href for '{name}': {e}")
+        return False
+
+
+def open_player_via_search_only(
+    logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com"
+) -> bool:
+    """
+    Try to open a player's detail page via the search box only.
+    Returns True if player detail seems loaded.
+    """
+    name = (player.get("name") or "").strip()
+    slug = (player.get("slug") or "").strip()
     if not name:
         logger.warning("open_player_via_search: missing player name; skipping.")
         return False
 
     flow_started_at = time.time()
-    if player.get("open_by_href_only") and href:
-        try:
-            if _open_player_via_href(
-                logger,
-                page,
-                name=name,
-                slug=slug,
-                href=href,
-                base_url=base_url,
-                timing_label="Player direct href open",
-                success_log="Opened player '%s' via direct href: %s",
-            ):
-                _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
-                return True
-            return False
-        except Exception as e:
-            logger.exception(f"Error opening direct href for '{name}': {e}")
-            return False
 
     try:
         # 1) Focus + clear search
@@ -162,21 +170,7 @@ def open_player_via_search(
         step_started_at = time.time()
         if not wait_table_filtered_for_name(page, name, timeout_ms=7000):
             _log_timing(logger, "Player search filter wait failed", step_started_at, player_slug=slug)
-            logger.warning(f"Search didn't show expected results for '{name}'. Trying fallback to href if available.")
-            if href:
-                if _open_player_via_href(
-                    logger,
-                    page,
-                    name=name,
-                    slug=slug,
-                    href=href,
-                    base_url=base_url,
-                    timing_label="Player fallback href open",
-                    success_log="Recovered player '%s' via fallback href after search mismatch: %s",
-                ):
-                    _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
-                    return True
-                return False
+            logger.warning(f"Search didn't show expected results for '{name}'.")
             return False
         _log_timing(logger, "Player search filter wait", step_started_at, player_slug=slug)
 
@@ -186,40 +180,13 @@ def open_player_via_search(
         _log_timing(logger, "Player search result click", step_started_at, player_slug=slug)
         if not clicked:
             logger.warning(f"Couldn't click a result row for '{name}'.")
-            # fallback to href
-            if href:
-                if _open_player_via_href(
-                    logger,
-                    page,
-                    name=name,
-                    slug=slug,
-                    href=href,
-                    base_url=base_url,
-                    timing_label="Player fallback href open",
-                    success_log="Recovered player '%s' via fallback href after row-click miss: %s",
-                ):
-                    _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
-                    return True
             return False
 
         # 5) Wait for player detail
         step_started_at = time.time()
         if not wait_player_detail_loaded(page, timeout_ms=9000):
             _log_timing(logger, "Player detail wait failed", step_started_at, player_slug=slug)
-            logger.warning(f"Player detail didn't appear after clicking result for '{name}'. Attempting href fallback.")
-            if href:
-                if _open_player_via_href(
-                    logger,
-                    page,
-                    name=name,
-                    slug=slug,
-                    href=href,
-                    base_url=base_url,
-                    timing_label="Player fallback href open after click",
-                    success_log="Recovered player '%s' via fallback href after detail wait miss: %s",
-                ):
-                    _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
-                    return True
+            logger.warning(f"Player detail didn't appear after clicking result for '{name}'.")
             return False
         _log_timing(logger, "Player detail wait", step_started_at, player_slug=slug)
 
@@ -228,25 +195,52 @@ def open_player_via_search(
         return True
 
     except Exception as e:
-        logger.warning("Search-path open failed for '%s': %s. Trying fallback href if available.", name, e)
-        # Last-chance fallback
-        if href:
-            try:
-                if _open_player_via_href(
-                    logger,
-                    page,
-                    name=name,
-                    slug=slug,
-                    href=href,
-                    base_url=base_url,
-                    timing_label="Player fallback href open after exception",
-                    success_log="Recovered player '%s' via fallback href after search-path exception: %s",
-                ):
-                    _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
-                    return True
-            except Exception as fallback_error:
-                logger.warning("Fallback href also failed for '%s': %s", name, fallback_error)
+        logger.warning("Search-path open failed for '%s': %s.", name, e)
         return False
+
+
+def open_player_detail(logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com") -> bool:
+    """
+    Open a player's detail page using the preferred strategy for this run.
+    Normal flow is href-first with search fallback per player. Retry/targeted
+    direct-only players keep their dedicated href-only behavior.
+    """
+    name = (player.get("name") or "").strip()
+    slug = (player.get("slug") or "").strip()
+    href = player.get("href") or ""
+    flow_started_at = time.time()
+
+    if player.get("open_by_href_only"):
+        opened = open_player_via_href(logger, page, player, base_url=base_url)
+        if opened:
+            _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
+        return opened
+
+    if href:
+        if open_player_via_href(logger, page, player, base_url=base_url):
+            _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
+            return True
+        logger.warning("Direct href open failed for '%s'. Falling back to search flow.", name or slug)
+        if open_player_via_search_only(logger, page, player, base_url=base_url):
+            logger.info("Recovered player '%s' via search fallback after direct href failure.", name or slug)
+            _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
+            return True
+        return False
+
+    logger.warning("Player '%s' is missing href. Falling back to search flow.", name or slug)
+    opened = open_player_via_search_only(logger, page, player, base_url=base_url)
+    if opened:
+        _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
+    return opened
+
+
+def open_player_via_search(
+    logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com"
+) -> bool:
+    """
+    Backward-compatible wrapper for the player detail opener.
+    """
+    return open_player_detail(logger, page, player, base_url=base_url)
 
 
 def clear_search_box_if_present(page: Page) -> None:

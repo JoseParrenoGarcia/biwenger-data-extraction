@@ -6,7 +6,6 @@ from playwright.sync_api import Page
 
 from scraping_biwenger.players.detail import scrape_player_detail
 from scraping_biwenger.players.matches import (
-    open_points_tab,
     scrape_player_matches,
     select_scoring_system,
     with_retries,
@@ -14,7 +13,7 @@ from scraping_biwenger.players.matches import (
 from scraping_biwenger.players.search_and_open import (
     clear_search_box_if_present,
     click_back_to_players_table,
-    open_player_via_search,
+    open_player_detail,
 )
 from scraping_biwenger.players.value_history import scrape_value_history_for_player
 from scraping_biwenger.shared.timing import log_timing_debug
@@ -26,6 +25,21 @@ def _cooldown(min_ms=300, max_ms=900):
 
 def _log_timing(logger, label: str, started_at: float, *, player_slug: str = "") -> None:
     log_timing_debug(logger, label, started_at, player_slug=player_slug)
+
+
+def _next_player_needs_table(
+    players_list: List[Dict[str, str]],
+    idx: int,
+    *,
+    max_players: Optional[int],
+    processed: int,
+) -> bool:
+    if idx >= len(players_list):
+        return False
+    if max_players and processed >= max_players:
+        return False
+    next_player = players_list[idx]
+    return not bool(next_player.get("href"))
 
 
 def scrape_all_players_detail(
@@ -92,14 +106,15 @@ def scrape_all_players_detail(
         logger.debug("Opening player %s/%s: %s (%s)", idx, len(players_list), name, slug)
 
         def needs_table_return() -> bool:
-            if idx >= len(players_list):
-                return False
-            if max_players and processed >= max_players:
-                return False
-            return True
+            return _next_player_needs_table(
+                players_list,
+                idx,
+                max_players=max_players,
+                processed=processed,
+            )
 
         # 1) open the player page
-        opened = open_player_via_search(logger, page, player, base_url=base_url)
+        opened = open_player_detail(logger, page, player, base_url=base_url)
         if not opened:
             logger.warning(f"Skipping {name} — could not open detail.")
             record_player_error(player, "open_player", "Could not open player detail.")
@@ -199,8 +214,6 @@ def scrape_all_players_detail(
         if collect_matches:
             try:
                 matches_started_at = time.time()
-                # your own helpers with a light retry
-                _ = open_points_tab(page, logger=logger)  # safe if already active
                 rows = (
                     with_retries(
                         lambda: scrape_player_matches(page, logger=logger),

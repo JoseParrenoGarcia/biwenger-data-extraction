@@ -26,52 +26,94 @@ class FakePage:
         self.gotos.append((url, wait_until))
 
 
-def test_open_player_via_search_recovered_fallback_logs_warning_not_exception(monkeypatch):
+def test_open_player_detail_uses_href_first_without_search_fallback(monkeypatch):
     logger = FakeLogger()
     page = FakePage()
     player = {"name": "Marc Roca", "slug": "marc-roca", "href": "/la-liga/players/marc-roca"}
 
+    search_calls = []
+    monkeypatch.setattr(search_and_open, "wait_player_detail_loaded", lambda page, timeout_ms=8000: True)
     monkeypatch.setattr(
         search_and_open,
-        "focus_and_clear_search_box",
-        lambda page, timeout_ms=5000: (_ for _ in ()).throw(RuntimeError("search input timeout")),
+        "open_player_via_search_only",
+        lambda logger, page, player, base_url="https://biwenger.as.com": search_calls.append(player),
     )
-    monkeypatch.setattr(search_and_open, "wait_player_detail_loaded", lambda page, timeout_ms=8000: True)
     monkeypatch.setattr(search_and_open, "_log_timing", lambda *args, **kwargs: None)
 
-    opened = search_and_open.open_player_via_search(logger, page, player)
+    opened = search_and_open.open_player_detail(logger, page, player)
 
     assert opened is True
     assert page.gotos == [("https://biwenger.as.com/la-liga/players/marc-roca", "domcontentloaded")]
-    assert ("exception", "Error in open_player_via_search for 'Marc Roca': search input timeout") not in logger.records
-    assert any(
-        level == "warning" and "Search-path open failed for 'Marc Roca'" in message for level, message in logger.records
-    )
-    assert any(
-        level == "info" and "Recovered player 'Marc Roca' via fallback href after search-path exception" in message
-        for level, message in logger.records
-    )
+    assert search_calls == []
 
 
-def test_open_player_via_search_failed_fallback_returns_false_without_exception_log(monkeypatch):
+def test_open_player_detail_recovers_with_search_after_href_failure(monkeypatch):
     logger = FakeLogger()
     page = FakePage()
     player = {"name": "Marc Roca", "slug": "marc-roca", "href": "/la-liga/players/marc-roca"}
 
+    monkeypatch.setattr(search_and_open, "wait_player_detail_loaded", lambda page, timeout_ms=8000: False)
     monkeypatch.setattr(
         search_and_open,
-        "focus_and_clear_search_box",
-        lambda page, timeout_ms=5000: (_ for _ in ()).throw(RuntimeError("search input timeout")),
+        "open_player_via_search_only",
+        lambda logger, page, player, base_url="https://biwenger.as.com": True,
     )
-    monkeypatch.setattr(search_and_open, "wait_player_detail_loaded", lambda page, timeout_ms=8000: False)
     monkeypatch.setattr(search_and_open, "_log_timing", lambda *args, **kwargs: None)
 
-    opened = search_and_open.open_player_via_search(logger, page, player)
+    opened = search_and_open.open_player_detail(logger, page, player)
+
+    assert opened is True
+    assert page.gotos == [("https://biwenger.as.com/la-liga/players/marc-roca", "domcontentloaded")]
+    assert any(
+        level == "warning" and "Direct href open failed for 'Marc Roca'. Falling back to search flow." in message
+        for level, message in logger.records
+    )
+    assert any(
+        level == "info" and "Recovered player 'Marc Roca' via search fallback after direct href failure." in message
+        for level, message in logger.records
+    )
+
+
+def test_open_player_detail_returns_false_when_href_and_search_fail(monkeypatch):
+    logger = FakeLogger()
+    page = FakePage()
+    player = {"name": "Marc Roca", "slug": "marc-roca", "href": "/la-liga/players/marc-roca"}
+
+    monkeypatch.setattr(search_and_open, "wait_player_detail_loaded", lambda page, timeout_ms=8000: False)
+    monkeypatch.setattr(
+        search_and_open,
+        "open_player_via_search_only",
+        lambda logger, page, player, base_url="https://biwenger.as.com": False,
+    )
+    monkeypatch.setattr(search_and_open, "_log_timing", lambda *args, **kwargs: None)
+
+    opened = search_and_open.open_player_detail(logger, page, player)
 
     assert opened is False
     assert page.gotos == [("https://biwenger.as.com/la-liga/players/marc-roca", "domcontentloaded")]
-    assert not any(level == "exception" for level, _ in logger.records)
-    assert any(
-        level == "warning" and "Fallback href did not load player detail in time for 'Marc Roca'" in message
-        for level, message in logger.records
+
+
+def test_open_player_detail_direct_only_does_not_fall_back_to_search(monkeypatch):
+    logger = FakeLogger()
+    page = FakePage()
+    player = {
+        "name": "Marc Roca",
+        "slug": "marc-roca",
+        "href": "/la-liga/players/marc-roca",
+        "open_by_href_only": True,
+    }
+
+    search_calls = []
+    monkeypatch.setattr(search_and_open, "wait_player_detail_loaded", lambda page, timeout_ms=8000: False)
+    monkeypatch.setattr(
+        search_and_open,
+        "open_player_via_search_only",
+        lambda logger, page, player, base_url="https://biwenger.as.com": search_calls.append(player),
     )
+    monkeypatch.setattr(search_and_open, "_log_timing", lambda *args, **kwargs: None)
+
+    opened = search_and_open.open_player_detail(logger, page, player)
+
+    assert opened is False
+    assert page.gotos == [("https://biwenger.as.com/la-liga/players/marc-roca", "domcontentloaded")]
+    assert search_calls == []
