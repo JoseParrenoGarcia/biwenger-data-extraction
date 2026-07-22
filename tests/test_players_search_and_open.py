@@ -44,7 +44,9 @@ def test_open_player_via_search_recovered_fallback_logs_warning_not_exception(mo
     assert opened is True
     assert page.gotos == [("https://biwenger.as.com/la-liga/players/marc-roca", "domcontentloaded")]
     assert ("exception", "Error in open_player_via_search for 'Marc Roca': search input timeout") not in logger.records
-    assert any(level == "warning" and "Search-path open failed for 'Marc Roca'" in message for level, message in logger.records)
+    assert any(
+        level == "warning" and "Search-path open failed for 'Marc Roca'" in message for level, message in logger.records
+    )
     assert any(
         level == "info" and "Recovered player 'Marc Roca' via fallback href after search-path exception" in message
         for level, message in logger.records
