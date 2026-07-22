@@ -80,8 +80,7 @@ Important semantics:
 
 Database protection:
 
-- Unique partial index on `(slug, as_of_date, scoring_system)` where slug is
-  present.
+- Unique index on `(slug, as_of_date, scoring_system)`.
 
 ## `biwenger_player_matches`
 
@@ -106,7 +105,7 @@ Write behavior:
 
 - transform dedupes incoming rows by the season-aware identity and keeps the
   latest incoming row;
-- persistence deletes only matching season-aware identities before insert;
+- persistence upserts rows by the season-aware identity;
 
 Important semantics:
 
@@ -125,9 +124,8 @@ Important semantics:
 
 Database protection:
 
-- Unique partial index on
-  `(slug, season_label, round_label, match_date, scoring_system)` where all key
-  fields are present.
+- Unique index on
+  `(slug, season_label, round_label, match_date, scoring_system)`.
 - Supporting lookup index on `(slug, match_date, scoring_system)`.
 
 Known cleanup:

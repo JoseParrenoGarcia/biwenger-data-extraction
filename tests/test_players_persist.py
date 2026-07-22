@@ -39,6 +39,18 @@ class FakeQuery:
         )
         return self
 
+    def upsert(self, rows, on_conflict=None, returning=None):
+        self.operations.append(
+            {
+                "table": self.table_name,
+                "action": "upsert",
+                "rows": rows,
+                "on_conflict": on_conflict,
+                "returning": returning,
+            }
+        )
+        return self
+
     def eq(self, column, value):
         self.filters.append(("eq", column, value))
         return self
@@ -120,7 +132,7 @@ def test_delete_stats_snapshot_filters_slug_snapshot_identity():
     }
 
 
-def test_persist_player_stats_deletes_slugged_rows_by_snapshot_identity():
+def test_persist_player_stats_upserts_rows_by_snapshot_identity():
     supabase = FakeSupabase()
     stats_df = pd.DataFrame(
         [
@@ -150,14 +162,10 @@ def test_persist_player_stats_deletes_slugged_rows_by_snapshot_identity():
 
     persist_player_stats(stats_df, supabase=supabase)
 
-    delete_op = next(op for op in supabase.operations if op["action"] == "delete")
-    assert set(delete_op["filters"]) == {
-        ("eq", "slug", "mbappe"),
-        ("eq", "as_of_date", "2026-07-22"),
-        ("eq", "scoring_system", "sofascore"),
-    }
-    insert_op = next(op for op in supabase.operations if op["action"] == "insert")
-    assert len(insert_op["rows"]) == 1
+    upsert_op = next(op for op in supabase.operations if op["action"] == "upsert")
+    assert upsert_op["on_conflict"] == "slug,as_of_date,scoring_system"
+    assert len(upsert_op["rows"]) == 1
+    assert not any(op["action"] == "delete" for op in supabase.operations)
 
 
 def test_persist_player_stats_rejects_missing_slug():
@@ -192,7 +200,7 @@ def test_persist_player_stats_rejects_missing_slug():
         persist_player_stats(stats_df, supabase=supabase)
 
 
-def test_persist_player_matches_deletes_slugged_rows_by_season_aware_identity():
+def test_persist_player_matches_upserts_rows_by_season_aware_identity():
     supabase = FakeSupabase()
     matches_df = pd.DataFrame(
         [
@@ -215,16 +223,10 @@ def test_persist_player_matches_deletes_slugged_rows_by_season_aware_identity():
 
     persist_player_matches(matches_df, supabase=supabase)
 
-    delete_op = next(op for op in supabase.operations if op["action"] == "delete")
-    assert set(delete_op["filters"]) == {
-        ("eq", "slug", "mbappe"),
-        ("eq", "season_label", "2025/2026"),
-        ("eq", "round_label", "R1"),
-        ("eq", "match_date", "2025-08-19"),
-        ("eq", "scoring_system", "sofascore"),
-    }
-    insert_op = next(op for op in supabase.operations if op["action"] == "insert")
-    assert len(insert_op["rows"]) == 1
+    upsert_op = next(op for op in supabase.operations if op["action"] == "upsert")
+    assert upsert_op["on_conflict"] == "slug,season_label,round_label,match_date,scoring_system"
+    assert len(upsert_op["rows"]) == 1
+    assert not any(op["action"] == "delete" for op in supabase.operations)
 
 
 def test_persist_player_matches_rejects_missing_slug():
@@ -249,6 +251,31 @@ def test_persist_player_matches_rejects_missing_slug():
     )
 
     with pytest.raises(ValueError, match="slug is required"):
+        persist_player_matches(matches_df, supabase=supabase)
+
+
+def test_persist_player_matches_rejects_missing_match_identity_values():
+    supabase = FakeSupabase()
+    matches_df = pd.DataFrame(
+        [
+            {
+                "season_label": "2025/2026",
+                "round_label": None,
+                "match_date": "2025-08-19",
+                "points": 14,
+                "best_xi": True,
+                "events": "",
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": "mbappe",
+                "scoring_system": "sofascore",
+                "as_of_date": "2026-07-20",
+            }
+        ],
+        columns=PLAYER_MATCHES_COLUMNS,
+    )
+
+    with pytest.raises(ValueError, match="required identity values"):
         persist_player_matches(matches_df, supabase=supabase)
 
 

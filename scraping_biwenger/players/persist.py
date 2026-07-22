@@ -1,8 +1,6 @@
 import pandas as pd
 
 from scraping_biwenger.players.repository import (
-    delete_matches_for_season_identities,
-    delete_stats_snapshot,
     delete_value_history_dates,
     fetch_existing_value_history,
     insert_player_rows_batched,
@@ -10,6 +8,7 @@ from scraping_biwenger.players.repository import (
 )
 from scraping_biwenger.players.transform import validate_player_payloads
 from supabase_client.connection import get_supabase_client
+from supabase_client.utils import upsert_rows_into_table_batched
 
 PLAYER_STATS_TABLE = "biwenger_player_stats"
 PLAYER_MATCHES_TABLE = "biwenger_player_matches"
@@ -34,6 +33,20 @@ def _assert_non_empty_slugs(df: pd.DataFrame, *, frame_name: str) -> None:
     slug_series = df["slug"].map(_optional_text)
     if slug_series.isna().any():
         raise ValueError(f"{frame_name} payload contains rows without slug; slug is required for persistence.")
+
+
+def _assert_non_empty_identity_values(df: pd.DataFrame, *, frame_name: str, columns: list[str]) -> None:
+    if df.empty:
+        return
+    missing_columns = []
+    for column in columns:
+        series = df[column].map(_optional_text)
+        if series.isna().any():
+            missing_columns.append(column)
+    if missing_columns:
+        raise ValueError(
+            f"{frame_name} payload contains rows without required identity values: {', '.join(missing_columns)}."
+        )
 
 
 def missing_table_message(table_names: list[str]) -> str:
@@ -82,23 +95,26 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
         return
 
     _assert_non_empty_slugs(stats_df, frame_name="stats")
+    _assert_non_empty_identity_values(
+        stats_df,
+        frame_name="stats",
+        columns=["slug", "as_of_date", "scoring_system"],
+    )
 
-    for slug, as_of_date, scoring_system in (
-        stats_df[["slug", "as_of_date", "scoring_system"]].drop_duplicates().itertuples(index=False, name=None)
-    ):
-        delete_stats_snapshot(
-            supabase,
-            PLAYER_STATS_TABLE,
-            _optional_text(slug),
-            as_of_date,
-            _optional_text(scoring_system),
+    input_rows = len(stats_df)
+    payload_df = stats_df.drop_duplicates(subset=["slug", "as_of_date", "scoring_system"], keep="last").copy()
+    payload = payload_df.astype(object).where(payload_df.notna(), None).to_dict(orient="records")
+    if logger:
+        logger.info(
+            "Stats upsert attempt: input_rows=%s deduped_rows=%s conflict=slug,as_of_date,scoring_system",
+            input_rows,
+            len(payload),
         )
-
-    payload = stats_df.astype(object).where(stats_df.notna(), None).to_dict(orient="records")
-    insert_player_rows_batched(
+    upsert_rows_into_table_batched(
         supabase,
         table_name=PLAYER_STATS_TABLE,
         rows=payload,
+        on_conflict="slug,as_of_date,scoring_system",
     )
     if logger:
         logger.info("Upserted %s player stat rows into '%s'.", len(payload), PLAYER_STATS_TABLE)
@@ -111,40 +127,28 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
         return
 
     _assert_non_empty_slugs(matches_df, frame_name="matches")
-
-    to_insert = []
-    for (_, _, _, _, _), group in matches_df.groupby(
-        ["slug", "season_label", "round_label", "match_date", "scoring_system"],
-        dropna=False,
-    ):
-        identity_columns = [
-            "slug",
-            "season_label",
-            "round_label",
-            "match_date",
-            "scoring_system",
-        ]
-        identity_df = group[identity_columns].drop_duplicates().astype(object)
-        identity_df = identity_df.where(identity_df.notna(), None)
-        identities = identity_df.to_dict(orient="records")
-        delete_matches_for_season_identities(
-            supabase,
-            PLAYER_MATCHES_TABLE,
-            identities,
-        )
-        to_insert.append(group)
-
-    if not to_insert:
-        if logger:
-            logger.info("No match rows had dates to insert.")
-        return
-
-    payload_df = pd.concat(to_insert, ignore_index=True)
+    _assert_non_empty_identity_values(
+        matches_df,
+        frame_name="matches",
+        columns=["slug", "season_label", "round_label", "match_date", "scoring_system"],
+    )
+    input_rows = len(matches_df)
+    payload_df = matches_df.drop_duplicates(
+        subset=["slug", "season_label", "round_label", "match_date", "scoring_system"],
+        keep="last",
+    ).copy()
     payload_df = payload_df.astype(object).where(payload_df.notna(), None)
-    insert_player_rows_batched(
+    if logger:
+        logger.info(
+            "Matches upsert attempt: input_rows=%s deduped_rows=%s conflict=slug,season_label,round_label,match_date,scoring_system",
+            input_rows,
+            len(payload_df),
+        )
+    upsert_rows_into_table_batched(
         supabase,
         table_name=PLAYER_MATCHES_TABLE,
         rows=payload_df.to_dict(orient="records"),
+        on_conflict="slug,season_label,round_label,match_date,scoring_system",
     )
     if logger:
         logger.info("Upserted %s match rows into '%s'.", len(payload_df), PLAYER_MATCHES_TABLE)
