@@ -17,6 +17,8 @@ run_artifacts/
 .env
 .venv/
 venv/
+.ruff_cache/
+.pytest_cache/
 
 # Ignore Streamlit secrets
 .streamlit/secrets.toml
