@@ -190,7 +190,7 @@ def open_player_via_search_only(
             return False
         _log_timing(logger, "Player detail wait", step_started_at, player_slug=slug)
 
-        logger.debug("Player detail opened via search: %s", name)
+        logger.info("Opened player '%s' via search results.", name)
         _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
         return True
 
@@ -230,6 +230,7 @@ def open_player_detail(logger, page: Page, player: Dict[str, str], base_url: str
     logger.warning("Player '%s' is missing href. Falling back to search flow.", name or slug)
     opened = open_player_via_search_only(logger, page, player, base_url=base_url)
     if opened:
+        logger.info("Opened player '%s' via search because href was unavailable.", name or slug)
         _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
     return opened
 
@@ -276,6 +277,10 @@ def click_back_to_players_table(page: Page, timeout_ms: int = 3500) -> bool:
     and clears search when the search box is ready.
     """
     try:
+        if page.locator(PLAYER_ROW_ANCHORS_SEL).count() > 0:
+            _clear_search_box_when_ready(page)
+            return True
+
         # Prefer the container with role=button (larger hitbox)
         if page.locator(BACK_CONTAINER_SEL).count() > 0:
             page.locator(BACK_CONTAINER_SEL).first.click()
