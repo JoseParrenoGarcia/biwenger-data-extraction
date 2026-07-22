@@ -60,10 +60,7 @@ Semantic grain: one row per player, scoring system, and scrape date.
 
 Current identity:
 
-- Preferred slug identity:
-  `slug + as_of_date + scoring_system`
-- Legacy fallback identity for rows without slug:
-  `player_name + team + as_of_date + scoring_system`
+`slug + as_of_date + scoring_system`
 
 Write behavior:
 
@@ -85,13 +82,6 @@ Database protection:
 
 - Unique partial index on `(slug, as_of_date, scoring_system)` where slug is
   present.
-- Unique partial index on `(player_name, team, as_of_date, scoring_system)` for
-  legacy rows where slug is missing.
-
-Known cleanup:
-
-- Issue #93 tracks backfilling historical slugs so fallback identity logic can
-  eventually be simplified.
 
 ## `biwenger_player_matches`
 
@@ -106,12 +96,6 @@ Current identity:
 slug + season_label + round_label + match_date + scoring_system
 ```
 
-Legacy fallback identity for rows without slug:
-
-```text
-player_name + team + match_date + scoring_system
-```
-
 Preferred future identity once scraped:
 
 ```text
@@ -122,10 +106,7 @@ Write behavior:
 
 - transform dedupes incoming rows by the season-aware identity and keeps the
   latest incoming row;
-- for slugged rows, persistence deletes only matching season-aware identities
-  before insert;
-- for legacy rows without slug, persistence keeps the older player/team/date
-  fallback until slug backfill is complete.
+- persistence deletes only matching season-aware identities before insert;
 
 Important semantics:
 

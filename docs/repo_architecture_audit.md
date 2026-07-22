@@ -210,15 +210,15 @@ Active Biwenger tables:
 | Table | Purpose | Write Strategy |
 |---|---|---|
 | `biwenger_current_team` | Current squad snapshot | Replace all rows each run |
-| `biwenger_player_stats` | Daily player detail snapshot | Slug-aware delete/insert for the run date |
-| `biwenger_player_matches` | Player match history | Slug-aware delete/insert for season-aware match identities |
+| `biwenger_player_stats` | Daily player detail snapshot | Slug-based delete/insert for the run date |
+| `biwenger_player_matches` | Player match history | Slug-based delete/insert for season-aware match identities |
 | `biwenger_player_value` | Market value history | Insert only new or changed value rows |
 
 The detailed table contract and persistence semantics are maintained in
 `docs/supabase_table_contracts.md`.
 
-Historical issue #93 tracks slug backfill and future simplification of legacy
-fallback identity logic.
+Issue #93 tracks the final cleanup that removes legacy null-slug rows and
+removes the old fallback identity logic.
 
 Supabase migrations under `supabase/migrations/` are the single executable
 schema source of truth. The table contract document explains semantics; it does
@@ -366,8 +366,8 @@ The main architecture cleanup is now largely complete. Remaining valuable work:
    semantics. Covered across issues #70, #71, #73, and #100.
 2. Make shell scripts path-portable instead of hardcoding local paths. Tracked
    by issue #73.
-3. Revisit player slug backfill so legacy duplicate-protection fallback logic can
-   be simplified. Tracked by issue #93.
+3. Consider tightening player slug constraints further once the cleanup
+   migration for issue #93 has been applied in Supabase.
 4. Audit `requirements.txt` around direct imports and remove any remaining stale
    dependencies if future imports change.
 

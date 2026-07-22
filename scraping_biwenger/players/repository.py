@@ -12,46 +12,14 @@ def player_table_exists(supabase, table_name: str) -> bool:
 def delete_stats_snapshot(
     supabase,
     table_name: str,
-    player_name: str,
-    team: str,
+    slug: str,
     as_of_date: str,
     scoring_system: str | None = None,
-    slug: str | None = None,
 ) -> None:
-    query = supabase.table(table_name).delete().eq("as_of_date", as_of_date)
-    if slug:
-        query = query.eq("slug", slug)
-    else:
-        query = query.eq("player_name", player_name).eq("team", team)
+    query = supabase.table(table_name).delete().eq("slug", slug).eq("as_of_date", as_of_date)
     if scoring_system is not None:
         query = query.eq("scoring_system", scoring_system)
     query.execute()
-
-
-def delete_matches_for_legacy_dates(
-    supabase,
-    table_name: str,
-    player_name: str,
-    team: str,
-    dates: List[str],
-    scoring_system: str | None = None,
-    chunk_size: int = 100,
-) -> None:
-    """
-    Delete legacy match rows without slug, limited to a player/team/date set.
-    """
-    if not dates:
-        return
-
-    uniq_dates = sorted({d for d in dates if d})
-    for i in range(0, len(uniq_dates), chunk_size):
-        batch = uniq_dates[i : i + chunk_size]
-        query = (
-            supabase.table(table_name).delete().in_("match_date", batch).eq("player_name", player_name).eq("team", team)
-        )
-        if scoring_system is not None:
-            query = query.eq("scoring_system", scoring_system)
-        query.execute()
 
 
 def delete_matches_for_season_identities(

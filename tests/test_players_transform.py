@@ -312,3 +312,39 @@ def test_validate_player_payloads_rejects_missing_columns():
             pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
             pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
         )
+
+
+def test_validate_player_payloads_rejects_missing_slug_for_persistence():
+    stats_df = pd.DataFrame(
+        [
+            {
+                "player_name": "Player One",
+                "team": "Athletic",
+                "slug": None,
+                "position": None,
+                "status": None,
+                "status_detail": None,
+                "scoring_system": "sofascore",
+                "points": 0,
+                "value": 0,
+                "min_value": 0,
+                "max_value": 0,
+                "matches_played": 0,
+                "average": 0.0,
+                "market_purchases_pct": 0.0,
+                "market_sales_pct": 0.0,
+                "market_usage_pct": 0.0,
+                "season": None,
+                "as_of_date": "2026-07-22",
+            }
+        ],
+        columns=PLAYER_STATS_COLUMNS,
+    )
+
+    with pytest.raises(ValueError, match="required slug values"):
+        validate_player_payloads(
+            stats_df,
+            pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+            pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+            require_slugs_for_persistence=True,
+        )

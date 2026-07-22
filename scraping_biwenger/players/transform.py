@@ -83,6 +83,10 @@ def _clean_text(value):
     return text or None
 
 
+def _missing_slug_mask(df: pd.DataFrame) -> pd.Series:
+    return df["slug"].map(_clean_text).isna()
+
+
 def transform_player_outputs(
     player_detail_rows: list[dict],
     match_rows: list[dict],
@@ -106,12 +110,7 @@ def transform_player_outputs(
         for column in ["player_name", "team", "slug"]:
             if column not in player_detail_df.columns:
                 player_detail_df[column] = None
-        player_detail_df["_player_identity"] = player_detail_df.apply(
-            lambda row: (
-                _clean_text(row.get("slug")) or f"{_clean_text(row.get('player_name'))}|{_clean_text(row.get('team'))}"
-            ),
-            axis=1,
-        )
+        player_detail_df["_player_identity"] = player_detail_df["slug"].map(_clean_text)
         stats_df = player_detail_df.drop_duplicates(subset=["_player_identity"], keep="last").copy()
         stats_df = stats_df.drop(columns=["_player_identity"], errors="ignore")
         stats_df["as_of_date"] = today
@@ -175,6 +174,8 @@ def validate_player_payloads(
     stats_df: pd.DataFrame,
     matches_df: pd.DataFrame,
     value_history_df: pd.DataFrame,
+    *,
+    require_slugs_for_persistence: bool = False,
 ) -> None:
     missing_stats = [column for column in PLAYER_STATS_COLUMNS if column not in stats_df.columns]
     missing_matches = [column for column in PLAYER_MATCHES_COLUMNS if column not in matches_df.columns]
@@ -187,3 +188,12 @@ def validate_player_payloads(
     missing = {name: columns for name, columns in missing.items() if columns}
     if missing:
         raise ValueError(f"Player payloads are missing columns: {missing}")
+
+    if require_slugs_for_persistence:
+        violations = {}
+        if not stats_df.empty and _missing_slug_mask(stats_df).any():
+            violations["stats"] = "slug"
+        if not matches_df.empty and _missing_slug_mask(matches_df).any():
+            violations["matches"] = "slug"
+        if violations:
+            raise ValueError(f"Player payloads are missing required slug values for persistence: {violations}")
