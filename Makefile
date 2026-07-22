@@ -49,6 +49,16 @@ dry-run-player-mbappe:
 	@echo "🎯 Running headed targeted player dry run: mbappe..."
 	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --dry-run --player-slug mbappe
 
+.PHONY: dry-run-player-marc-roca
+dry-run-player-marc-roca:
+	@echo "🎯 Running headed targeted player dry run: marc-roca..."
+	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --dry-run --player-slug marc-roca
+
+.PHONY: dry-run-player-gueye
+dry-run-player-gueye:
+	@echo "🎯 Running headed targeted player dry run: maguette-gueye..."
+	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --dry-run --player-slug maguette-gueye
+
 .PHONY: dry-run-players-2
 dry-run-players-2:
 	@echo "🔎 Running headed 2-player dry run..."
@@ -63,8 +73,12 @@ dry-run-players-15:
 dry-run-ladder: test dry-run-player-kita dry-run-player-mbappe dry-run-players-2
 	@echo "✅ Basic player verification ladder completed."
 
+.PHONY: dry-run-player-regressions
+dry-run-player-regressions: dry-run-player-kita dry-run-player-marc-roca dry-run-player-gueye
+	@echo "✅ Targeted player regression checks completed."
+
 .PHONY: dry-run-ladder-broad
-dry-run-ladder-broad: dry-run-ladder dry-run-team dry-run-players-15
+dry-run-ladder-broad: dry-run-ladder dry-run-player-regressions dry-run-team dry-run-players-15
 	@echo "✅ Broad headed verification ladder completed."
 
 .PHONY: write-players-2

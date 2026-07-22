@@ -107,13 +107,24 @@ Supabase:
 make dry-run-players-2
 make dry-run-player-kita
 make dry-run-player-mbappe
+make dry-run-player-marc-roca
+make dry-run-player-gueye
 make dry-run-team
 ```
 
 Use `make dry-run-players-15` before merging riskier player selector,
 navigation, timing, or parser changes. Use `make dry-run-ladder` for the basic
-player checks, and `make dry-run-ladder-broad` when you also want current-team
-and the 15-player smoke test.
+player checks, `make dry-run-player-regressions` for targeted known-problem
+players, and `make dry-run-ladder-broad` when you also want current-team and
+the 15-player smoke test.
+
+Recommended player dry-run scenarios:
+
+- `kazunari-kita`: no-round / sparse-data case.
+- `mbappe`: healthy high-signal baseline with full data.
+- `marc-roca`: previously failed in list-driven flow but succeeded in direct
+  slug mode; useful for Points-tab readiness and navigation regressions.
+- `maguette-gueye`: scoring-system menu timeout variant.
 
 Supabase write tests should only be run after dry-run output looks correct and
 the user explicitly approves writing rows:

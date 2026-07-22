@@ -92,6 +92,28 @@ def _log_timing(logger, label: str, started_at: float, *, player_slug: str = "")
     log_timing_debug(logger, label, started_at, player_slug=player_slug)
 
 
+def _open_player_via_href(
+    logger,
+    page: Page,
+    *,
+    name: str,
+    slug: str,
+    href: str,
+    base_url: str,
+    timing_label: str,
+    success_log: str,
+) -> bool:
+    started_at = time.time()
+    page.goto(base_url + href, wait_until="domcontentloaded")
+    ok = wait_player_detail_loaded(page, timeout_ms=8000)
+    _log_timing(logger, timing_label, started_at, player_slug=slug)
+    if ok:
+        logger.info(success_log, name, href)
+        return True
+    logger.warning("Fallback href did not load player detail in time for '%s': %s", name, href)
+    return False
+
+
 def open_player_via_search(
     logger, page: Page, player: Dict[str, str], base_url: str = "https://biwenger.as.com"
 ) -> bool:
@@ -110,15 +132,18 @@ def open_player_via_search(
     flow_started_at = time.time()
     if player.get("open_by_href_only") and href:
         try:
-            fallback_started_at = time.time()
-            page.goto(base_url + href, wait_until="domcontentloaded")
-            ok = wait_player_detail_loaded(page, timeout_ms=8000)
-            _log_timing(logger, "Player direct href open", fallback_started_at, player_slug=slug)
-            if ok:
-                logger.debug("Opened via direct href: %s", href)
+            if _open_player_via_href(
+                logger,
+                page,
+                name=name,
+                slug=slug,
+                href=href,
+                base_url=base_url,
+                timing_label="Player direct href open",
+                success_log="Opened player '%s' via direct href: %s",
+            ):
                 _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
                 return True
-            logger.warning("Direct href did not load player detail in time.")
             return False
         except Exception as e:
             logger.exception(f"Error opening direct href for '{name}': {e}")
@@ -139,15 +164,18 @@ def open_player_via_search(
             _log_timing(logger, "Player search filter wait failed", step_started_at, player_slug=slug)
             logger.warning(f"Search didn't show expected results for '{name}'. Trying fallback to href if available.")
             if href:
-                fallback_started_at = time.time()
-                page.goto(base_url + href, wait_until="domcontentloaded")
-                ok = wait_player_detail_loaded(page, timeout_ms=8000)
-                _log_timing(logger, "Player fallback href open", fallback_started_at, player_slug=slug)
-                if ok:
-                    logger.debug("Opened via fallback href: %s", href)
+                if _open_player_via_href(
+                    logger,
+                    page,
+                    name=name,
+                    slug=slug,
+                    href=href,
+                    base_url=base_url,
+                    timing_label="Player fallback href open",
+                    success_log="Recovered player '%s' via fallback href after search mismatch: %s",
+                ):
                     _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
                     return True
-                logger.warning("Fallback href did not load player detail in time.")
                 return False
             return False
         _log_timing(logger, "Player search filter wait", step_started_at, player_slug=slug)
@@ -160,12 +188,16 @@ def open_player_via_search(
             logger.warning(f"Couldn't click a result row for '{name}'.")
             # fallback to href
             if href:
-                fallback_started_at = time.time()
-                page.goto(base_url + href, wait_until="domcontentloaded")
-                ok = wait_player_detail_loaded(page, timeout_ms=8000)
-                _log_timing(logger, "Player fallback href open", fallback_started_at, player_slug=slug)
-                if ok:
-                    logger.debug("Opened via fallback href: %s", href)
+                if _open_player_via_href(
+                    logger,
+                    page,
+                    name=name,
+                    slug=slug,
+                    href=href,
+                    base_url=base_url,
+                    timing_label="Player fallback href open",
+                    success_log="Recovered player '%s' via fallback href after row-click miss: %s",
+                ):
                     _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
                     return True
             return False
@@ -176,12 +208,16 @@ def open_player_via_search(
             _log_timing(logger, "Player detail wait failed", step_started_at, player_slug=slug)
             logger.warning(f"Player detail didn't appear after clicking result for '{name}'. Attempting href fallback.")
             if href:
-                fallback_started_at = time.time()
-                page.goto(base_url + href, wait_until="domcontentloaded")
-                ok = wait_player_detail_loaded(page, timeout_ms=8000)
-                _log_timing(logger, "Player fallback href open after click", fallback_started_at, player_slug=slug)
-                if ok:
-                    logger.debug("Opened via fallback href after click: %s", href)
+                if _open_player_via_href(
+                    logger,
+                    page,
+                    name=name,
+                    slug=slug,
+                    href=href,
+                    base_url=base_url,
+                    timing_label="Player fallback href open after click",
+                    success_log="Recovered player '%s' via fallback href after detail wait miss: %s",
+                ):
                     _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
                     return True
             return False
@@ -192,21 +228,24 @@ def open_player_via_search(
         return True
 
     except Exception as e:
-        logger.exception(f"Error in open_player_via_search for '{name}': {e}")
+        logger.warning("Search-path open failed for '%s': %s. Trying fallback href if available.", name, e)
         # Last-chance fallback
         if href:
             try:
-                fallback_started_at = time.time()
-                page.goto(base_url + href, wait_until="domcontentloaded")
-                if wait_player_detail_loaded(page, timeout_ms=8000):
-                    logger.debug("Opened via fallback href after exception: %s", href)
-                    _log_timing(
-                        logger, "Player fallback href open after exception", fallback_started_at, player_slug=slug
-                    )
+                if _open_player_via_href(
+                    logger,
+                    page,
+                    name=name,
+                    slug=slug,
+                    href=href,
+                    base_url=base_url,
+                    timing_label="Player fallback href open after exception",
+                    success_log="Recovered player '%s' via fallback href after search-path exception: %s",
+                ):
                     _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)
                     return True
-            except Exception:
-                pass
+            except Exception as fallback_error:
+                logger.warning("Fallback href also failed for '%s': %s", name, fallback_error)
         return False
 
 
