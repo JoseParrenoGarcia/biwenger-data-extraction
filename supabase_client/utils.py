@@ -119,6 +119,54 @@ def upsert_rows_into_table(supabase, table_name: str, rows: List[Dict], on_confl
         raise Exception(f"❌ Supabase upsert failed: {str(e)}")
 
 
+def upsert_rows_into_table_batched(
+    supabase,
+    table_name: str,
+    rows: List[Dict],
+    on_conflict: str,
+    chunk_size: int = 5000,
+    sleep_s: float = 0.25,
+    returning: str = "minimal",
+    json_sanitize: bool = True,
+) -> None:
+    """
+    Upsert many rows with batching to avoid statement timeouts.
+
+    Raises on first failing chunk with the original error.
+    """
+    if not rows:
+        print(f"⚠️ No rows to upsert into '{table_name}'. Skipping.")
+        return
+
+    if json_sanitize:
+        try:
+            import pandas as pd
+
+            if isinstance(rows, list) and rows and isinstance(rows[0], dict):
+                df = pd.DataFrame(rows)
+                df = df.where(df.notna(), None)
+                rows = df.to_dict(orient="records")
+        except Exception:
+            pass
+
+    batched_iter = getattr(itertools, "batched", _batched)(rows, chunk_size)
+
+    count = 0
+    for chunk in batched_iter:
+        try:
+            supabase.table(table_name).upsert(chunk, on_conflict=on_conflict, returning=returning).execute()
+            count += len(chunk)
+        except Exception as e:
+            raise Exception(
+                f"❌ Supabase batched upsert failed after {count} rows "
+                f"(chunk_size={chunk_size}, on_conflict={on_conflict}) "
+                f"on table '{table_name}': {e}"
+            )
+        if sleep_s:
+            time.sleep(sleep_s)
+    print(f"✅ Upserted {count} rows into '{table_name}' (batched, conflict target: {on_conflict}).")
+
+
 def compute_content_hash(row: Dict[str, Any], cols: Iterable[str]) -> str:
     def _norm_for_hash(v: Any) -> str:
         if v is None:
