@@ -116,11 +116,20 @@ POINTS_TABLE_SEL = "player-detail-points point-list table"
 POINTS_ROOT_SEL = "player-detail-points"
 SCORING_BUTTON_SEL = 'player-detail-points score-selector-btn button[modalmenutitle="Scoring system"]'
 SCORING_BUTTON_FALLBACK_SEL = 'button[modalmenutitle="Scoring system"]'
+POINTS_SEASON_BUTTON_SEL = 'player-detail-points button[modalmenutitle="Season"]'
 NO_ROUNDS_TEXT_RE = re.compile(r"hasn['’]t played any round yet", re.I)
 
 
 def _points_panel_text(page: Page) -> str:
     return _safe_text(page.locator(POINTS_ROOT_SEL).first)
+
+
+def _has_visible_locator(page: Page, selector: str) -> bool:
+    try:
+        locator = page.locator(selector).first
+        return locator.count() > 0 and locator.is_visible()
+    except Exception:
+        return False
 
 
 def _points_content_is_loaded(page: Page) -> bool:
@@ -129,11 +138,15 @@ def _points_content_is_loaded(page: Page) -> bool:
     Some players render "Hasn't played any round yet" instead of point-list rows.
     """
     try:
-        if page.locator(POINTS_TABLE_SEL).first.count() > 0:
+        if _has_visible_locator(page, POINTS_TABLE_SEL):
             return True
-        if page.locator(SCORING_BUTTON_SEL).first.count() > 0:
+        if NO_ROUNDS_TEXT_RE.search(_points_panel_text(page)):
             return True
-        return bool(NO_ROUNDS_TEXT_RE.search(_points_panel_text(page)))
+        if _has_visible_locator(page, SCORING_BUTTON_SEL):
+            return True
+        if _has_visible_locator(page, POINTS_SEASON_BUTTON_SEL) and _has_visible_locator(page, POINTS_ROOT_SEL):
+            return True
+        return False
     except Exception:
         return False
 
@@ -144,9 +157,14 @@ def _wait_for_points_content(page: Page, timeout: int) -> None:
         () => {
             const root = document.querySelector('player-detail-points');
             if (!root) return false;
-            if (root.querySelector('point-list table')) return true;
-            if (root.querySelector('score-selector-btn button[modalmenutitle="Scoring system"]')) return true;
-            return /hasn['’]t played any round yet/i.test(root.textContent || '');
+            const table = root.querySelector('point-list table');
+            if (table && table.offsetParent !== null) return true;
+            if (/hasn['’]t played any round yet/i.test(root.textContent || '')) return true;
+            const scoringButton = root.querySelector('score-selector-btn button[modalmenutitle="Scoring system"]');
+            if (scoringButton && scoringButton.offsetParent !== null) return true;
+            const seasonButton = root.querySelector('button[modalmenutitle="Season"]');
+            if (seasonButton && seasonButton.offsetParent !== null && root.offsetParent !== null) return true;
+            return false;
         }
         """,
         timeout=timeout,

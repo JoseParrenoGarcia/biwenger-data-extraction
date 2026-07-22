@@ -53,7 +53,12 @@ Important current decisions:
 - For scraper refactors, preserve behavior with a local dry-run path before changing persistence.
 - Prefer headed dry-runs that print outputs and do not write to Supabase.
 - For player scraper changes, use `make dry-run-ladder` by default. It covers unit tests, `kazunari-kita`, `mbappe`, and a normal 2-player dry-run.
-- For riskier player selector, navigation, timing, or parser changes, also run `make dry-run-players-15`.
+- For riskier player selector, navigation, timing, or parser changes, also run `make dry-run-player-regressions` and `make dry-run-players-15`.
+- Treat these named player dry-runs as the standard targeted regression set when relevant:
+  - `kazunari-kita` for no-round / sparse-data handling.
+  - `mbappe` for a healthy full-data baseline.
+  - `marc-roca` for list-flow vs direct-href Points-tab readiness regressions.
+  - `maguette-gueye` for scoring-system menu timeout regressions.
 - For current-team scraper changes, run `make dry-run-team`.
 - Raw commands are documented in `README.md` and `docs/repo_architecture_audit.md` if Make is not convenient.
 - Before committing normal code, parser, persistence, or documentation changes, run `make ci` by default. It covers Ruff linting, Ruff format checks, and pytest. Fix issues locally before committing where practical.
