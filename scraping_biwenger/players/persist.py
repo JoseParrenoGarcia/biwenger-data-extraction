@@ -101,8 +101,15 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
         columns=["slug", "as_of_date", "scoring_system"],
     )
 
+    input_rows = len(stats_df)
     payload_df = stats_df.drop_duplicates(subset=["slug", "as_of_date", "scoring_system"], keep="last").copy()
     payload = payload_df.astype(object).where(payload_df.notna(), None).to_dict(orient="records")
+    if logger:
+        logger.info(
+            "Stats upsert attempt: input_rows=%s deduped_rows=%s conflict=slug,as_of_date,scoring_system",
+            input_rows,
+            len(payload),
+        )
     upsert_rows_into_table_batched(
         supabase,
         table_name=PLAYER_STATS_TABLE,
@@ -125,11 +132,18 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
         frame_name="matches",
         columns=["slug", "season_label", "round_label", "match_date", "scoring_system"],
     )
+    input_rows = len(matches_df)
     payload_df = matches_df.drop_duplicates(
         subset=["slug", "season_label", "round_label", "match_date", "scoring_system"],
         keep="last",
     ).copy()
     payload_df = payload_df.astype(object).where(payload_df.notna(), None)
+    if logger:
+        logger.info(
+            "Matches upsert attempt: input_rows=%s deduped_rows=%s conflict=slug,season_label,round_label,match_date,scoring_system",
+            input_rows,
+            len(payload_df),
+        )
     upsert_rows_into_table_batched(
         supabase,
         table_name=PLAYER_MATCHES_TABLE,

@@ -1,4 +1,5 @@
 import logging
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -82,6 +83,7 @@ def scrape_players_snapshot(
 
 
 def upload_player_checkpoint(run_dir: str, *, logger=None, supabase=None):
+    started_at = time.perf_counter()
     if logger is None:
         run_path = Path(run_dir)
         log_file = run_path / "upload.log" if run_path.is_dir() else Path("logs/ETL_get_player_stats.log")
@@ -105,7 +107,7 @@ def upload_player_checkpoint(run_dir: str, *, logger=None, supabase=None):
         logger=logger,
         supabase=supabase,
     )
-    logger.info("Checkpoint upload completed for %s.", run_dir)
+    logger.info("Checkpoint upload completed for %s in %.2fs.", run_dir, time.perf_counter() - started_at)
     return payload.stats_df, payload.matches_df, payload.value_history_df
 
 
@@ -128,6 +130,7 @@ def run_player_pipeline(
     """
     Login to Biwenger, scrape player data, and optionally persist it.
     """
+    started_at = time.perf_counter()
     as_of_date = pd.Timestamp.utcnow().date().isoformat()
     checkpoint = None
     deleted_old_runs = []
@@ -373,12 +376,18 @@ def run_player_pipeline(
         else:
             logger.info("Skipping Supabase persistence for player dry run.")
 
+        duration_s = time.perf_counter() - started_at
+        logger.info("Total player run time: %.2fs", duration_s)
         event_emitter.emit(
             "run_finished",
-            summary=(f"done stats={len(stats_df)} matches={len(matches_df)} values={len(value_history_df)}"),
+            summary=(
+                f"done stats={len(stats_df)} matches={len(matches_df)} "
+                f"values={len(value_history_df)} time={duration_s:.2f}s"
+            ),
             stats_rows=len(stats_df),
             match_rows=len(matches_df),
             value_rows=len(value_history_df),
+            duration_s=duration_s,
         )
         return stats_df, matches_df, value_history_df
     finally:
