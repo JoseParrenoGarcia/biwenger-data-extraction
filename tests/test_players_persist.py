@@ -1,8 +1,9 @@
 import pandas as pd
+import pytest
 
-from scraping_biwenger.players.persist import persist_player_matches, persist_player_values
-from scraping_biwenger.players.repository import delete_matches_for_season_identities
-from scraping_biwenger.players.transform import PLAYER_MATCHES_COLUMNS, PLAYER_VALUE_COLUMNS
+from scraping_biwenger.players.persist import persist_player_matches, persist_player_stats, persist_player_values
+from scraping_biwenger.players.repository import delete_matches_for_season_identities, delete_stats_snapshot
+from scraping_biwenger.players.transform import PLAYER_MATCHES_COLUMNS, PLAYER_STATS_COLUMNS, PLAYER_VALUE_COLUMNS
 
 
 class FakeQuery:
@@ -99,6 +100,98 @@ def test_delete_matches_for_season_identities_filters_full_season_aware_key():
     }
 
 
+def test_delete_stats_snapshot_filters_slug_snapshot_identity():
+    supabase = FakeSupabase()
+
+    delete_stats_snapshot(
+        supabase,
+        "biwenger_player_stats",
+        "mbappe",
+        "2026-07-22",
+        "sofascore",
+    )
+
+    delete_op = supabase.operations[0]
+    assert delete_op["action"] == "delete"
+    assert set(delete_op["filters"]) == {
+        ("eq", "slug", "mbappe"),
+        ("eq", "as_of_date", "2026-07-22"),
+        ("eq", "scoring_system", "sofascore"),
+    }
+
+
+def test_persist_player_stats_deletes_slugged_rows_by_snapshot_identity():
+    supabase = FakeSupabase()
+    stats_df = pd.DataFrame(
+        [
+            {
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": "mbappe",
+                "position": "Forward",
+                "status": "Fit",
+                "status_detail": None,
+                "scoring_system": "sofascore",
+                "points": 10,
+                "value": 1000000,
+                "min_value": 900000,
+                "max_value": 1100000,
+                "matches_played": 1,
+                "average": 10.0,
+                "market_purchases_pct": 0.0,
+                "market_sales_pct": 0.0,
+                "market_usage_pct": 0.0,
+                "season": "2025/2026",
+                "as_of_date": "2026-07-22",
+            }
+        ],
+        columns=PLAYER_STATS_COLUMNS,
+    )
+
+    persist_player_stats(stats_df, supabase=supabase)
+
+    delete_op = next(op for op in supabase.operations if op["action"] == "delete")
+    assert set(delete_op["filters"]) == {
+        ("eq", "slug", "mbappe"),
+        ("eq", "as_of_date", "2026-07-22"),
+        ("eq", "scoring_system", "sofascore"),
+    }
+    insert_op = next(op for op in supabase.operations if op["action"] == "insert")
+    assert len(insert_op["rows"]) == 1
+
+
+def test_persist_player_stats_rejects_missing_slug():
+    supabase = FakeSupabase()
+    stats_df = pd.DataFrame(
+        [
+            {
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": None,
+                "position": "Forward",
+                "status": "Fit",
+                "status_detail": None,
+                "scoring_system": "sofascore",
+                "points": 10,
+                "value": 1000000,
+                "min_value": 900000,
+                "max_value": 1100000,
+                "matches_played": 1,
+                "average": 10.0,
+                "market_purchases_pct": 0.0,
+                "market_sales_pct": 0.0,
+                "market_usage_pct": 0.0,
+                "season": "2025/2026",
+                "as_of_date": "2026-07-22",
+            }
+        ],
+        columns=PLAYER_STATS_COLUMNS,
+    )
+
+    with pytest.raises(ValueError, match="slug is required"):
+        persist_player_stats(stats_df, supabase=supabase)
+
+
 def test_persist_player_matches_deletes_slugged_rows_by_season_aware_identity():
     supabase = FakeSupabase()
     matches_df = pd.DataFrame(
@@ -132,6 +225,31 @@ def test_persist_player_matches_deletes_slugged_rows_by_season_aware_identity():
     }
     insert_op = next(op for op in supabase.operations if op["action"] == "insert")
     assert len(insert_op["rows"]) == 1
+
+
+def test_persist_player_matches_rejects_missing_slug():
+    supabase = FakeSupabase()
+    matches_df = pd.DataFrame(
+        [
+            {
+                "season_label": "2025/2026",
+                "round_label": "R1",
+                "match_date": "2025-08-19",
+                "points": 14,
+                "best_xi": True,
+                "events": "",
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": None,
+                "scoring_system": "sofascore",
+                "as_of_date": "2026-07-20",
+            }
+        ],
+        columns=PLAYER_MATCHES_COLUMNS,
+    )
+
+    with pytest.raises(ValueError, match="slug is required"):
+        persist_player_matches(matches_df, supabase=supabase)
 
 
 def test_persist_player_values_inserts_new_rows_and_replaces_changed_rows_only():

@@ -1,7 +1,6 @@
 import pandas as pd
 
 from scraping_biwenger.players.repository import (
-    delete_matches_for_legacy_dates,
     delete_matches_for_season_identities,
     delete_stats_snapshot,
     delete_value_history_dates,
@@ -29,6 +28,14 @@ def _optional_text(value):
     return text or None
 
 
+def _assert_non_empty_slugs(df: pd.DataFrame, *, frame_name: str) -> None:
+    if df.empty:
+        return
+    slug_series = df["slug"].map(_optional_text)
+    if slug_series.isna().any():
+        raise ValueError(f"{frame_name} payload contains rows without slug; slug is required for persistence.")
+
+
 def missing_table_message(table_names: list[str]) -> str:
     quoted = ", ".join(f"'{name}'" for name in table_names)
     return f"Supabase player table(s) missing: {quoted}. Run `supabase db push` before uploading player data."
@@ -54,7 +61,12 @@ def persist_player_outputs(
     """
     Persist player stats, match rows, and market value history.
     """
-    validate_player_payloads(stats_df, matches_df, value_history_df)
+    validate_player_payloads(
+        stats_df,
+        matches_df,
+        value_history_df,
+        require_slugs_for_persistence=True,
+    )
     supabase = supabase or get_supabase_client()
     assert_player_tables_exist(supabase, logger=logger)
 
@@ -69,19 +81,17 @@ def persist_player_stats(stats_df: pd.DataFrame, *, supabase, logger=None) -> No
             logger.info("No player stats to process.")
         return
 
-    for pname, team, slug, as_of_date, scoring_system in (
-        stats_df[["player_name", "team", "slug", "as_of_date", "scoring_system"]]
-        .drop_duplicates()
-        .itertuples(index=False, name=None)
+    _assert_non_empty_slugs(stats_df, frame_name="stats")
+
+    for slug, as_of_date, scoring_system in (
+        stats_df[["slug", "as_of_date", "scoring_system"]].drop_duplicates().itertuples(index=False, name=None)
     ):
         delete_stats_snapshot(
             supabase,
             PLAYER_STATS_TABLE,
-            pname,
-            team,
+            _optional_text(slug),
             as_of_date,
             _optional_text(scoring_system),
-            _optional_text(slug),
         )
 
     payload = stats_df.astype(object).where(stats_df.notna(), None).to_dict(orient="records")
@@ -100,42 +110,28 @@ def persist_player_matches(matches_df: pd.DataFrame, *, supabase, logger=None) -
             logger.info("No match rows to insert.")
         return
 
+    _assert_non_empty_slugs(matches_df, frame_name="matches")
+
     to_insert = []
-    for (pname, team, slug, scoring_system), group in matches_df.groupby(
-        ["player_name", "team", "slug", "scoring_system"],
+    for (_, _, _, _, _), group in matches_df.groupby(
+        ["slug", "season_label", "round_label", "match_date", "scoring_system"],
         dropna=False,
     ):
-        dates = group["match_date"].dropna().unique().tolist()
-        if not dates:
-            continue
-
-        slug_text = _optional_text(slug)
-        scoring_text = _optional_text(scoring_system)
-        if slug_text:
-            identity_columns = [
-                "slug",
-                "season_label",
-                "round_label",
-                "match_date",
-                "scoring_system",
-            ]
-            identity_df = group[identity_columns].drop_duplicates().astype(object)
-            identity_df = identity_df.where(identity_df.notna(), None)
-            identities = identity_df.to_dict(orient="records")
-            delete_matches_for_season_identities(
-                supabase,
-                PLAYER_MATCHES_TABLE,
-                identities,
-            )
-        else:
-            delete_matches_for_legacy_dates(
-                supabase,
-                PLAYER_MATCHES_TABLE,
-                pname,
-                team,
-                dates,
-                scoring_text,
-            )
+        identity_columns = [
+            "slug",
+            "season_label",
+            "round_label",
+            "match_date",
+            "scoring_system",
+        ]
+        identity_df = group[identity_columns].drop_duplicates().astype(object)
+        identity_df = identity_df.where(identity_df.notna(), None)
+        identities = identity_df.to_dict(orient="records")
+        delete_matches_for_season_identities(
+            supabase,
+            PLAYER_MATCHES_TABLE,
+            identities,
+        )
         to_insert.append(group)
 
     if not to_insert:
