@@ -348,3 +348,166 @@ def test_run_player_pipeline_writes_log_inside_checkpoint_run_dir(tmp_path, monk
     run_log = run_dir / "run.log"
     assert run_log.exists()
     assert "Starting ETL: get_player_stats" in run_log.read_text(encoding="utf-8")
+
+
+def test_run_player_pipeline_does_not_build_terminal_ui_by_default(tmp_path, monkeypatch):
+    calls = {"ui_init": 0}
+
+    class FakeBrowser:
+        def close(self):
+            pass
+
+    class FakeContext:
+        def close(self):
+            pass
+
+    class FakePlaywright:
+        def stop(self):
+            pass
+
+    class FakeLogger:
+        def info(self, *args, **kwargs):
+            pass
+
+        def debug(self, *args, **kwargs):
+            pass
+
+        def warning(self, *args, **kwargs):
+            pass
+
+        def exception(self, *args, **kwargs):
+            pass
+
+    def fake_start_browser_accept_cookies(*, headless, logger):
+        return FakePlaywright(), FakeBrowser(), FakeContext(), object()
+
+    def fake_scrape_players_snapshot(page, logger, **kwargs):
+        return (
+            pd.DataFrame(columns=PLAYER_STATS_COLUMNS),
+            pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+            pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+        )
+
+    class FakeUI:
+        def __init__(self):
+            calls["ui_init"] += 1
+
+        def handle_event(self, event):
+            return None
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"}
+    )
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies
+    )
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.perform_login", lambda page, email, password, logger: None)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.scrape_players_snapshot", fake_scrape_players_snapshot)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.PlayerRunTerminalUI", FakeUI)
+
+    run_player_pipeline(
+        headless=True,
+        persist=False,
+        max_pages=1,
+        max_players_detail=1,
+        checkpoint_dir=str(tmp_path),
+        logger=FakeLogger(),
+    )
+
+    assert calls["ui_init"] == 0
+
+
+def test_run_player_pipeline_emits_batch_upload_events(tmp_path, monkeypatch):
+    events = []
+
+    class FakeBrowser:
+        def close(self):
+            pass
+
+    class FakeContext:
+        def close(self):
+            pass
+
+    class FakePlaywright:
+        def stop(self):
+            pass
+
+    class FakeLogger:
+        def info(self, *args, **kwargs):
+            pass
+
+        def debug(self, *args, **kwargs):
+            pass
+
+        def warning(self, *args, **kwargs):
+            pass
+
+        def exception(self, *args, **kwargs):
+            pass
+
+    def fake_start_browser_accept_cookies(*, headless, logger):
+        return FakePlaywright(), FakeBrowser(), FakeContext(), object()
+
+    def fake_scrape_players_snapshot(page, logger, **kwargs):
+        on_player_payload = kwargs["on_player_payload"]
+        on_player_payload(
+            player={"name": "Player One", "slug": "player-one"},
+            detail_rows=[
+                {
+                    "player_name": "Player One",
+                    "team": "Athletic",
+                    "slug": "player-one",
+                    "scoring_system": "sofascore",
+                }
+            ],
+            match_rows=[],
+            value_history_rows=[],
+            processed_count=1,
+        )
+        return (
+            pd.DataFrame(
+                [{"player_name": "Player One", "team": "Athletic", "slug": "player-one"}],
+                columns=PLAYER_STATS_COLUMNS,
+            ),
+            pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+            pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+        )
+
+    class FakeUI:
+        def handle_event(self, event):
+            events.append(event)
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"}
+    )
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies
+    )
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.perform_login", lambda page, email, password, logger: None)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.scrape_players_snapshot", fake_scrape_players_snapshot)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.persist_player_outputs", lambda *args, **kwargs: None)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.PlayerRunTerminalUI", lambda: FakeUI())
+
+    run_player_pipeline(
+        headless=True,
+        persist=True,
+        max_pages=1,
+        max_players_detail=1,
+        checkpoint_dir=str(tmp_path),
+        upload_batch_size=1,
+        terminal_ui=True,
+        logger=FakeLogger(),
+    )
+
+    event_types = [event["type"] for event in events]
+    assert "run_started" in event_types
+    assert "checkpoint_written" in event_types
+    assert "batch_upload_started" in event_types
+    assert "batch_upload_finished" in event_types
+    assert "run_finished" in event_types

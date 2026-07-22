@@ -51,6 +51,7 @@ def scrape_all_players_detail(
     collect_matches: bool = True,
     on_player_payload: Optional[Callable[..., None]] = None,
     on_player_error: Optional[Callable[..., None]] = None,
+    on_player_event: Optional[Callable[..., None]] = None,
 ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
     """
     Iterate players_list → open → scrape detail (left panel) → scrape matches (Points tab) → back.
@@ -65,6 +66,17 @@ def scrape_all_players_detail(
     def record_player_error(player: Dict[str, str], stage: str, message: str) -> None:
         if on_player_error:
             on_player_error(player=player, stage=stage, message=message)
+        if on_player_event:
+            on_player_event(
+                "player_failed",
+                player_name=player.get("name", ""),
+                player_slug=player.get("slug", ""),
+                team=player.get("team", ""),
+                rank=player.get("rank"),
+                attempt_label=player.get("attempt", "initial"),
+                stage=stage,
+                message=message,
+            )
 
     def log_player_summary(
         player: Dict[str, str],
@@ -104,6 +116,16 @@ def scrape_all_players_detail(
         name = player.get("name", "")
         slug = player.get("slug", "")
         logger.debug("Opening player %s/%s: %s (%s)", idx, len(players_list), name, slug)
+        if on_player_event:
+            on_player_event(
+                "player_started",
+                player_name=name,
+                player_slug=slug,
+                rank=player.get("rank", idx),
+                total_players=min(len(players_list), max_players or len(players_list)),
+                attempt_label=player.get("attempt", "initial"),
+                team=player.get("team", ""),
+            )
 
         def needs_table_return() -> bool:
             return _next_player_needs_table(
@@ -271,6 +293,25 @@ def scrape_all_players_detail(
                 match_rows=player_match_rows,
                 value_history_rows=player_value_history_rows,
                 processed_count=processed,
+            )
+        if on_player_event:
+            note = ""
+            if detail.get("matches_played", 0) == 0 and not player_match_rows:
+                note = "no_match_history"
+            on_player_event(
+                "player_finished",
+                player_name=detail.get("player_name", "") or name,
+                player_slug=slug,
+                team=detail.get("team", ""),
+                rank=player.get("rank", idx),
+                attempt_label=player.get("attempt", "initial"),
+                processed_count=processed,
+                total_players=min(len(players_list), max_players or len(players_list)),
+                scoring_system=scoring_system,
+                stats_rows=1,
+                match_rows=len(player_match_rows),
+                value_rows=len(player_value_history_rows),
+                note=note,
             )
 
         # 5) back to table for next player
