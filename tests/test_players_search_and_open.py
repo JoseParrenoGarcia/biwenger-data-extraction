@@ -117,3 +117,24 @@ def test_open_player_detail_direct_only_does_not_fall_back_to_search(monkeypatch
     assert opened is False
     assert page.gotos == [("https://biwenger.as.com/la-liga/players/marc-roca", "domcontentloaded")]
     assert search_calls == []
+
+
+def test_open_player_detail_logs_search_success_when_href_missing(monkeypatch):
+    logger = FakeLogger()
+    page = FakePage()
+    player = {"name": "Marc Roca", "slug": "marc-roca"}
+
+    monkeypatch.setattr(
+        search_and_open,
+        "open_player_via_search_only",
+        lambda logger, page, player, base_url="https://biwenger.as.com": True,
+    )
+    monkeypatch.setattr(search_and_open, "_log_timing", lambda *args, **kwargs: None)
+
+    opened = search_and_open.open_player_detail(logger, page, player)
+
+    assert opened is True
+    assert any(
+        level == "info" and "Opened player 'Marc Roca' via search because href was unavailable." in message
+        for level, message in logger.records
+    )
