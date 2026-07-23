@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+import scraping_biwenger.players.persist as player_persist
 from scraping_biwenger.players.persist import persist_player_matches, persist_player_stats, persist_player_values
 from scraping_biwenger.players.repository import delete_matches_for_season_identities, delete_stats_snapshot
 from scraping_biwenger.players.transform import PLAYER_MATCHES_COLUMNS, PLAYER_STATS_COLUMNS, PLAYER_VALUE_COLUMNS
@@ -84,6 +85,34 @@ class FakeSupabase:
         return FakeQuery(table_name, self.operations, self.select_data)
 
 
+def _valid_stats_df():
+    return pd.DataFrame(
+        [
+            {
+                "player_name": "Mbappé",
+                "team": "Real Madrid",
+                "slug": "mbappe",
+                "position": "Forward",
+                "status": "Fit",
+                "status_detail": None,
+                "scoring_system": "sofascore",
+                "points": 10,
+                "value": 1000000,
+                "min_value": 900000,
+                "max_value": 1100000,
+                "matches_played": 1,
+                "average": 10.0,
+                "market_purchases_pct": 0.0,
+                "market_sales_pct": 0.0,
+                "market_usage_pct": 0.0,
+                "season": "2025/2026",
+                "as_of_date": "2026-07-22",
+            }
+        ],
+        columns=PLAYER_STATS_COLUMNS,
+    )
+
+
 def test_delete_matches_for_season_identities_filters_full_season_aware_key():
     supabase = FakeSupabase()
 
@@ -134,31 +163,7 @@ def test_delete_stats_snapshot_filters_slug_snapshot_identity():
 
 def test_persist_player_stats_upserts_rows_by_snapshot_identity():
     supabase = FakeSupabase()
-    stats_df = pd.DataFrame(
-        [
-            {
-                "player_name": "Mbappé",
-                "team": "Real Madrid",
-                "slug": "mbappe",
-                "position": "Forward",
-                "status": "Fit",
-                "status_detail": None,
-                "scoring_system": "sofascore",
-                "points": 10,
-                "value": 1000000,
-                "min_value": 900000,
-                "max_value": 1100000,
-                "matches_played": 1,
-                "average": 10.0,
-                "market_purchases_pct": 0.0,
-                "market_sales_pct": 0.0,
-                "market_usage_pct": 0.0,
-                "season": "2025/2026",
-                "as_of_date": "2026-07-22",
-            }
-        ],
-        columns=PLAYER_STATS_COLUMNS,
-    )
+    stats_df = _valid_stats_df()
 
     persist_player_stats(stats_df, supabase=supabase)
 
@@ -170,34 +175,26 @@ def test_persist_player_stats_upserts_rows_by_snapshot_identity():
 
 def test_persist_player_stats_rejects_missing_slug():
     supabase = FakeSupabase()
-    stats_df = pd.DataFrame(
-        [
-            {
-                "player_name": "Mbappé",
-                "team": "Real Madrid",
-                "slug": None,
-                "position": "Forward",
-                "status": "Fit",
-                "status_detail": None,
-                "scoring_system": "sofascore",
-                "points": 10,
-                "value": 1000000,
-                "min_value": 900000,
-                "max_value": 1100000,
-                "matches_played": 1,
-                "average": 10.0,
-                "market_purchases_pct": 0.0,
-                "market_sales_pct": 0.0,
-                "market_usage_pct": 0.0,
-                "season": "2025/2026",
-                "as_of_date": "2026-07-22",
-            }
-        ],
-        columns=PLAYER_STATS_COLUMNS,
-    )
+    stats_df = _valid_stats_df()
+    stats_df.loc[0, "slug"] = None
 
     with pytest.raises(ValueError, match="slug is required"):
         persist_player_stats(stats_df, supabase=supabase)
+
+
+def test_persist_player_outputs_uses_admin_client_by_default(monkeypatch):
+    fake_supabase = FakeSupabase()
+    monkeypatch.setattr(player_persist, "get_supabase_admin_client", lambda: fake_supabase)
+    monkeypatch.setattr(player_persist, "assert_player_tables_exist", lambda supabase, logger=None: None)
+
+    stats_df = _valid_stats_df()
+    matches_df = pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS)
+    values_df = pd.DataFrame(columns=PLAYER_VALUE_COLUMNS)
+
+    player_persist.persist_player_outputs(stats_df, matches_df, values_df)
+
+    upsert_op = next(op for op in fake_supabase.operations if op["action"] == "upsert")
+    assert upsert_op["table"] == "biwenger_player_stats"
 
 
 def test_persist_player_matches_upserts_rows_by_season_aware_identity():

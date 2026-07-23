@@ -24,3 +24,4 @@ def test_supabase_secret_template_has_required_fields():
 
     assert config["supabase"]["url"]
     assert config["supabase"]["anon_key"]
+    assert config["supabase"]["service_role_key"]

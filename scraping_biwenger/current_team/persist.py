@@ -6,7 +6,7 @@ from scraping_biwenger.current_team.repository import (
     insert_current_team_rows,
 )
 from scraping_biwenger.current_team.transform import validate_current_team_payload
-from supabase_client.connection import get_supabase_client
+from supabase_client.connection import get_supabase_admin_client
 
 DEFAULT_CURRENT_TEAM_TABLE = "biwenger_current_team"
 
@@ -23,7 +23,7 @@ def replace_current_team(
     """
     Replace the current-team table contents with the latest scraped snapshot.
     """
-    supabase = get_supabase_client()
+    supabase = get_supabase_admin_client()
 
     if not current_team_table_exists(supabase, table_name):
         message = missing_table_message(table_name)
@@ -48,7 +48,7 @@ def insert_current_team(
     Insert current-team rows without clearing existing table contents.
     """
     validate_current_team_payload(df)
-    supabase = supabase or get_supabase_client()
+    supabase = supabase or get_supabase_admin_client()
 
     if not current_team_table_exists(supabase, table_name):
         message = missing_table_message(table_name)

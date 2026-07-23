@@ -55,3 +55,26 @@ def test_insert_current_team_fails_clearly_when_table_is_missing(monkeypatch):
             table_name="biwenger_current_team",
             supabase=object(),
         )
+
+
+def test_insert_current_team_uses_admin_client_by_default(monkeypatch):
+    sentinel = object()
+    seen = {}
+
+    monkeypatch.setattr(persist, "get_supabase_admin_client", lambda: sentinel)
+    monkeypatch.setattr(persist, "current_team_table_exists", lambda supabase, table_name: True)
+
+    def fake_insert_current_team_rows(supabase, table_name, df):
+        seen["supabase"] = supabase
+        seen["table_name"] = table_name
+        seen["rows"] = len(df)
+
+    monkeypatch.setattr(persist, "insert_current_team_rows", fake_insert_current_team_rows)
+
+    persist.insert_current_team(_valid_current_team_df(), table_name="biwenger_current_team")
+
+    assert seen == {
+        "supabase": sentinel,
+        "table_name": "biwenger_current_team",
+        "rows": 1,
+    }

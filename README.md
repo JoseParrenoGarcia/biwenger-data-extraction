@@ -40,7 +40,11 @@ Fill in `secrets/biwenger.toml` with both Biwenger credential profiles:
 The player pipeline has a code guardrail to avoid accidentally running bulk
 scraping with the personal `[biwenger]` profile.
 
-Fill in `secrets/supabase.toml` with the Supabase project URL and anon key.
+Fill in `secrets/supabase.toml` with:
+
+- the Supabase project URL
+- a server-only `service_role_key` for scraper writes and private dashboard reads
+- optionally an `anon_key` placeholder only if you want to keep it documented for future public/browser access
 
 The `secrets/` directory remains ignored by Git except for `*.example.toml`
 templates. Do not commit real credentials. OpenAI, Gemini, and local Ollama
@@ -48,9 +52,12 @@ secrets are not required for the current Biwenger-only pipeline.
 
 ## Supabase Bootstrap
 
-Normal scraping uses the Supabase project URL and anon key from
-`secrets/supabase.toml`. Those credentials are for data upload only; they should
-not create tables.
+Runtime scraper writes and private dashboard reads now use the server-only
+`service_role_key` from `secrets/supabase.toml`.
+
+The repo does not currently support browser/public Supabase access. The
+`anon_key` can stay in the secrets template as future-facing documentation, but
+it is not the normal runtime credential after RLS is enabled.
 
 For a new Supabase project, apply the tracked schema migration once with the
 Supabase CLI:
@@ -70,7 +77,7 @@ Schema changes must be made as new timestamped SQL files under
 `supabase/migrations/`. Do not edit already-pushed migrations or maintain a
 separate schema snapshot SQL file.
 
-After the migration is applied, verify the anon connection:
+After the migration is applied, verify the backend connection:
 
 ```bash
 python3 -m supabase_client.connection
@@ -78,6 +85,10 @@ python3 -m supabase_client.connection
 
 If the normal pipeline runs before the migration exists, it should fail with a
 clear message telling you to run the schema bootstrap first.
+
+After enabling RLS on the public Biwenger tables, scraper writes and dashboard
+reads are expected to work only through server-side keys. Do not add broad
+public write policies for `anon`.
 
 The active Biwenger table semantics are documented in
 `docs/supabase_table_contracts.md`. Use that document when changing persistence

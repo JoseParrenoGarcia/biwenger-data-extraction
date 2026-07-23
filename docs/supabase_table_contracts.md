@@ -9,6 +9,10 @@ document is the human-facing contract for agents and future dashboard work.
 Runtime scraping must not perform DDL. Apply schema changes through
 `supabase/migrations/` with `supabase db push`.
 
+RLS is enabled on the exposed public Biwenger tables. Runtime scraper writes
+and private dashboard reads are expected to use a server-only Supabase key.
+No browser/public Supabase access is supported by this repo today.
+
 ## Persistence Ownership
 
 Generic Supabase primitives live in `supabase_client/`:
@@ -65,8 +69,7 @@ Current identity:
 Write behavior:
 
 - validate outgoing stats/matches/value dataframe columns together;
-- delete the existing row for the same current identity;
-- insert the latest scraped row.
+- upsert the latest scraped row for the current identity.
 
 Important semantics:
 
