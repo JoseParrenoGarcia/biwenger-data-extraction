@@ -7,7 +7,7 @@ pandas DataFrames. No writes, deletes, or DDL are performed here.
 
 import pandas as pd
 
-from supabase_client.connection import get_supabase_client
+from supabase_client.connection import get_supabase_backend_read_client
 
 SCORING_SYSTEM = "sofascore"
 
@@ -18,7 +18,7 @@ CURRENT_TEAM_TABLE = "biwenger_current_team"
 
 
 def _client(supabase=None):
-    return supabase if supabase is not None else get_supabase_client()
+    return supabase if supabase is not None else get_supabase_backend_read_client()
 
 
 def _paginate(query_factory, page_size: int = 1000) -> list[dict]:

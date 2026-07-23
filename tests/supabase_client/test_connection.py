@@ -1,6 +1,10 @@
 import pytest
 
-from supabase_client.connection import get_supabase_client
+from supabase_client.connection import (
+    get_supabase_admin_client,
+    get_supabase_backend_read_client,
+    get_supabase_client,
+)
 
 # =============================================================================
 # 🧪 UNIT TESTS — test file loading and error handling logic
@@ -16,23 +20,23 @@ def test_missing_file_raises_file_not_found():
         get_supabase_client(secrets_path_override="/nonexistent_path/supabase.toml")
 
 
-def test_missing_keys_raise_keyerror(tmp_path):
+def test_missing_service_role_key_raises_keyerror(tmp_path):
     """
-    If the secrets file is missing either 'url' or 'anon_key',
+    If the secrets file is missing the service role key,
     the function should raise a KeyError.
     """
-    # Create a fake supabase.toml missing the 'anon_key'
     secrets_path = tmp_path / "supabase.toml"
     secrets_path.write_text("""
         [supabase]
         url = "https://valid-url.supabase.co"
+        anon_key = "publishable-placeholder"
         """)
 
     with pytest.raises(KeyError):
-        get_supabase_client(secrets_path_override=str(secrets_path))
+        get_supabase_admin_client(secrets_path_override=str(secrets_path))
 
 
-def test_valid_secrets_structure(tmp_path):
+def test_valid_admin_secrets_structure(tmp_path):
     """
     Confirms that a valid toml file with correct keys does not raise any errors.
     """
@@ -40,7 +44,32 @@ def test_valid_secrets_structure(tmp_path):
     secrets_path.write_text("""
         [supabase]
         url = "https://valid-url.supabase.co"
-        anon_key = "test-key-123"
+        anon_key = "publishable-placeholder"
+        service_role_key = "service-role-test-key"
+        """)
+
+    client = get_supabase_admin_client(secrets_path_override=str(secrets_path))
+    assert client is not None
+
+
+def test_valid_backend_read_secrets_structure(tmp_path):
+    secrets_path = tmp_path / "supabase.toml"
+    secrets_path.write_text("""
+        [supabase]
+        url = "https://valid-url.supabase.co"
+        service_role_key = "service-role-test-key"
+        """)
+
+    client = get_supabase_backend_read_client(secrets_path_override=str(secrets_path))
+    assert client is not None
+
+
+def test_legacy_get_supabase_client_uses_backend_read_client(tmp_path):
+    secrets_path = tmp_path / "supabase.toml"
+    secrets_path.write_text("""
+        [supabase]
+        url = "https://valid-url.supabase.co"
+        service_role_key = "service-role-test-key"
         """)
 
     client = get_supabase_client(secrets_path_override=str(secrets_path))

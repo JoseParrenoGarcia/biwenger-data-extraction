@@ -7,7 +7,7 @@ from scraping_biwenger.players.repository import (
     player_table_exists,
 )
 from scraping_biwenger.players.transform import validate_player_payloads
-from supabase_client.connection import get_supabase_client
+from supabase_client.connection import get_supabase_admin_client
 from supabase_client.utils import upsert_rows_into_table_batched
 
 PLAYER_STATS_TABLE = "biwenger_player_stats"
@@ -80,7 +80,7 @@ def persist_player_outputs(
         value_history_df,
         require_slugs_for_persistence=True,
     )
-    supabase = supabase or get_supabase_client()
+    supabase = supabase or get_supabase_admin_client()
     assert_player_tables_exist(supabase, logger=logger)
 
     persist_player_stats(stats_df, supabase=supabase, logger=logger)

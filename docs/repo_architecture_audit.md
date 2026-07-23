@@ -200,7 +200,10 @@ to `requirements.txt`.
 Normal runtime code uses `secrets/supabase.toml` with:
 
 - `[supabase].url`
-- `[supabase].anon_key`
+- `[supabase].service_role_key`
+
+`[supabase].anon_key` can remain documented for future/public use, but the
+current scraper and private dashboard runtime paths are server-side only.
 
 Runtime scraping should not perform DDL. New projects should be bootstrapped via
 migrations first.
