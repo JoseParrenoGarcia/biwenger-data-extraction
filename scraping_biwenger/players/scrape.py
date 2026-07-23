@@ -36,15 +36,28 @@ def scrape_player_rows(
     max_pages: int | None = None,
     max_players_detail: int | None = None,
     player_slug: str | None = None,
+    selected_players_override: list[dict] | None = None,
+    start_from_slug: str | None = None,
+    start_from_href: str | None = None,
+    start_from_rank: int | None = None,
     retry_top_players: int = 0,
     on_player_payload=None,
     on_player_error=None,
+    on_players_selected=None,
     on_event=None,
 ) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     """
     Scrape player discovery rows plus detail, match, and value-history rows.
     """
-    if player_slug:
+    if selected_players_override is not None:
+        players_list = [dict(player) for player in selected_players_override]
+        selected_players = [dict(player) for player in selected_players_override]
+        if logger:
+            logger.info(
+                "Using preselected player list override with %s players; skipping player-list discovery.",
+                len(selected_players),
+            )
+    elif player_slug:
         slug = player_slug.strip().strip("/")
         if "/" in slug:
             slug = slug.rstrip("/").split("/")[-1]
@@ -92,6 +105,21 @@ def scrape_player_rows(
                 len(players_list),
                 len(selected_players),
             )
+
+    if on_players_selected and selected_players:
+        on_players_selected(selected_players)
+
+    selected_players = _filter_selected_players(
+        selected_players,
+        start_from_slug=start_from_slug,
+        start_from_href=start_from_href,
+        start_from_rank=start_from_rank,
+    )
+    if (start_from_slug or start_from_href or start_from_rank is not None) and logger:
+        logger.info(
+            "Applied manual start filter; %s players remain in the selected list.",
+            len(selected_players),
+        )
 
     if not selected_players:
         return players_list, [], [], []
@@ -198,3 +226,41 @@ def scrape_player_rows(
             )
 
     return players_list, player_detail_rows, match_rows, value_history_rows
+
+
+def _filter_selected_players(
+    selected_players: list[dict],
+    *,
+    start_from_slug: str | None = None,
+    start_from_href: str | None = None,
+    start_from_rank: int | None = None,
+) -> list[dict]:
+    if start_from_slug is None and start_from_href is None and start_from_rank is None:
+        return selected_players
+
+    target_index = None
+    if start_from_slug is not None:
+        target_slug = start_from_slug.strip().strip("/").split("/")[-1]
+        for idx, player in enumerate(selected_players):
+            if str(player.get("slug") or "").strip() == target_slug:
+                target_index = idx
+                break
+        if target_index is None:
+            raise ValueError(f"Could not find start-from slug '{target_slug}' in the selected player list.")
+    elif start_from_href is not None:
+        target_href = start_from_href.strip()
+        for idx, player in enumerate(selected_players):
+            if str(player.get("href") or "").strip() == target_href:
+                target_index = idx
+                break
+        if target_index is None:
+            raise ValueError(f"Could not find start-from href '{target_href}' in the selected player list.")
+    else:
+        for idx, player in enumerate(selected_players):
+            if player.get("rank") == start_from_rank:
+                target_index = idx
+                break
+        if target_index is None:
+            raise ValueError(f"Could not find start-from rank '{start_from_rank}' in the selected player list.")
+
+    return selected_players[target_index:]
