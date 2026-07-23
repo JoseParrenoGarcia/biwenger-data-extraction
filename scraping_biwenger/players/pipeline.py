@@ -9,7 +9,10 @@ from scraping_biwenger.players.checkpoints import (
     DEFAULT_CHECKPOINT_ROOT,
     PlayerRunCheckpoint,
     cleanup_old_player_runs,
+    read_checkpoint_successful_slugs,
+    read_latest_failed_players,
     read_player_checkpoint,
+    read_selected_players,
 )
 from scraping_biwenger.players.persist import persist_player_outputs
 from scraping_biwenger.players.run_events import build_event_emitter
@@ -44,10 +47,15 @@ def scrape_players_snapshot(
     max_pages: int | None = None,
     max_players_detail: int | None = None,
     player_slug: str | None = None,
+    selected_players_override: list[dict] | None = None,
+    start_from_slug: str | None = None,
+    start_from_href: str | None = None,
+    start_from_rank: int | None = None,
     retry_top_players: int = 0,
     as_of_date: str | None = None,
     on_player_payload=None,
     on_player_error=None,
+    on_players_selected=None,
     on_event=None,
 ):
     """
@@ -59,9 +67,14 @@ def scrape_players_snapshot(
         max_pages=max_pages,
         max_players_detail=max_players_detail,
         player_slug=player_slug,
+        selected_players_override=selected_players_override,
+        start_from_slug=start_from_slug,
+        start_from_href=start_from_href,
+        start_from_rank=start_from_rank,
         retry_top_players=retry_top_players,
         on_player_payload=on_player_payload,
         on_player_error=on_player_error,
+        on_players_selected=on_players_selected,
         on_event=on_event,
     )
     if not players_list:
@@ -118,6 +131,10 @@ def run_player_pipeline(
     max_pages: int = 100,
     max_players_detail: int = 1_000,
     player_slug: str | None = None,
+    start_from_slug: str | None = None,
+    start_from_href: str | None = None,
+    start_from_rank: int | None = None,
+    resume_checkpoint: str | None = None,
     retry_top_players: int = 0,
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
@@ -136,6 +153,24 @@ def run_player_pipeline(
     deleted_old_runs = []
     ui = PlayerRunTerminalUI() if terminal_ui else None
     event_emitter = build_event_emitter(ui.handle_event if ui else None)
+    resume_players_override = None
+    resume_failed_count = 0
+    resume_tail_count = 0
+
+    if sum(option is not None for option in [start_from_slug, start_from_href, start_from_rank]) > 1:
+        raise ValueError("Use at most one of --start-from-slug, --start-from-href, or --start-from-rank.")
+    if player_slug and any(option is not None for option in [start_from_slug, start_from_href, start_from_rank]):
+        raise ValueError("--player-slug cannot be combined with manual start-from options.")
+    if player_slug and resume_checkpoint:
+        raise ValueError("--player-slug cannot be combined with --resume-checkpoint.")
+
+    if resume_checkpoint:
+        resume_players_override, resume_failed_count, resume_tail_count = _build_resume_players(
+            run_dir=resume_checkpoint,
+            start_from_slug=start_from_slug,
+            start_from_href=start_from_href,
+            start_from_rank=start_from_rank,
+        )
     if checkpoint_enabled:
         deleted_old_runs = cleanup_old_player_runs(
             checkpoint_dir,
@@ -150,6 +185,10 @@ def run_player_pipeline(
                 "max_pages": max_pages,
                 "max_players_detail": max_players_detail,
                 "player_slug": player_slug,
+                "start_from_slug": start_from_slug,
+                "start_from_href": start_from_href,
+                "start_from_rank": start_from_rank,
+                "resume_checkpoint": resume_checkpoint,
                 "retry_top_players": retry_top_players,
                 "upload_batch_size": upload_batch_size,
                 "debug_log": debug_log,
@@ -207,6 +246,25 @@ def run_player_pipeline(
         retry_top_players=retry_top_players,
         upload_batch_size=upload_batch_size,
     )
+
+    if checkpoint and resume_checkpoint:
+        checkpoint.update_metadata(
+            {
+                "resumed_from_run_dir": resume_checkpoint,
+                "resume_mode": "checkpoint",
+                "resume_failed_count": resume_failed_count,
+                "resume_tail_count": resume_tail_count,
+            }
+        )
+    elif checkpoint and any(option is not None for option in [start_from_slug, start_from_href, start_from_rank]):
+        checkpoint.update_metadata(
+            {
+                "resume_mode": "manual_start",
+                "start_from_slug": start_from_slug,
+                "start_from_href": start_from_href,
+                "start_from_rank": start_from_rank,
+            }
+        )
 
     upload_batch_size = max(1, upload_batch_size)
     batch_number = 0
@@ -342,6 +400,18 @@ def run_player_pipeline(
         if checkpoint:
             checkpoint.append_player_error(player=player, stage=stage, message=message)
 
+    def on_players_selected(players: list[dict]) -> None:
+        if not checkpoint:
+            return
+        checkpoint.write_selected_players(players)
+        checkpoint.update_metadata(
+            {
+                "selected_player_count": len(players),
+                "selected_manifest_written": True,
+            }
+        )
+        logger.info("Wrote selected player manifest with %s players.", len(players))
+
     pw, browser, context, page = start_browser_accept_cookies(
         headless=headless,
         logger=logger,
@@ -356,10 +426,15 @@ def run_player_pipeline(
             max_pages=max_pages,
             max_players_detail=max_players_detail,
             player_slug=player_slug,
+            selected_players_override=resume_players_override,
+            start_from_slug=start_from_slug,
+            start_from_href=start_from_href,
+            start_from_rank=start_from_rank,
             retry_top_players=retry_top_players,
             as_of_date=as_of_date,
             on_player_payload=on_player_payload if checkpoint else None,
             on_player_error=on_player_error if checkpoint else None,
+            on_players_selected=on_players_selected if checkpoint else None,
             on_event=event_emitter.emit,
         )
 
@@ -405,3 +480,69 @@ def run_player_pipeline(
             pw.stop()
         except Exception:
             pass
+
+
+def _build_resume_players(
+    *,
+    run_dir: str,
+    start_from_slug: str | None = None,
+    start_from_href: str | None = None,
+    start_from_rank: int | None = None,
+) -> tuple[list[dict], int, int]:
+    selected_players = read_selected_players(run_dir)
+    if not selected_players:
+        if any(option is not None for option in [start_from_slug, start_from_href, start_from_rank]):
+            raise ValueError(
+                "Automatic resume is unavailable for this checkpoint because selected_players.jsonl is missing. "
+                "Older checkpoints must be resumed manually from an explicit start point using a normal scraping run."
+            )
+        raise ValueError(
+            "Automatic resume requires selected_players.jsonl in the checkpoint run directory. "
+            "Older checkpoints must be resumed manually from an explicit start point."
+        )
+
+    successful_slugs = read_checkpoint_successful_slugs(run_dir)
+    latest_failures = read_latest_failed_players(run_dir)
+    manifest_by_slug = {
+        str(player.get("slug") or "").strip(): dict(player)
+        for player in selected_players
+        if str(player.get("slug") or "").strip()
+    }
+
+    failed_players = []
+    for slug, failure in latest_failures.items():
+        if slug in successful_slugs:
+            continue
+        manifest_player = manifest_by_slug.get(slug)
+        if not manifest_player:
+            continue
+        failed_players.append(
+            {
+                **manifest_player,
+                "attempt": "resume_retry",
+                "open_by_href_only": True,
+                "failure_stage": failure.get("stage"),
+            }
+        )
+    failed_players.sort(key=lambda player: player.get("rank", 0))
+
+    failed_slugs = {str(player.get("slug") or "").strip() for player in failed_players}
+    untouched_players = []
+    for player in selected_players:
+        slug = str(player.get("slug") or "").strip()
+        if slug in successful_slugs or slug in failed_slugs:
+            continue
+        untouched_players.append({**player, "attempt": "resume_tail"})
+
+    resume_players = failed_players + untouched_players
+    if start_from_slug or start_from_href or start_from_rank is not None:
+        from scraping_biwenger.players.scrape import _filter_selected_players
+
+        resume_players = _filter_selected_players(
+            resume_players,
+            start_from_slug=start_from_slug,
+            start_from_href=start_from_href,
+            start_from_rank=start_from_rank,
+        )
+
+    return resume_players, len(failed_players), len(untouched_players)

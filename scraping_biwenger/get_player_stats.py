@@ -13,6 +13,10 @@ def ETL_get_player_stats(
     headless: bool = True,
     persist: bool = True,
     player_slug: str | None = None,
+    start_from_slug: str | None = None,
+    start_from_href: str | None = None,
+    start_from_rank: int | None = None,
+    resume_checkpoint: str | None = None,
     retry_top_players: int = 0,
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
@@ -30,6 +34,10 @@ def ETL_get_player_stats(
         max_pages=max_pages,
         max_players_detail=max_players_detail,
         player_slug=player_slug,
+        start_from_slug=start_from_slug,
+        start_from_href=start_from_href,
+        start_from_rank=start_from_rank,
+        resume_checkpoint=resume_checkpoint,
         retry_top_players=retry_top_players,
         checkpoint_dir=checkpoint_dir,
         checkpoint_enabled=checkpoint_enabled,
@@ -78,6 +86,17 @@ def parse_args() -> argparse.Namespace:
             "Scrape one Biwenger player directly by URL slug, "
             "for example 'moussa-diarra-2'. Skips player-list discovery."
         ),
+    )
+    parser.add_argument(
+        "--start-from-slug", help="Start scraping from this player slug within the selected player list."
+    )
+    parser.add_argument(
+        "--start-from-href", help="Start scraping from this player href within the selected player list."
+    )
+    parser.add_argument("--start-from-rank", type=int, help="Start scraping from this selected player rank.")
+    parser.add_argument(
+        "--resume-checkpoint",
+        help="Resume unfinished scraping work from a prior player checkpoint run directory.",
     )
     parser.add_argument(
         "--retry-top-players",
@@ -168,6 +187,8 @@ def main() -> None:
 
     args = parse_args()
     if args.upload_checkpoint:
+        if args.resume_checkpoint or args.start_from_slug or args.start_from_href or args.start_from_rank is not None:
+            raise SystemExit("--upload-checkpoint cannot be combined with resume or manual start-from options.")
         stats_df, matches_df, value_history_df = upload_player_checkpoint(args.upload_checkpoint)
         print(f"\nUploaded checkpoint: {args.upload_checkpoint}")
         print(f"Stats rows: {len(stats_df)}")
@@ -181,6 +202,10 @@ def main() -> None:
         headless=not args.headed,
         persist=not args.dry_run,
         player_slug=args.player_slug,
+        start_from_slug=args.start_from_slug,
+        start_from_href=args.start_from_href,
+        start_from_rank=args.start_from_rank,
+        resume_checkpoint=args.resume_checkpoint,
         retry_top_players=args.retry_top_players,
         checkpoint_dir=args.checkpoint_dir,
         checkpoint_enabled=not args.no_checkpoint,

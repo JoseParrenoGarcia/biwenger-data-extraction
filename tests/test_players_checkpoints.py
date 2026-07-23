@@ -8,7 +8,10 @@ import pandas as pd
 from scraping_biwenger.players.checkpoints import (
     PlayerRunCheckpoint,
     cleanup_old_player_runs,
+    read_checkpoint_successful_slugs,
+    read_latest_failed_players,
     read_player_checkpoint,
+    read_selected_players,
 )
 from scraping_biwenger.players.pipeline import _concat_frames, run_player_pipeline, upload_player_checkpoint
 from scraping_biwenger.players.transform import (
@@ -70,13 +73,19 @@ def test_player_checkpoint_writes_metadata_and_payloads(tmp_path):
         value_rows=1,
         message="Supabase unavailable",
     )
+    checkpoint.write_selected_players(
+        [{"rank": 1, "name": "Player One", "slug": "player-one", "href": "/la-liga/players/player-one"}]
+    )
+    checkpoint.update_metadata({"selected_player_count": 1, "selected_manifest_written": True})
 
     assert counts == {"stats": 1, "matches": 0, "values": 1}
     metadata = json.loads((checkpoint.run_dir / "metadata.json").read_text(encoding="utf-8"))
     assert metadata["run_id"] == "test-run"
     assert metadata["pipeline"] == "get_player_stats"
+    assert metadata["selected_player_count"] == 1
     assert (checkpoint.run_dir / "player_stats.jsonl").read_text(encoding="utf-8").count("\n") == 1
     assert (checkpoint.run_dir / "player_values.jsonl").read_text(encoding="utf-8").count("\n") == 1
+    assert (checkpoint.run_dir / "selected_players.jsonl").read_text(encoding="utf-8").count("\n") == 1
     assert (checkpoint.run_dir / "errors.jsonl").read_text(encoding="utf-8").count("\n") == 1
     assert (checkpoint.run_dir / "upload_errors.jsonl").read_text(encoding="utf-8").count("\n") == 1
 
@@ -118,6 +127,59 @@ def test_read_empty_player_checkpoint_returns_empty_payload_shapes(tmp_path):
     assert payload.stats_df.empty
     assert payload.matches_df.empty
     assert payload.value_history_df.empty
+
+
+def test_selected_players_round_trip(tmp_path):
+    checkpoint = PlayerRunCheckpoint(root_dir=tmp_path, run_id="manifest-run", metadata={})
+    checkpoint.write_selected_players(
+        [
+            {
+                "rank": 1,
+                "name": "Player One",
+                "slug": "player-one",
+                "href": "/la-liga/players/player-one",
+                "attempt": "initial",
+                "open_by_href_only": False,
+            }
+        ]
+    )
+
+    selected = read_selected_players(checkpoint.run_dir)
+
+    assert selected == [
+        {
+            "rank": 1,
+            "name": "Player One",
+            "slug": "player-one",
+            "href": "/la-liga/players/player-one",
+            "attempt": "initial",
+            "open_by_href_only": False,
+        }
+    ]
+
+
+def test_checkpoint_successful_slugs_and_latest_failures(tmp_path):
+    checkpoint = PlayerRunCheckpoint(root_dir=tmp_path, run_id="resume-run", metadata={})
+    checkpoint.append_payload(
+        player={"name": "Player One", "slug": "player-one"},
+        stats_df=pd.DataFrame([{"slug": "player-one"}], columns=["slug"]),
+        matches_df=pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+        value_history_df=pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+    )
+    checkpoint.append_player_error(
+        player={"name": "Player Two", "slug": "player-two"},
+        stage="open_player",
+        message="failed once",
+    )
+    checkpoint.append_player_error(
+        player={"name": "Player Two", "slug": "player-two"},
+        stage="scrape_detail",
+        message="failed twice",
+    )
+
+    assert read_checkpoint_successful_slugs(checkpoint.run_dir) == {"player-one"}
+    latest_failures = read_latest_failed_players(checkpoint.run_dir)
+    assert latest_failures["player-two"]["stage"] == "scrape_detail"
 
 
 def test_upload_player_checkpoint_uses_existing_persistence_path(tmp_path, monkeypatch):
@@ -511,3 +573,79 @@ def test_run_player_pipeline_emits_batch_upload_events(tmp_path, monkeypatch):
     assert "batch_upload_started" in event_types
     assert "batch_upload_finished" in event_types
     assert "run_finished" in event_types
+
+
+def test_run_player_pipeline_writes_selected_player_manifest(tmp_path, monkeypatch):
+    class FakeBrowser:
+        def close(self):
+            pass
+
+    class FakeContext:
+        def close(self):
+            pass
+
+    class FakePlaywright:
+        def stop(self):
+            pass
+
+    class FakeLogger:
+        def info(self, *args, **kwargs):
+            pass
+
+        def debug(self, *args, **kwargs):
+            pass
+
+        def warning(self, *args, **kwargs):
+            pass
+
+        def exception(self, *args, **kwargs):
+            pass
+
+    def fake_start_browser_accept_cookies(*, headless, logger):
+        return FakePlaywright(), FakeBrowser(), FakeContext(), object()
+
+    def fake_scrape_players_snapshot(page, logger, **kwargs):
+        kwargs["on_players_selected"](
+            [
+                {
+                    "rank": 1,
+                    "name": "Player One",
+                    "slug": "player-one",
+                    "href": "/la-liga/players/player-one",
+                    "attempt": "initial",
+                    "open_by_href_only": False,
+                }
+            ]
+        )
+        return (
+            pd.DataFrame(columns=PLAYER_STATS_COLUMNS),
+            pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+            pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+        )
+
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"}
+    )
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies
+    )
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.perform_login", lambda page, email, password, logger: None)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.scrape_players_snapshot", fake_scrape_players_snapshot)
+
+    run_player_pipeline(
+        headless=True,
+        persist=False,
+        max_pages=1,
+        max_players_detail=1,
+        checkpoint_dir=str(tmp_path),
+        logger=FakeLogger(),
+    )
+
+    run_dir = next(path for path in tmp_path.iterdir() if path.is_dir())
+    selected_players = read_selected_players(run_dir)
+    metadata = json.loads((run_dir / "metadata.json").read_text(encoding="utf-8"))
+
+    assert len(selected_players) == 1
+    assert selected_players[0]["slug"] == "player-one"
+    assert metadata["selected_player_count"] == 1
+    assert metadata["selected_manifest_written"] is True

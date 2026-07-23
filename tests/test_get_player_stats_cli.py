@@ -2,8 +2,9 @@ import io
 from contextlib import redirect_stdout
 
 import pandas as pd
+import pytest
 
-from scraping_biwenger.get_player_stats import _print_dry_run_summary
+from scraping_biwenger.get_player_stats import _print_dry_run_summary, main
 
 
 def test_terminal_ui_dry_run_summary_skips_dataframe_prints():
@@ -48,3 +49,19 @@ def test_standard_dry_run_summary_keeps_dataframe_sections():
     assert "Player Stats - Dry Run" in rendered
     assert "Player Matches - Dry Run" in rendered
     assert "Player Value History - Dry Run" in rendered
+
+
+def test_upload_checkpoint_rejects_resume_and_manual_start_options(monkeypatch):
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "get_player_stats.py",
+            "--upload-checkpoint",
+            "run_artifacts/player_runs/run-1",
+            "--resume-checkpoint",
+            "run_artifacts/player_runs/run-2",
+        ],
+    )
+
+    with pytest.raises(SystemExit, match="--upload-checkpoint cannot be combined"):
+        main()

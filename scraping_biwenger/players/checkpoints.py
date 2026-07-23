@@ -91,6 +91,7 @@ class PlayerRunCheckpoint:
         self.stats_path = self.run_dir / "player_stats.jsonl"
         self.matches_path = self.run_dir / "player_matches.jsonl"
         self.values_path = self.run_dir / "player_values.jsonl"
+        self.selected_players_path = self.run_dir / "selected_players.jsonl"
         self.errors_path = self.run_dir / "errors.jsonl"
         self.upload_errors_path = self.run_dir / "upload_errors.jsonl"
         self.metadata_path = self.run_dir / "metadata.json"
@@ -105,21 +106,45 @@ class PlayerRunCheckpoint:
             self.stats_path,
             self.matches_path,
             self.values_path,
+            self.selected_players_path,
             self.errors_path,
             self.upload_errors_path,
         ]:
             path.touch(exist_ok=True)
 
     def write_metadata(self, metadata: dict) -> None:
-        payload = {
-            "run_id": self.run_id,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            **metadata,
-        }
+        created_at = datetime.now(timezone.utc).isoformat()
+        if self.metadata_path.exists():
+            existing = json.loads(self.metadata_path.read_text(encoding="utf-8") or "{}")
+            created_at = existing.get("created_at", created_at)
+        payload = {"run_id": self.run_id, "created_at": created_at, **metadata}
         self.metadata_path.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False, default=_json_default) + "\n",
             encoding="utf-8",
         )
+
+    def update_metadata(self, metadata: dict) -> None:
+        existing = {}
+        if self.metadata_path.exists():
+            existing = json.loads(self.metadata_path.read_text(encoding="utf-8") or "{}")
+        existing.update(metadata)
+        self.write_metadata(existing)
+
+    def write_selected_players(self, players: list[dict]) -> None:
+        rows = []
+        for player in players:
+            rows.append(
+                {
+                    "rank": player.get("rank"),
+                    "name": player.get("name"),
+                    "slug": player.get("slug"),
+                    "href": player.get("href"),
+                    "attempt": player.get("attempt", "initial"),
+                    "open_by_href_only": bool(player.get("open_by_href_only", False)),
+                }
+            )
+        self.selected_players_path.write_text("", encoding="utf-8")
+        _append_jsonl(self.selected_players_path, rows)
 
     def append_payload(
         self,
@@ -188,6 +213,32 @@ def read_player_checkpoint(run_dir: str | Path) -> PlayerCheckpointPayload:
         matches_df=dataframe_from_rows(match_rows, PLAYER_MATCHES_COLUMNS),
         value_history_df=dataframe_from_rows(value_rows, PLAYER_VALUE_COLUMNS),
     )
+
+
+def read_selected_players(run_dir: str | Path) -> list[dict]:
+    run_path = Path(run_dir)
+    return _read_jsonl(run_path / "selected_players.jsonl")
+
+
+def read_checkpoint_successful_slugs(run_dir: str | Path) -> set[str]:
+    payload = read_player_checkpoint(run_dir)
+    if payload.stats_df.empty or "slug" not in payload.stats_df.columns:
+        return set()
+    slugs = payload.stats_df["slug"].dropna().astype(str).str.strip()
+    return {slug for slug in slugs if slug}
+
+
+def read_latest_failed_players(run_dir: str | Path) -> dict[str, dict]:
+    run_path = Path(run_dir)
+    failures = _read_jsonl(run_path / "errors.jsonl")
+    latest: dict[str, dict] = {}
+    for failure in failures:
+        player = failure.get("player") or {}
+        slug = str(player.get("slug") or "").strip()
+        if not slug:
+            continue
+        latest[slug] = failure
+    return latest
 
 
 def cleanup_old_player_runs(
