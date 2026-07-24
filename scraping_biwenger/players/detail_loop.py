@@ -15,7 +15,7 @@ from scraping_biwenger.players.search_and_open import (
     click_back_to_players_table,
     open_player_detail,
 )
-from scraping_biwenger.players.value_history import scrape_value_history_for_player
+from scraping_biwenger.players.value_history import scrape_value_history_result_for_player
 from scraping_biwenger.shared.timing import log_timing_debug
 
 
@@ -63,10 +63,17 @@ def scrape_all_players_detail(
     value_history_rows: List[Dict[str, str]] = []
     processed = 0
 
-    def record_player_error(player: Dict[str, str], stage: str, message: str) -> None:
+    def record_player_error(
+        player: Dict[str, str],
+        stage: str,
+        message: str,
+        *,
+        details: Optional[Dict[str, str]] = None,
+        emit_failure_event: bool = True,
+    ) -> None:
         if on_player_error:
-            on_player_error(player=player, stage=stage, message=message)
-        if on_player_event:
+            on_player_error(player=player, stage=stage, message=message, details=details or {})
+        if on_player_event and emit_failure_event:
             on_player_event(
                 "player_failed",
                 player_name=player.get("name", ""),
@@ -76,6 +83,7 @@ def scrape_all_players_detail(
                 attempt_label=player.get("attempt", "initial"),
                 stage=stage,
                 message=message,
+                **(details or {}),
             )
 
     def log_player_summary(
@@ -263,9 +271,11 @@ def scrape_all_players_detail(
                 record_player_error(player, "scrape_matches", str(e))
 
         # 4) Scrape value history (Value tab)
+        value_stage_status = "unknown"
+        value_retry_reason = ""
         try:
             value_started_at = time.time()
-            vdf = scrape_value_history_for_player(
+            value_result = scrape_value_history_result_for_player(
                 page,
                 logger=logger,
                 player_ctx={
@@ -275,16 +285,61 @@ def scrape_all_players_detail(
                 },
                 timeout=7000,
             )
-            if not vdf.empty:
-                player_value_history_rows = vdf.to_dict(orient="records")
+            value_stage_status = value_result.status
+            value_retry_reason = value_result.retry_reason
+            if not value_result.dataframe.empty:
+                player_value_history_rows = value_result.dataframe.to_dict(orient="records")
                 value_history_rows.extend(player_value_history_rows)
-                logger.debug("Value history captured for %s: %s rows", name, len(vdf))
+                logger.debug("Value history captured for %s: %s rows", name, len(value_result.dataframe))
             else:
                 logger.debug("Value history empty for %s", name)
             _log_timing(logger, "Value history scrape", value_started_at, player_slug=slug)
         except Exception as e:
             logger.warning(f"⚠️ Failed to scrape value history for {name}: {e}")
-            record_player_error(player, "scrape_value_history", str(e))
+            value_stage_status = "unknown"
+            value_retry_reason = "scrape_value_history_exception"
+
+        player["_value_stage_status"] = value_stage_status
+        player["_value_retry_reason"] = value_retry_reason
+
+        stage_label = "ok"
+        if len(player_match_rows) > 0 and len(player_value_history_rows) == 0:
+            stage_label = "value_incomplete"
+            player["_stage_status"] = stage_label
+            details = {
+                "reason": value_retry_reason or "values_missing_after_matches",
+                "match_rows": len(player_match_rows),
+                "value_rows": len(player_value_history_rows),
+                "stats_rows": 1,
+                "scoring_system": scoring_system,
+            }
+            record_player_error(
+                player,
+                "value_history_incomplete",
+                (
+                    f"Value history incomplete: reason={details['reason']} "
+                    f"matches={details['match_rows']} values={details['value_rows']}"
+                ),
+                details=details,
+                emit_failure_event=False,
+            )
+            if on_player_event:
+                on_player_event(
+                    "player_value_incomplete",
+                    player_name=detail.get("player_name", "") or name,
+                    player_slug=slug,
+                    team=detail.get("team", ""),
+                    rank=player.get("rank", idx),
+                    attempt_label=player.get("attempt", "initial"),
+                    stage="value_history_incomplete",
+                    reason=details["reason"],
+                    stats_rows=1,
+                    match_rows=len(player_match_rows),
+                    value_rows=len(player_value_history_rows),
+                    scoring_system=scoring_system,
+                )
+        else:
+            player["_stage_status"] = stage_label
 
         if on_player_payload:
             on_player_payload(
@@ -311,6 +366,7 @@ def scrape_all_players_detail(
                 stats_rows=1,
                 match_rows=len(player_match_rows),
                 value_rows=len(player_value_history_rows),
+                stage=stage_label,
                 note=note,
             )
 
@@ -339,6 +395,7 @@ def scrape_all_players_detail(
             stats_rows=1,
             match_count=len(player_match_rows),
             value_count=len(player_value_history_rows),
+            stage=stage_label,
         )
         if processed % 20 == 0 and processed > 0:
             _cooldown(500, 1500)

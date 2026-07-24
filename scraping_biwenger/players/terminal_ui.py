@@ -91,14 +91,16 @@ class PlayerRunTerminalState:
             self.current_player = ""
             self.current_player_rank = 0
             self.current_player_team = ""
+            stage = event.get("stage", "")
             self.append_outcome(
                 RecentOutcome(
                     label=event.get("player_slug") or event.get("player_name") or "",
-                    status="ok",
+                    status="warning" if stage and stage != "ok" else "ok",
                     scoring_system=event.get("scoring_system", "n/a"),
                     stats_rows=event.get("stats_rows", 0),
                     match_rows=event.get("match_rows", 0),
                     value_rows=event.get("value_rows", 0),
+                    stage=stage,
                     note=event.get("note", ""),
                 )
             )
@@ -114,6 +116,13 @@ class PlayerRunTerminalState:
                     stage=event.get("stage", ""),
                     note=(event.get("message", "") or "")[:80],
                 )
+            )
+        elif event_type == "player_value_incomplete":
+            self.warning_count += 1
+            self.append_notice(
+                "Value history incomplete for "
+                f"{event.get('player_slug') or event.get('player_name', '')} "
+                f"(reason={event.get('reason', '')} m={event.get('match_rows', 0)} v={event.get('value_rows', 0)})"
             )
         elif event_type == "batch_upload_started":
             self.batch_number = event.get("batch_number", self.batch_number)
@@ -138,6 +147,13 @@ class PlayerRunTerminalState:
                 f"Retry queued for {event.get('player_slug') or event.get('player_name', '')} "
                 f"(rank={event.get('rank')} stage={event.get('stage')})"
             )
+        elif event_type == "player_value_retry_queued":
+            self.retry_queue_count += 1
+            self.append_notice(
+                "Value retry queued for "
+                f"{event.get('player_slug') or event.get('player_name', '')} "
+                f"(rank={event.get('rank')} reason={event.get('reason', '')})"
+            )
         elif event_type == "retry_pass_started":
             self.retry_active = True
             self.append_notice(f"Retry pass started for {event.get('retry_count', 0)} players")
@@ -146,6 +162,16 @@ class PlayerRunTerminalState:
             self.retry_recovered = event.get("recovered_count", 0)
             self.retry_failed = event.get("failed_count", 0)
             self.append_notice(f"Retry pass finished: recovered={self.retry_recovered} failed={self.retry_failed}")
+        elif event_type == "value_retry_pass_started":
+            self.retry_active = True
+            self.append_notice(f"Value retry pass started for {event.get('retry_count', 0)} players")
+        elif event_type == "value_retry_pass_finished":
+            self.retry_active = False
+            self.retry_recovered = event.get("recovered_count", 0)
+            self.retry_failed = event.get("failed_count", 0)
+            self.append_notice(
+                f"Value retry pass finished: recovered={self.retry_recovered} failed={self.retry_failed}"
+            )
         elif event_type == "run_finished":
             self.final_summary = event.get("summary", "")
 
@@ -153,6 +179,8 @@ class PlayerRunTerminalState:
 def _status_text(status: str) -> Text:
     if status == "ok":
         return Text("ok", style="bold green")
+    if status == "warning":
+        return Text("warning", style="bold yellow")
     if status == "failed":
         return Text("failed", style="bold red")
     return Text(status or "n/a")

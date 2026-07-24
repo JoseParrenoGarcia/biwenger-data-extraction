@@ -166,7 +166,7 @@ class PlayerRunCheckpoint:
             "values": len(value_rows),
         }
 
-    def append_player_error(self, *, player: dict, stage: str, message: str) -> None:
+    def append_player_error(self, *, player: dict, stage: str, message: str, details: dict | None = None) -> None:
         _append_jsonl(
             self.errors_path,
             [
@@ -175,6 +175,7 @@ class PlayerRunCheckpoint:
                     "stage": stage,
                     "player": player,
                     "message": message,
+                    "details": details or {},
                 }
             ],
         )

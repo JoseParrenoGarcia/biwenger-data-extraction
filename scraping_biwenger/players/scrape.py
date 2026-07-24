@@ -9,6 +9,7 @@ RETRYABLE_DETAIL_ERROR_STAGES = {
     "select_scoring_system",
     "scrape_detail",
 }
+VALUE_RETRY_STAGE = "value_history_incomplete"
 
 
 def select_player_table_layout(page, logger=None) -> None:
@@ -125,6 +126,8 @@ def scrape_player_rows(
         return players_list, [], [], []
 
     retry_candidates: dict[str, dict] = {}
+    value_retry_candidates: dict[str, dict] = {}
+    value_retry_failures: set[str] = set()
 
     def player_retry_key(player: dict) -> str:
         return player.get("slug") or player.get("href") or player.get("name", "")
@@ -141,12 +144,49 @@ def scrape_player_rows(
             return False
         return True
 
-    def handle_player_error(*, player, stage, message) -> None:
+    def should_retry_value_history(player: dict, stage: str) -> bool:
+        if stage != VALUE_RETRY_STAGE:
+            return False
+        if player.get("attempt") == "value_retry":
+            return False
+        return True
+
+    def handle_player_error(*, player, stage, message, details=None) -> None:
         if on_player_error:
-            on_player_error(player=player, stage=stage, message=message)
-        if not should_retry_player(player, stage):
-            return
+            on_player_error(player=player, stage=stage, message=message, details=details or {})
         key = player_retry_key(player)
+        if player.get("attempt") == "value_retry" and key:
+            value_retry_failures.add(key)
+        if not should_retry_player(player, stage):
+            if should_retry_value_history(player, stage):
+                if not key or key in value_retry_candidates:
+                    return
+                value_retry_candidates[key] = {
+                    **player,
+                    "attempt": "value_retry",
+                    "open_by_href_only": True,
+                    "retry_stage": stage,
+                }
+                if logger:
+                    logger.warning(
+                        "Queued player for value retry: %s rank=%s reason=%s matches=%s values=%s",
+                        player.get("name", ""),
+                        player.get("rank"),
+                        (details or {}).get("reason", ""),
+                        (details or {}).get("match_rows", 0),
+                        (details or {}).get("value_rows", 0),
+                    )
+                if on_event:
+                    on_event(
+                        "player_value_retry_queued",
+                        player_name=player.get("name", ""),
+                        player_slug=player.get("slug", ""),
+                        rank=player.get("rank"),
+                        reason=(details or {}).get("reason", ""),
+                        match_rows=(details or {}).get("match_rows", 0),
+                        value_rows=(details or {}).get("value_rows", 0),
+                    )
+            return
         if not key or key in retry_candidates:
             return
         retry_candidates[key] = {
@@ -203,7 +243,7 @@ def scrape_player_rows(
             max_players=len(retry_players),
             collect_matches=True,
             on_player_payload=on_player_payload,
-            on_player_error=on_player_error,
+            on_player_error=handle_player_error,
             on_player_event=on_event,
         )
         player_detail_rows.extend(retry_detail_rows)
@@ -221,6 +261,48 @@ def scrape_player_rows(
             on_event(
                 "retry_pass_finished",
                 retry_count=len(retry_players),
+                recovered_count=recovered,
+                failed_count=failed,
+            )
+
+    if value_retry_candidates:
+        value_retry_players = list(value_retry_candidates.values())
+        if logger:
+            logger.info(
+                "Starting value retry pass for %s queued players.",
+                len(value_retry_players),
+            )
+        if on_event:
+            on_event(
+                "value_retry_pass_started",
+                retry_count=len(value_retry_players),
+            )
+        value_retry_failures.clear()
+        value_retry_detail_rows, value_retry_match_rows, value_retry_history_rows = scrape_all_players_detail(
+            logger,
+            page,
+            value_retry_players,
+            max_players=len(value_retry_players),
+            collect_matches=True,
+            on_player_payload=on_player_payload,
+            on_player_error=handle_player_error,
+            on_player_event=on_event,
+        )
+        player_detail_rows.extend(value_retry_detail_rows)
+        match_rows.extend(value_retry_match_rows)
+        value_history_rows.extend(value_retry_history_rows)
+        recovered = max(0, len(value_retry_players) - len(value_retry_failures))
+        failed = len(value_retry_failures)
+        if logger:
+            logger.info(
+                "Value retry pass completed: %s recovered, %s still incomplete.",
+                recovered,
+                failed,
+            )
+        if on_event:
+            on_event(
+                "value_retry_pass_finished",
+                retry_count=len(value_retry_players),
                 recovered_count=recovered,
                 failed_count=failed,
             )

@@ -62,6 +62,7 @@ def test_terminal_ui_state_tracks_progress_and_uploads():
             stats_rows=1,
             match_rows=0,
             value_rows=17,
+            stage="ok",
             note="no_match_history",
         )
     )
@@ -131,3 +132,51 @@ def test_terminal_ui_state_tracks_retry_and_failure():
     assert state.retry_failed == 1
     assert state.warning_count == 1
     assert state.recent_outcomes[-1].status == "failed"
+
+
+def test_terminal_ui_state_tracks_value_incomplete_and_value_retry():
+    state = PlayerRunTerminalState()
+
+    state.apply_event(
+        make_player_run_event(
+            "player_value_incomplete",
+            player_name="Courtois",
+            player_slug="t-courtois",
+            reason="csv_timeout",
+            match_rows=32,
+            value_rows=0,
+        )
+    )
+    state.apply_event(
+        make_player_run_event(
+            "player_finished",
+            player_name="Courtois",
+            player_slug="t-courtois",
+            processed_count=54,
+            total_players=510,
+            scoring_system="SofaScore",
+            stats_rows=1,
+            match_rows=32,
+            value_rows=0,
+            stage="value_incomplete",
+        )
+    )
+    state.apply_event(
+        make_player_run_event(
+            "player_value_retry_queued",
+            player_name="Courtois",
+            player_slug="t-courtois",
+            rank=54,
+            reason="csv_timeout",
+        )
+    )
+    state.apply_event(make_player_run_event("value_retry_pass_started", retry_count=1))
+    state.apply_event(
+        make_player_run_event("value_retry_pass_finished", retry_count=1, recovered_count=1, failed_count=0)
+    )
+
+    assert state.warning_count == 1
+    assert state.retry_queue_count == 1
+    assert state.retry_active is False
+    assert state.retry_recovered == 1
+    assert state.recent_outcomes[-1].status == "warning"

@@ -193,3 +193,116 @@ def test_retry_failure_is_recorded_once_without_second_retry(monkeypatch):
     assert len(errors) == 2
     assert errors[0]["player"]["attempt"] == "initial"
     assert errors[1]["player"]["attempt"] == "retry"
+
+
+def test_value_incomplete_player_is_retried_once_after_main_pass(monkeypatch):
+    calls = []
+    payload_players = []
+    errors = []
+
+    def fake_detail_loop(logger, page, players, **kwargs):
+        calls.append([player["slug"] for player in players])
+        details = []
+        value_rows = []
+        for player in players:
+            detail = {
+                "player_name": player["name"],
+                "team": "Athletic",
+                "slug": player["slug"],
+            }
+            details.append(detail)
+            if player.get("attempt") == "initial":
+                kwargs["on_player_error"](
+                    player=player,
+                    stage="value_history_incomplete",
+                    message="Value history incomplete: reason=csv_timeout matches=3 values=0",
+                    details={"reason": "csv_timeout", "match_rows": 3, "value_rows": 0, "stats_rows": 1},
+                )
+                kwargs["on_player_payload"](
+                    player=player,
+                    detail_rows=[detail],
+                    match_rows=[{"player_name": player["name"], "slug": player["slug"]}],
+                    value_history_rows=[],
+                    processed_count=len(details),
+                )
+            else:
+                recovered_rows = [{"date": "2026-07-24", "market_value_eur": 1000000, "slug": player["slug"]}]
+                value_rows.extend(recovered_rows)
+                kwargs["on_player_payload"](
+                    player=player,
+                    detail_rows=[detail],
+                    match_rows=[{"player_name": player["name"], "slug": player["slug"]}],
+                    value_history_rows=recovered_rows,
+                    processed_count=len(details),
+                )
+        return details, [], value_rows
+
+    monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
+    monkeypatch.setattr(
+        "scraping_biwenger.players.scrape.extract_all_player_names",
+        lambda logger, page, max_pages, max_players=None: _players(1),
+    )
+    monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
+
+    _, detail_rows, _, value_rows = scrape_player_rows(
+        object(),
+        FakeLogger(),
+        max_pages=1,
+        max_players_detail=1,
+        on_player_payload=lambda **kwargs: payload_players.append(kwargs["player"]),
+        on_player_error=lambda **kwargs: errors.append(kwargs),
+    )
+
+    assert calls == [["player-1"], ["player-1"]]
+    assert payload_players[1]["attempt"] == "value_retry"
+    assert len(detail_rows) == 2
+    assert len(value_rows) == 1
+    assert errors[0]["stage"] == "value_history_incomplete"
+
+
+def test_value_retry_failure_is_recorded_once_without_loop(monkeypatch):
+    calls = []
+    errors = []
+
+    def fake_detail_loop(logger, page, players, **kwargs):
+        calls.append([player["attempt"] for player in players])
+        detail = {
+            "player_name": players[0]["name"],
+            "team": "Athletic",
+            "slug": players[0]["slug"],
+        }
+        kwargs["on_player_error"](
+            player=players[0],
+            stage="value_history_incomplete",
+            message="Value history incomplete: reason=csv_timeout matches=3 values=0",
+            details={"reason": "csv_timeout", "match_rows": 3, "value_rows": 0, "stats_rows": 1},
+        )
+        kwargs["on_player_payload"](
+            player=players[0],
+            detail_rows=[detail],
+            match_rows=[{"player_name": players[0]["name"], "slug": players[0]["slug"]}],
+            value_history_rows=[],
+            processed_count=1,
+        )
+        return [detail], [], []
+
+    monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
+    monkeypatch.setattr(
+        "scraping_biwenger.players.scrape.extract_all_player_names",
+        lambda logger, page, max_pages, max_players=None: _players(1),
+    )
+    monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
+
+    scrape_player_rows(
+        object(),
+        FakeLogger(),
+        max_pages=1,
+        max_players_detail=1,
+        on_player_payload=lambda **kwargs: None,
+        on_player_error=lambda **kwargs: errors.append(kwargs),
+    )
+
+    assert calls == [["initial"], ["value_retry"]]
+    assert len(errors) == 2
+    assert errors[0]["player"]["attempt"] == "initial"
+    assert errors[1]["player"]["attempt"] == "value_retry"
