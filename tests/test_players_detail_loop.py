@@ -1,6 +1,7 @@
 import pandas as pd
 
 from scraping_biwenger.players import detail_loop
+from scraping_biwenger.players.value_history import ValueHistoryScrapeResult
 
 
 class FakeLogger:
@@ -43,7 +44,15 @@ def _install_success_mocks(monkeypatch):
     )
     monkeypatch.setattr(detail_loop, "scrape_player_matches", lambda *args, **kwargs: [])
     monkeypatch.setattr(detail_loop, "with_retries", lambda fn, **kwargs: fn())
-    monkeypatch.setattr(detail_loop, "scrape_value_history_for_player", lambda *args, **kwargs: pd.DataFrame())
+    monkeypatch.setattr(
+        detail_loop,
+        "scrape_value_history_result_for_player",
+        lambda *args, **kwargs: ValueHistoryScrapeResult(
+            dataframe=pd.DataFrame(),
+            status="empty",
+            retry_reason="value_history_empty",
+        ),
+    )
     monkeypatch.setattr(detail_loop, "_cooldown", lambda *args, **kwargs: None)
     monkeypatch.setattr(detail_loop, "_log_timing", lambda *args, **kwargs: None)
 
@@ -100,3 +109,51 @@ def test_back_to_table_when_next_player_needs_search(monkeypatch):
     assert match_rows == []
     assert value_rows == []
     assert back_calls == [True]
+
+
+def test_value_incomplete_records_structured_error_and_warning_event(monkeypatch):
+    _install_success_mocks(monkeypatch)
+    events = []
+    errors = []
+    monkeypatch.setattr(detail_loop, "click_back_to_players_table", lambda *args, **kwargs: True)
+    monkeypatch.setattr(
+        detail_loop,
+        "scrape_player_matches",
+        lambda *args, **kwargs: [{"round_label": "R1", "points": 3}],
+    )
+
+    detail_rows, match_rows, value_rows = detail_loop.scrape_all_players_detail(
+        FakeLogger(),
+        object(),
+        [_base_player("player-1", "/la-liga/players/player-1")],
+        on_player_error=lambda **kwargs: errors.append(kwargs),
+        on_player_event=lambda *args, **kwargs: events.append((args, kwargs)),
+    )
+
+    assert len(detail_rows) == 1
+    assert len(match_rows) == 1
+    assert value_rows == []
+    assert errors[0]["stage"] == "value_history_incomplete"
+    assert errors[0]["details"]["match_rows"] == 1
+    event_types = [args[0] for args, _ in events]
+    assert "player_value_incomplete" in event_types
+    player_finished = next(kwargs for args, kwargs in events if args[0] == "player_finished")
+    assert player_finished["stage"] == "value_incomplete"
+
+
+def test_no_value_retry_signal_when_player_has_no_matches(monkeypatch):
+    _install_success_mocks(monkeypatch)
+    errors = []
+    monkeypatch.setattr(detail_loop, "click_back_to_players_table", lambda *args, **kwargs: True)
+
+    detail_rows, match_rows, value_rows = detail_loop.scrape_all_players_detail(
+        FakeLogger(),
+        object(),
+        [_base_player("player-1", "/la-liga/players/player-1")],
+        on_player_error=lambda **kwargs: errors.append(kwargs),
+    )
+
+    assert len(detail_rows) == 1
+    assert match_rows == []
+    assert value_rows == []
+    assert errors == []

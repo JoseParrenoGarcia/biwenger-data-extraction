@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import time
+from dataclasses import dataclass
 from io import StringIO
 from typing import Dict, Optional
 
@@ -18,6 +19,13 @@ IMG_BTN = "segmented-control button:has(.icon-image)"
 VALUE_TAB = "tab[header='Value'], [role='tab']:has-text('Value')"
 CHART_CANVAS = "chart-js canvas"
 TOOLS = "chart-js .tools segmented-control"
+
+
+@dataclass
+class ValueHistoryScrapeResult:
+    dataframe: pd.DataFrame
+    status: str
+    retry_reason: str = ""
 
 
 def _log_timing(logger, label: str, started_at: float, *, player_slug: str = "") -> None:
@@ -133,6 +141,20 @@ def scrape_value_history_for_player(
     player_ctx: Optional[Dict[str, str]] = None,
     timeout: float = 7000,
 ) -> pd.DataFrame:
+    return scrape_value_history_result_for_player(
+        page,
+        logger=logger,
+        player_ctx=player_ctx,
+        timeout=timeout,
+    ).dataframe
+
+
+def scrape_value_history_result_for_player(
+    page: Page,
+    logger=None,
+    player_ctx: Optional[Dict[str, str]] = None,
+    timeout: float = 7000,
+) -> ValueHistoryScrapeResult:
     """
     Open Value tab → click CSV download → parse to DataFrame.
     Enriches rows with player context if provided.
@@ -145,7 +167,11 @@ def scrape_value_history_for_player(
     if not ok:
         if logger:
             logger.warning("Could not open Value tab.")
-        return pd.DataFrame(columns=["date", "market_value_eur"])
+        return ValueHistoryScrapeResult(
+            dataframe=pd.DataFrame(columns=["date", "market_value_eur"]),
+            status="value_tab_unavailable",
+            retry_reason="value_tab_unavailable",
+        )
 
     try:
         step_started_at = time.time()
@@ -155,7 +181,11 @@ def scrape_value_history_for_player(
         _log_timing(logger, "Value CSV download failed", step_started_at, player_slug=player_slug)
         if logger:
             logger.warning("CSV download did not start in time.")
-        return pd.DataFrame(columns=["date", "market_value_eur"])
+        return ValueHistoryScrapeResult(
+            dataframe=pd.DataFrame(columns=["date", "market_value_eur"]),
+            status="csv_timeout",
+            retry_reason="csv_timeout",
+        )
 
     step_started_at = time.time()
     df = _read_price_csv_to_df(dl)
@@ -170,4 +200,13 @@ def scrape_value_history_for_player(
         logger.debug("Value history rows for %s: %s", player_slug or "(unknown)", len(df))
         _log_timing(logger, "Value history full scrape", started_at, player_slug=player_slug)
 
-    return df
+    if df.empty:
+        return ValueHistoryScrapeResult(
+            dataframe=df,
+            status="empty",
+            retry_reason="value_history_empty",
+        )
+    return ValueHistoryScrapeResult(
+        dataframe=df,
+        status="ok",
+    )

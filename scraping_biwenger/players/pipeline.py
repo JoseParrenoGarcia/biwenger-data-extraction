@@ -396,9 +396,9 @@ def run_player_pipeline(
             if processed_count % upload_batch_size == 0:
                 flush_upload_buffer(f"{processed_count} processed players")
 
-    def on_player_error(*, player, stage, message) -> None:
+    def on_player_error(*, player, stage, message, details=None) -> None:
         if checkpoint:
-            checkpoint.append_player_error(player=player, stage=stage, message=message)
+            checkpoint.append_player_error(player=player, stage=stage, message=message, details=details or {})
 
     def on_players_selected(players: list[dict]) -> None:
         if not checkpoint:
