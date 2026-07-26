@@ -168,3 +168,47 @@ make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>
 `run-players-ui-full` is the full headed UI write command.
 `upload-checkpoint` skips Biwenger entirely and uploads rows already saved in a
 checkpoint run folder.
+
+## Scheduling on macOS
+
+The supported scheduler path is macOS `launchd` with **user LaunchAgents**.
+
+- player job script: `bash_scripts/run_players.sh`
+- current-team job script: `bash_scripts/run_current_team.sh`
+- plist templates:
+  - `launchd/com.biwenger.players.plist.example`
+  - `launchd/com.biwenger.current-team.plist.example`
+
+The active plist files belong under:
+
+```bash
+~/Library/LaunchAgents
+```
+
+These jobs assume a stable local checkout path and a prepared virtualenv at
+`.venv/bin/python`. They are designed as headed LaunchAgent jobs, so they can
+run Chromium in your logged-in macOS session and show notifications.
+
+For the copy/paste setup flow, load/unload commands, and troubleshooting, use:
+
+- `launchd/biwenger_scheduler_setup.md`
+
+At a high level:
+
+1. copy the repo plist examples into `~/Library/LaunchAgents/`
+2. replace the placeholder repo path with your actual checkout path
+3. validate with `plutil -lint`
+4. load with `launchctl bootstrap`
+5. smoke test with `launchctl kickstart`
+
+Player scheduler logs go under:
+
+```bash
+run_artifacts/launchd/players/<timestamp>/script.log
+```
+
+while the actual scrape outputs continue to live under:
+
+```bash
+run_artifacts/player_runs/<run_id>/
+```
