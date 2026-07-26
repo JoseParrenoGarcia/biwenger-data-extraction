@@ -25,6 +25,10 @@ virtualenv at `.venv/bin/python`.
 - The Mac should be logged in when the job runs.
 - The repo path should stay stable. The LaunchAgent plist points to an absolute
   script path inside the repo.
+- Use a scheduler checkout outside `Documents/`, for example
+  `~/Code/biwenger-data-extraction`. The July 26, 2026 smoke test showed macOS
+  privacy restrictions can block LaunchAgent execution from
+  `~/Documents/GitHub/...` with `Operation not permitted`.
 - Scheduler scripts write their own wrapper log under:
 
 ```bash
@@ -175,3 +179,6 @@ find run_artifacts/launchd -maxdepth 3 -name script.log | tail
   **LaunchAgent** under your user session, not as a system daemon.
 - If the script cannot find Python, rebuild the repo virtualenv and confirm
   `.venv/bin/python` exists.
+- If the wrapper log shows Python import or syntax failures, confirm the
+  scheduler checkout uses the same Python major/minor version as the main repo.
+  The validated setup on July 26, 2026 used Python `3.13`.

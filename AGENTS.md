@@ -69,6 +69,9 @@ Important current decisions:
 - If inspecting large copied Biwenger HTML dumps, prefer using subagents or narrow shell searches so the main context is not flooded with raw DOM.
 - Validate dataframe columns and payload schemas before uploads.
 - Keep local automation simple and documented.
+- The supported macOS scheduler path is `launchd` with user LaunchAgents. Keep the operational detail in @launchd/biwenger_scheduler_setup.md rather than duplicating it here.
+- For scheduler work, use `bash_scripts/run_players.sh` and `bash_scripts/run_current_team.sh` as the supported entrypoints.
+- LaunchAgent jobs should point to a stable local checkout outside `Documents/`, for example `~/Code/biwenger-data-extraction`, because macOS privacy restrictions can block executing repo scripts from `Documents/`.
 
 ## Streamlit API Conventions
 
