@@ -82,7 +82,7 @@ run-players-ui-write-2:
 .PHONY: run-players-ui-full
 run-players-ui-full:
 	@echo "🖥️  Running headed full player scrape with terminal UI and Supabase writes..."
-	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --terminal-ui --upload-batch-size 10
+	$(PYTHON) -m scraping_biwenger.get_player_stats --headed --terminal-ui --upload-batch-size 10 --retry-top-players 400
 
 .PHONY: run-players-ui-popup
 run-players-ui-popup:
@@ -97,7 +97,7 @@ run-players-ui-popup-write-2:
 .PHONY: run-players-ui-popup-full
 run-players-ui-popup-full:
 	@echo "🪟 Opening a separate Terminal window for the full UI write run..."
-	bash bash_scripts/run_players_ui_popup.sh --headed --terminal-ui --upload-batch-size 10
+	bash bash_scripts/run_players_ui_popup.sh --headed --terminal-ui --upload-batch-size 10 --retry-top-players 400
 
 .PHONY: dry-run-players-15
 dry-run-players-15:
