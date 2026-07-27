@@ -260,6 +260,84 @@ def test_value_incomplete_player_is_retried_once_after_main_pass(monkeypatch):
     assert errors[0]["stage"] == "value_history_incomplete"
 
 
+def test_circuit_breaker_stops_main_pass_and_skips_retry_passes(monkeypatch):
+    calls = []
+    run_states = []
+
+    def fake_detail_loop(logger, page, players, **kwargs):
+        calls.append([player["slug"] for player in players])
+        for idx, player in enumerate(players, start=1):
+            kwargs["on_player_error"](
+                player={**player, "rank": idx},
+                stage="select_scoring_system",
+                message="Points tab did not load usable content",
+            )
+            kwargs["on_player_event"](
+                "player_failed",
+                player_name=player["name"],
+                player_slug=player["slug"],
+                rank=idx,
+                stage="select_scoring_system",
+                message="Points tab did not load usable content",
+            )
+            if kwargs["stop_requested"]():
+                break
+        return [], [], []
+
+    monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
+    monkeypatch.setattr(
+        "scraping_biwenger.players.scrape.extract_all_player_names",
+        lambda logger, page, max_pages, max_players=None: _players(10),
+    )
+    monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
+
+    _, detail_rows, _, _ = scrape_player_rows(
+        object(),
+        FakeLogger(),
+        max_pages=1,
+        max_players_detail=10,
+        retry_top_players=10,
+        on_run_state=run_states.append,
+    )
+
+    assert calls == [
+        [
+            "player-1",
+            "player-2",
+            "player-3",
+            "player-4",
+            "player-5",
+            "player-6",
+            "player-7",
+            "player-8",
+            "player-9",
+            "player-10",
+        ]
+    ]
+    assert detail_rows == []
+    assert run_states[-1]["termination_reason"] == "circuit_breaker"
+    assert run_states[-1]["circuit_breaker_triggered"] is True
+
+
+def test_targeted_player_slug_bypasses_pacing(monkeypatch):
+    captured_profiles = []
+
+    def fake_detail_loop(logger, page, players, **kwargs):
+        captured_profiles.append(kwargs["pacing_policy"].profile)
+        return [], [], []
+
+    monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
+
+    scrape_player_rows(
+        object(),
+        FakeLogger(),
+        player_slug="kazunari-kita",
+        pacing_profile="slow",
+    )
+
+    assert captured_profiles == ["off"]
+
+
 def test_value_retry_failure_is_recorded_once_without_loop(monkeypatch):
     calls = []
     errors = []

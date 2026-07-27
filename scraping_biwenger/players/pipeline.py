@@ -8,11 +8,11 @@ from config_logging import get_logger
 from scraping_biwenger.players.checkpoints import (
     DEFAULT_CHECKPOINT_ROOT,
     PlayerRunCheckpoint,
+    build_resume_candidates,
     cleanup_old_player_runs,
-    read_checkpoint_successful_slugs,
-    read_latest_failed_players,
     read_player_checkpoint,
     read_selected_players,
+    write_resume_candidates,
 )
 from scraping_biwenger.players.persist import persist_player_outputs
 from scraping_biwenger.players.run_events import build_event_emitter
@@ -52,11 +52,16 @@ def scrape_players_snapshot(
     start_from_href: str | None = None,
     start_from_rank: int | None = None,
     retry_top_players: int = 0,
+    pacing_profile: str = "normal",
+    circuit_breaker_consecutive_failures: int = 4,
+    circuit_breaker_window_size: int = 10,
+    circuit_breaker_window_failures: int = 8,
     as_of_date: str | None = None,
     on_player_payload=None,
     on_player_error=None,
     on_players_selected=None,
     on_event=None,
+    on_run_state=None,
 ):
     """
     Scrape and normalize player stats, matches, and value history from a logged-in page.
@@ -72,10 +77,15 @@ def scrape_players_snapshot(
         start_from_href=start_from_href,
         start_from_rank=start_from_rank,
         retry_top_players=retry_top_players,
+        pacing_profile=pacing_profile,
+        circuit_breaker_consecutive_failures=circuit_breaker_consecutive_failures,
+        circuit_breaker_window_size=circuit_breaker_window_size,
+        circuit_breaker_window_failures=circuit_breaker_window_failures,
         on_player_payload=on_player_payload,
         on_player_error=on_player_error,
         on_players_selected=on_players_selected,
         on_event=on_event,
+        on_run_state=on_run_state,
     )
     if not players_list:
         logger.warning("No players extracted; returning empty player payloads.")
@@ -139,6 +149,10 @@ def run_player_pipeline(
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
     upload_batch_size: int = 10,
+    pacing_profile: str = "normal",
+    circuit_breaker_consecutive_failures: int = 4,
+    circuit_breaker_window_size: int = 10,
+    circuit_breaker_window_failures: int = 8,
     debug_log: bool = False,
     run_retention_days: int = 7,
     terminal_ui: bool = False,
@@ -156,6 +170,7 @@ def run_player_pipeline(
     resume_players_override = None
     resume_failed_count = 0
     resume_tail_count = 0
+    run_state: dict = {"termination_reason": "completed"}
 
     if sum(option is not None for option in [start_from_slug, start_from_href, start_from_rank]) > 1:
         raise ValueError("Use at most one of --start-from-slug, --start-from-href, or --start-from-rank.")
@@ -191,6 +206,10 @@ def run_player_pipeline(
                 "resume_checkpoint": resume_checkpoint,
                 "retry_top_players": retry_top_players,
                 "upload_batch_size": upload_batch_size,
+                "pacing_profile": pacing_profile,
+                "circuit_breaker_consecutive_failures": circuit_breaker_consecutive_failures,
+                "circuit_breaker_window_size": circuit_breaker_window_size,
+                "circuit_breaker_window_failures": circuit_breaker_window_failures,
                 "debug_log": debug_log,
                 "run_retention_days": run_retention_days,
                 "terminal_ui": terminal_ui,
@@ -245,6 +264,10 @@ def run_player_pipeline(
         max_players_detail=max_players_detail,
         retry_top_players=retry_top_players,
         upload_batch_size=upload_batch_size,
+        pacing_profile=pacing_profile,
+        circuit_breaker_consecutive_failures=circuit_breaker_consecutive_failures,
+        circuit_breaker_window_size=circuit_breaker_window_size,
+        circuit_breaker_window_failures=circuit_breaker_window_failures,
     )
 
     if checkpoint and resume_checkpoint:
@@ -412,6 +435,9 @@ def run_player_pipeline(
         )
         logger.info("Wrote selected player manifest with %s players.", len(players))
 
+    def on_run_state(state: dict) -> None:
+        run_state.update(state)
+
     pw, browser, context, page = start_browser_accept_cookies(
         headless=headless,
         logger=logger,
@@ -431,12 +457,42 @@ def run_player_pipeline(
             start_from_href=start_from_href,
             start_from_rank=start_from_rank,
             retry_top_players=retry_top_players,
+            pacing_profile=pacing_profile,
+            circuit_breaker_consecutive_failures=circuit_breaker_consecutive_failures,
+            circuit_breaker_window_size=circuit_breaker_window_size,
+            circuit_breaker_window_failures=circuit_breaker_window_failures,
             as_of_date=as_of_date,
             on_player_payload=on_player_payload if checkpoint else None,
             on_player_error=on_player_error if checkpoint else None,
             on_players_selected=on_players_selected if checkpoint else None,
             on_event=event_emitter.emit,
+            on_run_state=on_run_state,
         )
+
+        if checkpoint and run_state.get("termination_reason") == "circuit_breaker":
+            candidates, successful_count, failed_count, untouched_count = write_resume_candidates(checkpoint.run_dir)
+            checkpoint.update_metadata(
+                {
+                    **run_state,
+                    "successful_player_count": successful_count,
+                    "failed_player_count": failed_count,
+                    "untouched_tail_count": untouched_count,
+                    "resume_candidate_count": len(candidates),
+                }
+            )
+            logger.warning(
+                "Circuit breaker stopped the player run at rank=%s slug=%s stage=%s. "
+                "Successful=%s failed=%s untouched_tail=%s resume_candidates=%s. "
+                "Resume with: .venv/bin/python -m scraping_biwenger.get_player_stats --resume-checkpoint %s",
+                run_state.get("circuit_breaker_rank"),
+                run_state.get("circuit_breaker_player_slug", ""),
+                run_state.get("circuit_breaker_stage", ""),
+                successful_count,
+                failed_count,
+                untouched_count,
+                len(candidates),
+                checkpoint.run_dir,
+            )
 
         if persist and checkpoint:
             flush_upload_buffer("final buffered rows")
@@ -453,16 +509,18 @@ def run_player_pipeline(
 
         duration_s = time.perf_counter() - started_at
         logger.info("Total player run time: %.2fs", duration_s)
+        summary_prefix = "aborted" if run_state.get("termination_reason") == "circuit_breaker" else "done"
         event_emitter.emit(
             "run_finished",
             summary=(
-                f"done stats={len(stats_df)} matches={len(matches_df)} "
+                f"{summary_prefix} stats={len(stats_df)} matches={len(matches_df)} "
                 f"values={len(value_history_df)} time={duration_s:.2f}s"
             ),
             stats_rows=len(stats_df),
             match_rows=len(matches_df),
             value_rows=len(value_history_df),
             duration_s=duration_s,
+            termination_reason=run_state.get("termination_reason", "completed"),
         )
         return stats_df, matches_df, value_history_df
     finally:
@@ -501,40 +559,17 @@ def _build_resume_players(
             "Older checkpoints must be resumed manually from an explicit start point."
         )
 
-    successful_slugs = read_checkpoint_successful_slugs(run_dir)
-    latest_failures = read_latest_failed_players(run_dir)
-    manifest_by_slug = {
-        str(player.get("slug") or "").strip(): dict(player)
-        for player in selected_players
-        if str(player.get("slug") or "").strip()
-    }
-
-    failed_players = []
-    for slug, failure in latest_failures.items():
-        if slug in successful_slugs:
-            continue
-        manifest_player = manifest_by_slug.get(slug)
-        if not manifest_player:
-            continue
-        failed_players.append(
+    candidates, _, failed_count, tail_count = build_resume_candidates(run_dir)
+    resume_players = []
+    for player in candidates:
+        attempt = "resume_retry" if player.get("resume_reason") == "failed" else "resume_tail"
+        resume_players.append(
             {
-                **manifest_player,
-                "attempt": "resume_retry",
-                "open_by_href_only": True,
-                "failure_stage": failure.get("stage"),
+                **player,
+                "attempt": attempt,
+                "failure_stage": player.get("last_failure_stage"),
             }
         )
-    failed_players.sort(key=lambda player: player.get("rank", 0))
-
-    failed_slugs = {str(player.get("slug") or "").strip() for player in failed_players}
-    untouched_players = []
-    for player in selected_players:
-        slug = str(player.get("slug") or "").strip()
-        if slug in successful_slugs or slug in failed_slugs:
-            continue
-        untouched_players.append({**player, "attempt": "resume_tail"})
-
-    resume_players = failed_players + untouched_players
     if start_from_slug or start_from_href or start_from_rank is not None:
         from scraping_biwenger.players.scrape import _filter_selected_players
 
@@ -545,4 +580,4 @@ def _build_resume_players(
             start_from_rank=start_from_rank,
         )
 
-    return resume_players, len(failed_players), len(untouched_players)
+    return resume_players, failed_count, tail_count

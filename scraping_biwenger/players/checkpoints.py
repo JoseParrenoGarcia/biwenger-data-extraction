@@ -92,6 +92,7 @@ class PlayerRunCheckpoint:
         self.matches_path = self.run_dir / "player_matches.jsonl"
         self.values_path = self.run_dir / "player_values.jsonl"
         self.selected_players_path = self.run_dir / "selected_players.jsonl"
+        self.resume_candidates_path = self.run_dir / "resume_candidates.jsonl"
         self.errors_path = self.run_dir / "errors.jsonl"
         self.upload_errors_path = self.run_dir / "upload_errors.jsonl"
         self.metadata_path = self.run_dir / "metadata.json"
@@ -107,6 +108,7 @@ class PlayerRunCheckpoint:
             self.matches_path,
             self.values_path,
             self.selected_players_path,
+            self.resume_candidates_path,
             self.errors_path,
             self.upload_errors_path,
         ]:
@@ -240,6 +242,64 @@ def read_latest_failed_players(run_dir: str | Path) -> dict[str, dict]:
             continue
         latest[slug] = failure
     return latest
+
+
+def build_resume_candidates(run_dir: str | Path) -> tuple[list[dict], int, int, int]:
+    selected_players = read_selected_players(run_dir)
+    if not selected_players:
+        return [], 0, 0, 0
+
+    successful_slugs = read_checkpoint_successful_slugs(run_dir)
+    latest_failures = read_latest_failed_players(run_dir)
+    manifest_by_slug = {
+        str(player.get("slug") or "").strip(): dict(player)
+        for player in selected_players
+        if str(player.get("slug") or "").strip()
+    }
+
+    failed_players = []
+    for slug, failure in latest_failures.items():
+        if slug in successful_slugs:
+            continue
+        manifest_player = manifest_by_slug.get(slug)
+        if not manifest_player:
+            continue
+        failed_players.append(
+            {
+                **manifest_player,
+                "resume_reason": "failed",
+                "last_failure_stage": failure.get("stage"),
+                "open_by_href_only": True,
+            }
+        )
+    failed_players.sort(key=lambda player: player.get("rank", 0))
+
+    failed_slugs = {str(player.get("slug") or "").strip() for player in failed_players}
+    untouched_players = []
+    for player in selected_players:
+        slug = str(player.get("slug") or "").strip()
+        if slug in successful_slugs or slug in failed_slugs:
+            continue
+        untouched_players.append(
+            {
+                **player,
+                "resume_reason": "untouched_tail",
+                "last_failure_stage": "",
+                "open_by_href_only": True,
+            }
+        )
+
+    candidates = failed_players + untouched_players
+    return candidates, len(successful_slugs), len(failed_players), len(untouched_players)
+
+
+def write_resume_candidates(run_dir: str | Path) -> tuple[list[dict], int, int, int]:
+    run_path = Path(run_dir)
+    candidates, successful_count, failed_count, untouched_count = build_resume_candidates(run_dir)
+    resume_path = run_path / "resume_candidates.jsonl"
+    resume_path.write_text("", encoding="utf-8")
+    _append_jsonl(resume_path, candidates)
+    return candidates, successful_count, failed_count, untouched_count
 
 
 def cleanup_old_player_runs(

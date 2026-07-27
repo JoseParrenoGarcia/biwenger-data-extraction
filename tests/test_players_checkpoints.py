@@ -7,11 +7,13 @@ import pandas as pd
 
 from scraping_biwenger.players.checkpoints import (
     PlayerRunCheckpoint,
+    build_resume_candidates,
     cleanup_old_player_runs,
     read_checkpoint_successful_slugs,
     read_latest_failed_players,
     read_player_checkpoint,
     read_selected_players,
+    write_resume_candidates,
 )
 from scraping_biwenger.players.pipeline import _concat_frames, run_player_pipeline, upload_player_checkpoint
 from scraping_biwenger.players.transform import (
@@ -182,6 +184,41 @@ def test_checkpoint_successful_slugs_and_latest_failures(tmp_path):
     assert latest_failures["player-two"]["stage"] == "scrape_detail"
 
 
+def test_build_and_write_resume_candidates(tmp_path):
+    checkpoint = PlayerRunCheckpoint(root_dir=tmp_path, run_id="resume-candidates", metadata={})
+    checkpoint.write_selected_players(
+        [
+            {"rank": 1, "name": "One", "slug": "one", "href": "/la-liga/players/one", "attempt": "initial"},
+            {"rank": 2, "name": "Two", "slug": "two", "href": "/la-liga/players/two", "attempt": "initial"},
+            {"rank": 3, "name": "Three", "slug": "three", "href": "/la-liga/players/three", "attempt": "initial"},
+        ]
+    )
+    checkpoint.append_payload(
+        player={"name": "One", "slug": "one"},
+        stats_df=pd.DataFrame([{"slug": "one"}], columns=["slug"]),
+        matches_df=pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+        value_history_df=pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+    )
+    checkpoint.append_player_error(
+        player={"name": "Two", "slug": "two", "href": "/la-liga/players/two", "rank": 2, "attempt": "initial"},
+        stage="select_scoring_system",
+        message="failed",
+    )
+
+    candidates, successful_count, failed_count, untouched_count = build_resume_candidates(checkpoint.run_dir)
+
+    assert [candidate["slug"] for candidate in candidates] == ["two", "three"]
+    assert candidates[0]["resume_reason"] == "failed"
+    assert candidates[1]["resume_reason"] == "untouched_tail"
+    assert successful_count == 1
+    assert failed_count == 1
+    assert untouched_count == 1
+
+    written_candidates, _, _, _ = write_resume_candidates(checkpoint.run_dir)
+    assert written_candidates == candidates
+    assert (checkpoint.run_dir / "resume_candidates.jsonl").read_text(encoding="utf-8").count("\n") == 2
+
+
 def test_upload_player_checkpoint_uses_existing_persistence_path(tmp_path, monkeypatch):
     checkpoint = PlayerRunCheckpoint(root_dir=tmp_path, run_id="upload-run", metadata={})
     checkpoint.append_payload(
@@ -326,6 +363,114 @@ def test_run_player_pipeline_replays_checkpoint_after_batch_upload_failure(tmp_p
     assert calls == [1, 1]
     run_dir = next(tmp_path.iterdir())
     assert (run_dir / "upload_errors.jsonl").read_text(encoding="utf-8").count("\n") == 1
+
+
+def test_run_player_pipeline_marks_circuit_breaker_and_writes_resume_candidates(tmp_path, monkeypatch):
+    class FakeBrowser:
+        def close(self):
+            pass
+
+    class FakeContext:
+        def close(self):
+            pass
+
+    class FakePlaywright:
+        def stop(self):
+            pass
+
+    class FakeLogger:
+        def info(self, *args, **kwargs):
+            pass
+
+        def debug(self, *args, **kwargs):
+            pass
+
+        def warning(self, *args, **kwargs):
+            pass
+
+        def exception(self, *args, **kwargs):
+            pass
+
+    def fake_start_browser_accept_cookies(*, headless, logger):
+        return FakePlaywright(), FakeBrowser(), FakeContext(), object()
+
+    def fake_scrape_players_snapshot(page, logger, **kwargs):
+        kwargs["on_players_selected"](
+            [
+                {"rank": 1, "name": "One", "slug": "one", "href": "/la-liga/players/one", "attempt": "initial"},
+                {"rank": 2, "name": "Two", "slug": "two", "href": "/la-liga/players/two", "attempt": "initial"},
+                {
+                    "rank": 3,
+                    "name": "Three",
+                    "slug": "three",
+                    "href": "/la-liga/players/three",
+                    "attempt": "initial",
+                },
+            ]
+        )
+        kwargs["on_player_payload"](
+            player={"name": "One", "slug": "one"},
+            detail_rows=[
+                {
+                    "player_name": "One",
+                    "team": "Athletic",
+                    "slug": "one",
+                    "scoring_system": "sofascore",
+                }
+            ],
+            match_rows=[],
+            value_history_rows=[],
+            processed_count=1,
+        )
+        kwargs["on_player_error"](
+            player={"name": "Two", "slug": "two", "href": "/la-liga/players/two", "rank": 2, "attempt": "initial"},
+            stage="select_scoring_system",
+            message="Points tab did not load usable content",
+        )
+        kwargs["on_run_state"](
+            {
+                "termination_reason": "circuit_breaker",
+                "circuit_breaker_triggered": True,
+                "circuit_breaker_stage": "select_scoring_system",
+                "circuit_breaker_player_slug": "two",
+                "circuit_breaker_rank": 2,
+                "circuit_breaker_consecutive_failures": 4,
+                "circuit_breaker_recent_failure_count": 8,
+            }
+        )
+        return (
+            pd.DataFrame([{"player_name": "One", "team": "Athletic", "slug": "one"}], columns=PLAYER_STATS_COLUMNS),
+            pd.DataFrame(columns=PLAYER_MATCHES_COLUMNS),
+            pd.DataFrame(columns=PLAYER_VALUE_COLUMNS),
+        )
+
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.load_biwenger_credentials", lambda profile: {"email": "x", "password": "y"}
+    )
+    monkeypatch.setattr(
+        "scraping_biwenger.players.pipeline.start_browser_accept_cookies", fake_start_browser_accept_cookies
+    )
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.perform_login", lambda page, email, password, logger: None)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.scrape_players_snapshot", fake_scrape_players_snapshot)
+    monkeypatch.setattr("scraping_biwenger.players.pipeline.persist_player_outputs", lambda *args, **kwargs: None)
+
+    run_player_pipeline(
+        headless=True,
+        persist=False,
+        max_pages=1,
+        max_players_detail=3,
+        checkpoint_dir=str(tmp_path),
+        logger=FakeLogger(),
+    )
+
+    run_dir = next(path for path in tmp_path.iterdir() if path.is_dir())
+    metadata = json.loads((run_dir / "metadata.json").read_text(encoding="utf-8"))
+    assert metadata["termination_reason"] == "circuit_breaker"
+    assert metadata["failed_player_count"] == 1
+    assert metadata["untouched_tail_count"] == 1
+    assert metadata["resume_candidate_count"] == 2
+    resume_lines = (run_dir / "resume_candidates.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    assert len(resume_lines) == 2
 
 
 def test_cleanup_old_player_runs_deletes_only_expired_directories(tmp_path):

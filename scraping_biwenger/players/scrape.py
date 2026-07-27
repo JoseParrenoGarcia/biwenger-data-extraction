@@ -1,5 +1,7 @@
+from scraping_biwenger.players.circuit_breaker import PlayerRunCircuitBreaker
 from scraping_biwenger.players.detail_loop import scrape_all_players_detail
 from scraping_biwenger.players.discover import extract_all_player_names
+from scraping_biwenger.players.pacing import build_pacing_policy
 from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
 from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu
 from scraping_biwenger.shared.timing import _rand_sleep
@@ -46,6 +48,11 @@ def scrape_player_rows(
     on_player_error=None,
     on_players_selected=None,
     on_event=None,
+    on_run_state=None,
+    pacing_profile: str = "normal",
+    circuit_breaker_consecutive_failures: int = 4,
+    circuit_breaker_window_size: int = 10,
+    circuit_breaker_window_failures: int = 8,
 ) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     """
     Scrape player discovery rows plus detail, match, and value-history rows.
@@ -128,6 +135,15 @@ def scrape_player_rows(
     retry_candidates: dict[str, dict] = {}
     value_retry_candidates: dict[str, dict] = {}
     value_retry_failures: set[str] = set()
+    pacing_policy = build_pacing_policy(
+        pacing_profile,
+        targeted_player=bool(player_slug and selected_players_override is None),
+    )
+    circuit_breaker = PlayerRunCircuitBreaker(
+        consecutive_failures_threshold=circuit_breaker_consecutive_failures,
+        window_size=circuit_breaker_window_size,
+        window_failures_threshold=circuit_breaker_window_failures,
+    )
 
     def player_retry_key(player: dict) -> str:
         return player.get("slug") or player.get("href") or player.get("name", "")
@@ -154,9 +170,49 @@ def scrape_player_rows(
     def handle_player_error(*, player, stage, message, details=None) -> None:
         if on_player_error:
             on_player_error(player=player, stage=stage, message=message, details=details or {})
+        breaker_triggered = circuit_breaker.record_failure(
+            stage=stage,
+            message=message,
+            player_slug=player.get("slug", ""),
+            rank=player.get("rank"),
+        )
         key = player_retry_key(player)
         if player.get("attempt") == "value_retry" and key:
             value_retry_failures.add(key)
+        if logger and stage in RETRYABLE_DETAIL_ERROR_STAGES and not circuit_breaker.triggered:
+            if circuit_breaker.recent_failure_count >= max(
+                1, circuit_breaker.window_failures_threshold - 3
+            ) or circuit_breaker.consecutive_failures >= max(1, circuit_breaker.consecutive_failures_threshold - 1):
+                logger.warning(
+                    "Breaker warning: %s relevant failures in last %s players (consecutive=%s).",
+                    circuit_breaker.recent_failure_count,
+                    circuit_breaker.window_size,
+                    circuit_breaker.consecutive_failures,
+                )
+        if breaker_triggered:
+            if logger:
+                logger.warning(
+                    "Circuit breaker triggered at rank=%s slug=%s stage=%s after %s consecutive failures "
+                    "and %s failures in the last %s players.",
+                    player.get("rank"),
+                    player.get("slug", ""),
+                    stage,
+                    circuit_breaker.consecutive_failures,
+                    circuit_breaker.recent_failure_count,
+                    circuit_breaker.window_size,
+                )
+            if on_event:
+                on_event(
+                    "circuit_breaker_triggered",
+                    player_name=player.get("name", ""),
+                    player_slug=player.get("slug", ""),
+                    rank=player.get("rank"),
+                    stage=stage,
+                    message=message,
+                    consecutive_failures=circuit_breaker.consecutive_failures,
+                    recent_failure_count=circuit_breaker.recent_failure_count,
+                    window_size=circuit_breaker.window_size,
+                )
         if not should_retry_player(player, stage):
             if should_retry_value_history(player, stage):
                 if not key or key in value_retry_candidates:
@@ -219,8 +275,21 @@ def scrape_player_rows(
         collect_matches=True,
         on_player_payload=on_player_payload,
         on_player_error=handle_player_error,
-        on_player_event=on_event,
+        on_player_event=_wrap_player_event(on_event, circuit_breaker),
+        stop_requested=lambda: circuit_breaker.triggered,
+        pacing_policy=pacing_policy,
     )
+
+    if on_run_state:
+        on_run_state(
+            {
+                "termination_reason": "circuit_breaker" if circuit_breaker.triggered else "completed",
+                **circuit_breaker.state_payload(),
+            }
+        )
+
+    if circuit_breaker.triggered:
+        return players_list, player_detail_rows, match_rows, value_history_rows
 
     if retry_candidates:
         retry_players = list(retry_candidates.values())
@@ -308,6 +377,16 @@ def scrape_player_rows(
             )
 
     return players_list, player_detail_rows, match_rows, value_history_rows
+
+
+def _wrap_player_event(on_event, circuit_breaker: PlayerRunCircuitBreaker):
+    def emit(event_type, **payload):
+        if event_type == "player_finished":
+            circuit_breaker.record_success()
+        if on_event is not None:
+            on_event(event_type, **payload)
+
+    return emit
 
 
 def _filter_selected_players(
