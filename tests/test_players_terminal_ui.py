@@ -180,3 +180,28 @@ def test_terminal_ui_state_tracks_value_incomplete_and_value_retry():
     assert state.retry_active is False
     assert state.retry_recovered == 1
     assert state.recent_outcomes[-1].status == "warning"
+
+
+def test_terminal_ui_state_tracks_circuit_breaker():
+    state = PlayerRunTerminalState()
+
+    state.apply_event(
+        make_player_run_event(
+            "circuit_breaker_triggered",
+            player_name="Deossa",
+            player_slug="nelson-deossa",
+            rank=392,
+            stage="select_scoring_system",
+        )
+    )
+    state.apply_event(
+        make_player_run_event(
+            "run_finished",
+            summary="aborted stats=100 matches=2000 values=50000 time=3600.00s",
+            termination_reason="circuit_breaker",
+        )
+    )
+
+    assert state.termination_reason == "circuit_breaker"
+    assert state.warning_count == 1
+    assert "Circuit breaker triggered" in state.notices[-1]

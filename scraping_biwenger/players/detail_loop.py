@@ -10,6 +10,7 @@ from scraping_biwenger.players.matches import (
     select_scoring_system,
     with_retries,
 )
+from scraping_biwenger.players.pacing import PlayerRunPacingPolicy
 from scraping_biwenger.players.search_and_open import (
     clear_search_box_if_present,
     click_back_to_players_table,
@@ -52,6 +53,8 @@ def scrape_all_players_detail(
     on_player_payload: Optional[Callable[..., None]] = None,
     on_player_error: Optional[Callable[..., None]] = None,
     on_player_event: Optional[Callable[..., None]] = None,
+    stop_requested: Optional[Callable[[], bool]] = None,
+    pacing_policy: Optional[PlayerRunPacingPolicy] = None,
 ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
     """
     Iterate players_list → open → scrape detail (left panel) → scrape matches (Points tab) → back.
@@ -62,6 +65,7 @@ def scrape_all_players_detail(
     match_rows: List[Dict[str, str]] = []
     value_history_rows: List[Dict[str, str]] = []
     processed = 0
+    pacing_policy = pacing_policy or PlayerRunPacingPolicy(profile="off", enabled=False)
 
     def record_player_error(
         player: Dict[str, str],
@@ -116,6 +120,9 @@ def scrape_all_players_detail(
         )
 
     for idx, player in enumerate(players_list, start=1):
+        if stop_requested and stop_requested():
+            logger.warning("Stopping player detail loop because circuit breaker has been triggered.")
+            break
         player_started_at = time.time()
         if max_players and processed >= max_players:
             logger.info(f"⛔ Reached max_players={max_players}. Stopping early.")
@@ -162,9 +169,13 @@ def scrape_all_players_detail(
                 started_at=player_started_at,
                 stage="open_player",
             )
+            if stop_requested and stop_requested():
+                break
             continue
+        pacing_policy.apply("after_open", processed=processed)
 
         try:
+            pacing_policy.apply("before_scoring", processed=processed)
             scoring_started_at = time.time()
             scoring_system = select_scoring_system(page, target_label="SofaScore", logger=logger)
             player["_scoring_system"] = scoring_system
@@ -186,6 +197,8 @@ def scrape_all_players_detail(
                 started_at=player_started_at,
                 stage="select_scoring_system",
             )
+            if stop_requested and stop_requested():
+                break
             continue
 
         # 2) scrape left-panel stats
@@ -274,6 +287,7 @@ def scrape_all_players_detail(
         value_stage_status = "unknown"
         value_retry_reason = ""
         try:
+            pacing_policy.apply("before_value", processed=processed)
             value_started_at = time.time()
             value_result = scrape_value_history_result_for_player(
                 page,
@@ -385,6 +399,7 @@ def scrape_all_players_detail(
             logger.debug("Skipping back-to-table for final selected player: %s", name)
 
         _cooldown()
+        pacing_policy.apply("after_player", processed=processed)
         _log_timing(logger, "Full player cycle", player_started_at, player_slug=slug)
         log_player_summary(
             player,
@@ -397,8 +412,8 @@ def scrape_all_players_detail(
             value_count=len(player_value_history_rows),
             stage=stage_label,
         )
-        if processed % 20 == 0 and processed > 0:
-            _cooldown(500, 1500)
+        pacing_policy.apply("every_10_players", processed=processed)
+        pacing_policy.apply("every_50_players", processed=processed)
 
     logger.info(
         f"🏁 Done. Players processed: {processed}. "

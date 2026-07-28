@@ -46,6 +46,7 @@ class PlayerRunTerminalState:
     retry_active: bool = False
     retry_recovered: int = 0
     retry_failed: int = 0
+    termination_reason: str = ""
     final_summary: str = ""
 
     def append_notice(self, message: str) -> None:
@@ -172,7 +173,16 @@ class PlayerRunTerminalState:
             self.append_notice(
                 f"Value retry pass finished: recovered={self.retry_recovered} failed={self.retry_failed}"
             )
+        elif event_type == "circuit_breaker_triggered":
+            self.warning_count += 1
+            self.termination_reason = "circuit_breaker"
+            self.append_notice(
+                "Circuit breaker triggered for "
+                f"{event.get('player_slug') or event.get('player_name', '')} "
+                f"(rank={event.get('rank')} stage={event.get('stage')})"
+            )
         elif event_type == "run_finished":
+            self.termination_reason = event.get("termination_reason", self.termination_reason)
             self.final_summary = event.get("summary", "")
 
 
@@ -247,7 +257,8 @@ def build_terminal_ui_renderable(state: PlayerRunTerminalState):
 
     footer_text = state.final_summary or (
         f"warnings={state.warning_count} retries={state.retry_queue_count} "
-        f"retry_active={'yes' if state.retry_active else 'no'}"
+        f"retry_active={'yes' if state.retry_active else 'no'} "
+        f"termination={state.termination_reason or 'running'}"
     )
 
     return Group(

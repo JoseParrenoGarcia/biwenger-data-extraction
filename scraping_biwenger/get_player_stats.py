@@ -21,6 +21,10 @@ def ETL_get_player_stats(
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
     upload_batch_size: int = 10,
+    pacing_profile: str = "normal",
+    circuit_breaker_consecutive_failures: int = 4,
+    circuit_breaker_window_size: int = 10,
+    circuit_breaker_window_failures: int = 8,
     debug_log: bool = False,
     run_retention_days: int = 7,
     terminal_ui: bool = False,
@@ -42,6 +46,10 @@ def ETL_get_player_stats(
         checkpoint_dir=checkpoint_dir,
         checkpoint_enabled=checkpoint_enabled,
         upload_batch_size=upload_batch_size,
+        pacing_profile=pacing_profile,
+        circuit_breaker_consecutive_failures=circuit_breaker_consecutive_failures,
+        circuit_breaker_window_size=circuit_breaker_window_size,
+        circuit_breaker_window_failures=circuit_breaker_window_failures,
         debug_log=debug_log,
         run_retention_days=run_retention_days,
         terminal_ui=terminal_ui,
@@ -122,6 +130,30 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=10,
         help="Number of checkpointed players between Supabase upload attempts.",
+    )
+    parser.add_argument(
+        "--pacing-profile",
+        choices=["off", "normal", "slow"],
+        default="normal",
+        help="Human-like pacing profile for multi-player runs. Targeted --player-slug runs bypass pacing.",
+    )
+    parser.add_argument(
+        "--circuit-breaker-consecutive-failures",
+        type=int,
+        default=4,
+        help="Stop the main player pass after this many consecutive relevant failures.",
+    )
+    parser.add_argument(
+        "--circuit-breaker-window-size",
+        type=int,
+        default=10,
+        help="Rolling player window size for the circuit breaker failure threshold.",
+    )
+    parser.add_argument(
+        "--circuit-breaker-window-failures",
+        type=int,
+        default=8,
+        help="Relevant failures inside the rolling window that trigger the circuit breaker.",
     )
     parser.add_argument(
         "--debug-log",
@@ -210,6 +242,10 @@ def main() -> None:
         checkpoint_dir=args.checkpoint_dir,
         checkpoint_enabled=not args.no_checkpoint,
         upload_batch_size=args.upload_batch_size,
+        pacing_profile=args.pacing_profile,
+        circuit_breaker_consecutive_failures=args.circuit_breaker_consecutive_failures,
+        circuit_breaker_window_size=args.circuit_breaker_window_size,
+        circuit_breaker_window_failures=args.circuit_breaker_window_failures,
         debug_log=args.debug_log,
         run_retention_days=args.run_retention_days,
         terminal_ui=args.terminal_ui,
