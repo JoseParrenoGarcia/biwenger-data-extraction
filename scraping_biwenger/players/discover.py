@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
+from scraping_biwenger.players.network_telemetry import network_action
 from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
 from scraping_biwenger.shared.timing import _rand_sleep
 
@@ -40,7 +41,8 @@ def click_next_if_enabled(page: Page) -> bool:
     if not is_next_enabled(page):
         return False
     # Click the <a> inside that LI
-    page.locator(f"{NEXT_LI_SEL} a").first.click()
+    with network_action(page, "paginate_players"):
+        page.locator(f"{NEXT_LI_SEL} a").first.click()
     return True
 
 

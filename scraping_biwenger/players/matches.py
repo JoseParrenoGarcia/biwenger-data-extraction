@@ -9,6 +9,7 @@ from typing import Callable, Dict, List, Optional
 from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
+from scraping_biwenger.players.network_telemetry import network_action
 from scraping_biwenger.shared.timing import log_timing_debug
 
 # -----------------------------
@@ -189,33 +190,34 @@ def open_points_tab(page: Page, timeout: int = 10_000, logger=None):
     except Exception:
         pass
 
-    # Prefer ARIA role=tab
-    try:
-        page.get_by_role("tab", name=re.compile(r"^Points$", re.I)).click()
-    except Exception:
-        # Fallback selectors
-        for sel in (
-            "linear-tabs ul li:has-text('Points') a",
-            "linear-tabs ul li:has-text('Points')",
-        ):
-            loc = page.locator(sel).first
-            if loc.count():
-                try:
-                    loc.scroll_into_view_if_needed()
-                    loc.click()
-                    break
-                except Exception:
-                    continue
+    with network_action(page, "open_points_tab"):
+        # Prefer ARIA role=tab
+        try:
+            page.get_by_role("tab", name=re.compile(r"^Points$", re.I)).click()
+        except Exception:
+            # Fallback selectors
+            for sel in (
+                "linear-tabs ul li:has-text('Points') a",
+                "linear-tabs ul li:has-text('Points')",
+            ):
+                loc = page.locator(sel).first
+                if loc.count():
+                    try:
+                        loc.scroll_into_view_if_needed()
+                        loc.click()
+                        break
+                    except Exception:
+                        continue
 
-    # Even if we didn't click (maybe already selected), wait for content
-    try:
-        _wait_for_points_content(page, timeout=timeout)
-        _log_timing(logger, "Points tab open/wait", started_at)
-    except PWTimeout:
-        _log_timing(logger, "Points tab open/wait failed", started_at)
-        raise RuntimeError(
-            "Points tab did not load usable content. Verify the header selector and that the tab is present."
-        )
+        # Even if we didn't click (maybe already selected), wait for content
+        try:
+            _wait_for_points_content(page, timeout=timeout)
+            _log_timing(logger, "Points tab open/wait", started_at)
+        except PWTimeout:
+            _log_timing(logger, "Points tab open/wait failed", started_at)
+            raise RuntimeError(
+                "Points tab did not load usable content. Verify the header selector and that the tab is present."
+            )
 
 
 def _normalize_scoring_system_label(label: str) -> str:
@@ -253,33 +255,34 @@ def select_scoring_system(
         _log_timing(logger, "Scoring system selection", started_at)
         return target_key
 
-    button.click(timeout=timeout)
-    page.wait_for_selector("round-league-score-menu", timeout=timeout, state="visible")
+    with network_action(page, "select_scoring_system", target_label=target_label):
+        button.click(timeout=timeout)
+        page.wait_for_selector("round-league-score-menu", timeout=timeout, state="visible")
 
-    option = (
-        page.locator("round-league-score-menu button")
-        .filter(has_text=re.compile(rf"^\s*{re.escape(target_label)}\s*$", re.I))
-        .first
-    )
-    option.click(timeout=timeout)
+        option = (
+            page.locator("round-league-score-menu button")
+            .filter(has_text=re.compile(rf"^\s*{re.escape(target_label)}\s*$", re.I))
+            .first
+        )
+        option.click(timeout=timeout)
 
-    page.wait_for_function(
-        """
-        ({ selector, fallbackSelector, target }) => {
-            const button =
-                document.querySelector(selector) ||
-                document.querySelector(fallbackSelector);
-            return button && (button.textContent || '').trim().toLowerCase() === target.toLowerCase();
-        }
-        """,
-        arg={
-            "selector": button_selector,
-            "fallbackSelector": fallback_selector,
-            "target": target_label,
-        },
-        timeout=timeout,
-    )
-    _wait_for_points_content(page, timeout=timeout)
+        page.wait_for_function(
+            """
+            ({ selector, fallbackSelector, target }) => {
+                const button =
+                    document.querySelector(selector) ||
+                    document.querySelector(fallbackSelector);
+                return button && (button.textContent || '').trim().toLowerCase() === target.toLowerCase();
+            }
+            """,
+            arg={
+                "selector": button_selector,
+                "fallbackSelector": fallback_selector,
+                "target": target_label,
+            },
+            timeout=timeout,
+        )
+        _wait_for_points_content(page, timeout=timeout)
 
     if logger:
         logger.debug("Selected scoring system: %s", target_label)

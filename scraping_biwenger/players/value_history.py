@@ -12,6 +12,7 @@ import pandas as pd
 from playwright.sync_api import Download, Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
+from scraping_biwenger.players.network_telemetry import network_action
 from scraping_biwenger.shared.timing import log_timing_debug
 
 CSV_BTN = "segmented-control button:has(.icon-download)"
@@ -46,13 +47,14 @@ def open_value_tab(page: Page, timeout: float = 5000) -> bool:
     Safe to call even if already active.
     """
     try:
-        # Prefer the ARIA role first (most robust across Angular versions).
-        tab = page.get_by_role("tab", name=re.compile(r"^\s*Value\s*$", re.I))
-        if tab.count() > 0:
-            tab.first.click()
-        else:
-            page.locator(VALUE_TAB).first.click()
-        page.locator(CHART_CANVAS).wait_for(state="visible", timeout=timeout)
+        with network_action(page, "open_value_tab"):
+            # Prefer the ARIA role first (most robust across Angular versions).
+            tab = page.get_by_role("tab", name=re.compile(r"^\s*Value\s*$", re.I))
+            if tab.count() > 0:
+                tab.first.click()
+            else:
+                page.locator(VALUE_TAB).first.click()
+            page.locator(CHART_CANVAS).wait_for(state="visible", timeout=timeout)
         return True
     except PWTimeout:
         return False
@@ -63,10 +65,11 @@ def click_download_csv(page: Page, timeout: float = 5000) -> Optional[Download]:
     Hover chart → click CSV button → return Playwright Download handle.
     Requires the browser context to be created with accept_downloads=True.
     """
-    _hover_chart_to_reveal_tools(page, timeout=timeout)
+    with network_action(page, "download_value_csv"):
+        _hover_chart_to_reveal_tools(page, timeout=timeout)
 
-    with page.expect_download(timeout=timeout) as dl_info:
-        page.locator(CSV_BTN).click()
+        with page.expect_download(timeout=timeout) as dl_info:
+            page.locator(CSV_BTN).click()
     return dl_info.value
 
 

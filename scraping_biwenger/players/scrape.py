@@ -1,6 +1,7 @@
 from scraping_biwenger.players.circuit_breaker import PlayerRunCircuitBreaker
 from scraping_biwenger.players.detail_loop import scrape_all_players_detail
 from scraping_biwenger.players.discover import extract_all_player_names
+from scraping_biwenger.players.network_telemetry import network_action
 from scraping_biwenger.players.pacing import build_pacing_policy
 from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
 from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu
@@ -23,13 +24,19 @@ def select_player_table_layout(page, logger=None) -> None:
     _rand_sleep(0.5, 1.5)
 
     try:
-        page.get_by_role("button", name="Table").click()
+        with network_action(page, "select_players_table_layout"):
+            page.get_by_role("button", name="Table").click()
         if logger:
             logger.info("Selected players table layout.")
     except Exception:
         if logger:
             logger.info("Players table layout button was not clicked; scraper will wait for rows.")
     _rand_sleep(0.5, 1.5)
+
+
+def prepare_players_table(page, logger=None) -> None:
+    with network_action(page, "players_page_setup"):
+        select_player_table_layout(page, logger=logger)
 
 
 def scrape_player_rows(
@@ -86,14 +93,15 @@ def scrape_player_rows(
             )
         players_list = selected_players
     else:
-        select_player_table_layout(page, logger=logger)
+        prepare_players_table(page, logger=logger)
 
-        players_list = extract_all_player_names(
-            logger=logger,
-            page=page,
-            max_pages=max_pages,
-            max_players=max_players_detail,
-        )
+        with network_action(page, "players_discovery"):
+            players_list = extract_all_player_names(
+                logger=logger,
+                page=page,
+                max_pages=max_pages,
+                max_players=max_players_detail,
+            )
         if max_players_detail is not None:
             selected_players = players_list[:max_players_detail]
         else:

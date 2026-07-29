@@ -5,6 +5,7 @@ from typing import Dict
 from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
+from scraping_biwenger.players.network_telemetry import network_action
 from scraping_biwenger.shared.timing import _rand_sleep, log_timing_debug
 
 # search and select pointers
@@ -104,7 +105,8 @@ def _open_player_via_href(
     success_log: str,
 ) -> bool:
     started_at = time.time()
-    page.goto(base_url + href, wait_until="domcontentloaded")
+    with network_action(page, "open_player_href", player_slug=slug, href=href):
+        page.goto(base_url + href, wait_until="domcontentloaded")
     ok = wait_player_detail_loaded(page, timeout_ms=8000)
     _log_timing(logger, timing_label, started_at, player_slug=slug)
     if ok:
@@ -158,37 +160,38 @@ def open_player_via_search_only(
     flow_started_at = time.time()
 
     try:
-        # 1) Focus + clear search
-        step_started_at = time.time()
-        focus_and_clear_search_box(page)
-        _log_timing(logger, "Player search clear input", step_started_at, player_slug=slug)
-        # 2) Type name
-        step_started_at = time.time()
-        type_player_name(page, name)
-        _log_timing(logger, "Player search type query", step_started_at, player_slug=slug)
-        # 3) Wait table filtered
-        step_started_at = time.time()
-        if not wait_table_filtered_for_name(page, name, timeout_ms=7000):
-            _log_timing(logger, "Player search filter wait failed", step_started_at, player_slug=slug)
-            logger.warning(f"Search didn't show expected results for '{name}'.")
-            return False
-        _log_timing(logger, "Player search filter wait", step_started_at, player_slug=slug)
+        with network_action(page, "open_player_search", player_slug=slug, player_name=name):
+            # 1) Focus + clear search
+            step_started_at = time.time()
+            focus_and_clear_search_box(page)
+            _log_timing(logger, "Player search clear input", step_started_at, player_slug=slug)
+            # 2) Type name
+            step_started_at = time.time()
+            type_player_name(page, name)
+            _log_timing(logger, "Player search type query", step_started_at, player_slug=slug)
+            # 3) Wait table filtered
+            step_started_at = time.time()
+            if not wait_table_filtered_for_name(page, name, timeout_ms=7000):
+                _log_timing(logger, "Player search filter wait failed", step_started_at, player_slug=slug)
+                logger.warning(f"Search didn't show expected results for '{name}'.")
+                return False
+            _log_timing(logger, "Player search filter wait", step_started_at, player_slug=slug)
 
-        # 4) Click a matching row
-        step_started_at = time.time()
-        clicked = click_matching_player_row(page, name)
-        _log_timing(logger, "Player search result click", step_started_at, player_slug=slug)
-        if not clicked:
-            logger.warning(f"Couldn't click a result row for '{name}'.")
-            return False
+            # 4) Click a matching row
+            step_started_at = time.time()
+            clicked = click_matching_player_row(page, name)
+            _log_timing(logger, "Player search result click", step_started_at, player_slug=slug)
+            if not clicked:
+                logger.warning(f"Couldn't click a result row for '{name}'.")
+                return False
 
-        # 5) Wait for player detail
-        step_started_at = time.time()
-        if not wait_player_detail_loaded(page, timeout_ms=9000):
-            _log_timing(logger, "Player detail wait failed", step_started_at, player_slug=slug)
-            logger.warning(f"Player detail didn't appear after clicking result for '{name}'.")
-            return False
-        _log_timing(logger, "Player detail wait", step_started_at, player_slug=slug)
+            # 5) Wait for player detail
+            step_started_at = time.time()
+            if not wait_player_detail_loaded(page, timeout_ms=9000):
+                _log_timing(logger, "Player detail wait failed", step_started_at, player_slug=slug)
+                logger.warning(f"Player detail didn't appear after clicking result for '{name}'.")
+                return False
+            _log_timing(logger, "Player detail wait", step_started_at, player_slug=slug)
 
         logger.info("Opened player '%s' via search results.", name)
         _log_timing(logger, "Player open flow", flow_started_at, player_slug=slug)

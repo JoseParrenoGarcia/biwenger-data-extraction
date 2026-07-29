@@ -14,6 +14,10 @@ from scraping_biwenger.players.checkpoints import (
     read_selected_players,
     write_resume_candidates,
 )
+from scraping_biwenger.players.network_telemetry import (
+    PlayerRunNetworkTelemetry,
+    attach_page_network_telemetry,
+)
 from scraping_biwenger.players.persist import persist_player_outputs
 from scraping_biwenger.players.run_events import build_event_emitter
 from scraping_biwenger.players.scrape import scrape_player_rows
@@ -171,6 +175,7 @@ def run_player_pipeline(
     resume_failed_count = 0
     resume_tail_count = 0
     run_state: dict = {"termination_reason": "completed"}
+    network_telemetry: PlayerRunNetworkTelemetry | None = None
 
     if sum(option is not None for option in [start_from_slug, start_from_href, start_from_rank]) > 1:
         raise ValueError("Use at most one of --start-from-slug, --start-from-href, or --start-from-rank.")
@@ -443,6 +448,14 @@ def run_player_pipeline(
         logger=logger,
     )
     logger.info("Browser session started.")
+    if debug_log and checkpoint:
+        network_telemetry = PlayerRunNetworkTelemetry(checkpoint.run_dir)
+        attach_page_network_telemetry(page, network_telemetry)
+        logger.info(
+            "Debug network telemetry enabled: %s, %s",
+            network_telemetry.telemetry_path,
+            network_telemetry.summary_path,
+        )
 
     try:
         perform_login(page, creds["email"], creds["password"], logger=logger)
@@ -508,6 +521,12 @@ def run_player_pipeline(
             logger.info("Skipping Supabase persistence for player dry run.")
 
         duration_s = time.perf_counter() - started_at
+        if network_telemetry:
+            network_telemetry.close()
+            logger.info(
+                "Wrote debug network telemetry summary to %s.",
+                network_telemetry.summary_path,
+            )
         logger.info("Total player run time: %.2fs", duration_s)
         summary_prefix = "aborted" if run_state.get("termination_reason") == "circuit_breaker" else "done"
         event_emitter.emit(
@@ -526,6 +545,11 @@ def run_player_pipeline(
     finally:
         if ui:
             ui.close()
+        if network_telemetry:
+            try:
+                network_telemetry.close()
+            except Exception:
+                pass
         try:
             context.close()
         except Exception:

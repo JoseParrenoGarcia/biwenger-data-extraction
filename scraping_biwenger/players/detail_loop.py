@@ -10,6 +10,7 @@ from scraping_biwenger.players.matches import (
     select_scoring_system,
     with_retries,
 )
+from scraping_biwenger.players.network_telemetry import network_action
 from scraping_biwenger.players.pacing import PlayerRunPacingPolicy
 from scraping_biwenger.players.search_and_open import (
     clear_search_box_if_present,
@@ -150,270 +151,276 @@ def scrape_all_players_detail(
                 processed=processed,
             )
 
-        # 1) open the player page
-        opened = open_player_detail(logger, page, player, base_url=base_url)
-        if not opened:
-            logger.warning(f"Skipping {name} — could not open detail.")
-            record_player_error(player, "open_player", "Could not open player detail.")
-            if needs_table_return():
-                back_started_at = time.time()
-                click_back_to_players_table(page)
-                _log_timing(logger, "Back-to-table after failed open", back_started_at, player_slug=slug)
-            else:
-                logger.debug("Skipping back-to-table for final selected player: %s", name)
-            log_player_summary(
-                player,
-                idx=idx,
-                total=len(players_list),
-                status="failed",
-                started_at=player_started_at,
-                stage="open_player",
-            )
-            if stop_requested and stop_requested():
-                break
-            continue
-        pacing_policy.apply("after_open", processed=processed)
+        with network_action(page, "player_cycle", player_slug=slug, player_name=name, rank=idx):
+            # 1) open the player page
+            opened = open_player_detail(logger, page, player, base_url=base_url)
+            if not opened:
+                logger.warning(f"Skipping {name} — could not open detail.")
+                record_player_error(player, "open_player", "Could not open player detail.")
+                if needs_table_return():
+                    back_started_at = time.time()
+                    click_back_to_players_table(page)
+                    _log_timing(logger, "Back-to-table after failed open", back_started_at, player_slug=slug)
+                else:
+                    logger.debug("Skipping back-to-table for final selected player: %s", name)
+                log_player_summary(
+                    player,
+                    idx=idx,
+                    total=len(players_list),
+                    status="failed",
+                    started_at=player_started_at,
+                    stage="open_player",
+                )
+                if stop_requested and stop_requested():
+                    break
+                continue
+            pacing_policy.apply("after_open", processed=processed)
 
-        try:
-            pacing_policy.apply("before_scoring", processed=processed)
-            scoring_started_at = time.time()
-            scoring_system = select_scoring_system(page, target_label="SofaScore", logger=logger)
-            player["_scoring_system"] = scoring_system
-            _log_timing(logger, "SofaScore selection", scoring_started_at, player_slug=slug)
-        except Exception as e:
-            logger.exception(f"Skipping {name} — could not select SofaScore scoring system: {e}")
-            record_player_error(player, "select_scoring_system", str(e))
-            if needs_table_return():
-                back_started_at = time.time()
-                click_back_to_players_table(page)
-                _log_timing(logger, "Back-to-table after scoring-system failure", back_started_at, player_slug=slug)
-            else:
-                logger.debug("Skipping back-to-table for final selected player: %s", name)
-            log_player_summary(
-                player,
-                idx=idx,
-                total=len(players_list),
-                status="failed",
-                started_at=player_started_at,
-                stage="select_scoring_system",
-            )
-            if stop_requested and stop_requested():
-                break
-            continue
+            try:
+                pacing_policy.apply("before_scoring", processed=processed)
+                scoring_started_at = time.time()
+                scoring_system = select_scoring_system(page, target_label="SofaScore", logger=logger)
+                player["_scoring_system"] = scoring_system
+                _log_timing(logger, "SofaScore selection", scoring_started_at, player_slug=slug)
+            except Exception as e:
+                logger.exception(f"Skipping {name} — could not select SofaScore scoring system: {e}")
+                record_player_error(player, "select_scoring_system", str(e))
+                if needs_table_return():
+                    back_started_at = time.time()
+                    click_back_to_players_table(page)
+                    _log_timing(
+                        logger,
+                        "Back-to-table after scoring-system failure",
+                        back_started_at,
+                        player_slug=slug,
+                    )
+                else:
+                    logger.debug("Skipping back-to-table for final selected player: %s", name)
+                log_player_summary(
+                    player,
+                    idx=idx,
+                    total=len(players_list),
+                    status="failed",
+                    started_at=player_started_at,
+                    stage="select_scoring_system",
+                )
+                if stop_requested and stop_requested():
+                    break
+                continue
 
-        # 2) scrape left-panel stats
-        detail = None
-        player_match_rows: List[Dict[str, str]] = []
-        player_value_history_rows: List[Dict[str, str]] = []
-        try:
-            detail_started_at = time.time()
-            detail = scrape_player_detail(page, logger=logger)
-            _log_timing(logger, "Detail scrape", detail_started_at, player_slug=slug)
-            detail.update(
-                {
-                    "name": name,
-                    "slug": slug,
-                    "href": player.get("href", ""),
+            # 2) scrape left-panel stats
+            detail = None
+            player_match_rows: List[Dict[str, str]] = []
+            player_value_history_rows: List[Dict[str, str]] = []
+            try:
+                detail_started_at = time.time()
+                detail = scrape_player_detail(page, logger=logger)
+                _log_timing(logger, "Detail scrape", detail_started_at, player_slug=slug)
+                detail.update(
+                    {
+                        "name": name,
+                        "slug": slug,
+                        "href": player.get("href", ""),
+                        "scoring_system": scoring_system,
+                    }
+                )
+                player_detail_rows.append(detail)
+                processed += 1
+                logger.debug(
+                    "Stats scraped for %s: %s",
+                    name,
+                    {
+                        k: detail.get(k)
+                        for k in [
+                            "points",
+                            "value",
+                            "matches_played",
+                            "average",
+                            "market_purchases_pct",
+                            "market_sales_pct",
+                        ]
+                    },
+                )
+            except Exception as e:
+                logger.exception(f"Failed scraping stats for '{name}': {e}")
+                record_player_error(player, "scrape_detail", str(e))
+                if needs_table_return():
+                    back_started_at = time.time()
+                    click_back_to_players_table(page)
+                    _log_timing(logger, "Back-to-table after detail failure", back_started_at, player_slug=slug)
+                else:
+                    logger.debug("Skipping back-to-table for final selected player: %s", name)
+                log_player_summary(
+                    player,
+                    idx=idx,
+                    total=len(players_list),
+                    status="failed",
+                    started_at=player_started_at,
+                    stage="scrape_detail",
+                )
+                continue
+
+            # 3) scrape matches (Points tab) while page is still open
+            if collect_matches:
+                try:
+                    matches_started_at = time.time()
+                    rows = (
+                        with_retries(
+                            lambda: scrape_player_matches(page, logger=logger),
+                            validate=lambda r: r is not None and len(r) > 0,
+                            attempts=2,
+                            base_sleep=0.6,
+                            logger=logger,
+                        )
+                        or []
+                    )
+
+                    # enrich each row with player context
+                    for r in rows:
+                        r["player_name"] = detail.get("player_name", "") or name
+                        r["team"] = detail.get("team", "")
+                        r["slug"] = slug
+                        r["scoring_system"] = scoring_system
+                    match_rows.extend(rows)
+                    player_match_rows.extend(rows)
+
+                    logger.debug("Matches scraped for %s: %s rows", name, len(rows))
+                    _log_timing(logger, "Matches scrape", matches_started_at, player_slug=slug)
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to scrape matches for {name}: {e}")
+                    record_player_error(player, "scrape_matches", str(e))
+
+            # 4) Scrape value history (Value tab)
+            value_stage_status = "unknown"
+            value_retry_reason = ""
+            try:
+                pacing_policy.apply("before_value", processed=processed)
+                value_started_at = time.time()
+                value_result = scrape_value_history_result_for_player(
+                    page,
+                    logger=logger,
+                    player_ctx={
+                        "player_name": detail.get("player_name", "") or name,
+                        "team": detail.get("team", ""),
+                        "slug": slug,
+                    },
+                    timeout=7000,
+                )
+                value_stage_status = value_result.status
+                value_retry_reason = value_result.retry_reason
+                if not value_result.dataframe.empty:
+                    player_value_history_rows = value_result.dataframe.to_dict(orient="records")
+                    value_history_rows.extend(player_value_history_rows)
+                    logger.debug("Value history captured for %s: %s rows", name, len(value_result.dataframe))
+                else:
+                    logger.debug("Value history empty for %s", name)
+                _log_timing(logger, "Value history scrape", value_started_at, player_slug=slug)
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to scrape value history for {name}: {e}")
+                value_stage_status = "unknown"
+                value_retry_reason = "scrape_value_history_exception"
+
+            player["_value_stage_status"] = value_stage_status
+            player["_value_retry_reason"] = value_retry_reason
+
+            stage_label = "ok"
+            if len(player_match_rows) > 0 and len(player_value_history_rows) == 0:
+                stage_label = "value_incomplete"
+                player["_stage_status"] = stage_label
+                details = {
+                    "reason": value_retry_reason or "values_missing_after_matches",
+                    "match_rows": len(player_match_rows),
+                    "value_rows": len(player_value_history_rows),
+                    "stats_rows": 1,
                     "scoring_system": scoring_system,
                 }
-            )
-            player_detail_rows.append(detail)
-            processed += 1
-            logger.debug(
-                "Stats scraped for %s: %s",
-                name,
-                {
-                    k: detail.get(k)
-                    for k in [
-                        "points",
-                        "value",
-                        "matches_played",
-                        "average",
-                        "market_purchases_pct",
-                        "market_sales_pct",
-                    ]
-                },
-            )
-        except Exception as e:
-            logger.exception(f"Failed scraping stats for '{name}': {e}")
-            record_player_error(player, "scrape_detail", str(e))
-            if needs_table_return():
-                back_started_at = time.time()
-                click_back_to_players_table(page)
-                _log_timing(logger, "Back-to-table after detail failure", back_started_at, player_slug=slug)
-            else:
-                logger.debug("Skipping back-to-table for final selected player: %s", name)
-            log_player_summary(
-                player,
-                idx=idx,
-                total=len(players_list),
-                status="failed",
-                started_at=player_started_at,
-                stage="scrape_detail",
-            )
-            continue
-
-        # 3) scrape matches (Points tab) while page is still open
-        if collect_matches:
-            try:
-                matches_started_at = time.time()
-                rows = (
-                    with_retries(
-                        lambda: scrape_player_matches(page, logger=logger),
-                        validate=lambda r: r is not None and len(r) > 0,
-                        attempts=2,
-                        base_sleep=0.6,
-                        logger=logger,
-                    )
-                    or []
+                record_player_error(
+                    player,
+                    "value_history_incomplete",
+                    (
+                        f"Value history incomplete: reason={details['reason']} "
+                        f"matches={details['match_rows']} values={details['value_rows']}"
+                    ),
+                    details=details,
+                    emit_failure_event=False,
                 )
-
-                # enrich each row with player context
-                for r in rows:
-                    r["player_name"] = detail.get("player_name", "") or name
-                    r["team"] = detail.get("team", "")
-                    r["slug"] = slug
-                    r["scoring_system"] = scoring_system
-                match_rows.extend(rows)
-                player_match_rows.extend(rows)
-
-                logger.debug("Matches scraped for %s: %s rows", name, len(rows))
-                _log_timing(logger, "Matches scrape", matches_started_at, player_slug=slug)
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to scrape matches for {name}: {e}")
-                record_player_error(player, "scrape_matches", str(e))
-
-        # 4) Scrape value history (Value tab)
-        value_stage_status = "unknown"
-        value_retry_reason = ""
-        try:
-            pacing_policy.apply("before_value", processed=processed)
-            value_started_at = time.time()
-            value_result = scrape_value_history_result_for_player(
-                page,
-                logger=logger,
-                player_ctx={
-                    "player_name": detail.get("player_name", "") or name,
-                    "team": detail.get("team", ""),
-                    "slug": slug,
-                },
-                timeout=7000,
-            )
-            value_stage_status = value_result.status
-            value_retry_reason = value_result.retry_reason
-            if not value_result.dataframe.empty:
-                player_value_history_rows = value_result.dataframe.to_dict(orient="records")
-                value_history_rows.extend(player_value_history_rows)
-                logger.debug("Value history captured for %s: %s rows", name, len(value_result.dataframe))
+                if on_player_event:
+                    on_player_event(
+                        "player_value_incomplete",
+                        player_name=detail.get("player_name", "") or name,
+                        player_slug=slug,
+                        team=detail.get("team", ""),
+                        rank=player.get("rank", idx),
+                        attempt_label=player.get("attempt", "initial"),
+                        stage="value_history_incomplete",
+                        reason=details["reason"],
+                        stats_rows=1,
+                        match_rows=len(player_match_rows),
+                        value_rows=len(player_value_history_rows),
+                        scoring_system=scoring_system,
+                    )
             else:
-                logger.debug("Value history empty for %s", name)
-            _log_timing(logger, "Value history scrape", value_started_at, player_slug=slug)
-        except Exception as e:
-            logger.warning(f"⚠️ Failed to scrape value history for {name}: {e}")
-            value_stage_status = "unknown"
-            value_retry_reason = "scrape_value_history_exception"
+                player["_stage_status"] = stage_label
 
-        player["_value_stage_status"] = value_stage_status
-        player["_value_retry_reason"] = value_retry_reason
-
-        stage_label = "ok"
-        if len(player_match_rows) > 0 and len(player_value_history_rows) == 0:
-            stage_label = "value_incomplete"
-            player["_stage_status"] = stage_label
-            details = {
-                "reason": value_retry_reason or "values_missing_after_matches",
-                "match_rows": len(player_match_rows),
-                "value_rows": len(player_value_history_rows),
-                "stats_rows": 1,
-                "scoring_system": scoring_system,
-            }
-            record_player_error(
-                player,
-                "value_history_incomplete",
-                (
-                    f"Value history incomplete: reason={details['reason']} "
-                    f"matches={details['match_rows']} values={details['value_rows']}"
-                ),
-                details=details,
-                emit_failure_event=False,
-            )
+            if on_player_payload:
+                on_player_payload(
+                    player=player,
+                    detail_rows=[detail],
+                    match_rows=player_match_rows,
+                    value_history_rows=player_value_history_rows,
+                    processed_count=processed,
+                )
             if on_player_event:
+                note = ""
+                if detail.get("matches_played", 0) == 0 and not player_match_rows:
+                    note = "no_match_history"
                 on_player_event(
-                    "player_value_incomplete",
+                    "player_finished",
                     player_name=detail.get("player_name", "") or name,
                     player_slug=slug,
                     team=detail.get("team", ""),
                     rank=player.get("rank", idx),
                     attempt_label=player.get("attempt", "initial"),
-                    stage="value_history_incomplete",
-                    reason=details["reason"],
+                    processed_count=processed,
+                    total_players=min(len(players_list), max_players or len(players_list)),
+                    scoring_system=scoring_system,
                     stats_rows=1,
                     match_rows=len(player_match_rows),
                     value_rows=len(player_value_history_rows),
-                    scoring_system=scoring_system,
+                    stage=stage_label,
+                    note=note,
                 )
-        else:
-            player["_stage_status"] = stage_label
 
-        if on_player_payload:
-            on_player_payload(
-                player=player,
-                detail_rows=[detail],
-                match_rows=player_match_rows,
-                value_history_rows=player_value_history_rows,
-                processed_count=processed,
-            )
-        if on_player_event:
-            note = ""
-            if detail.get("matches_played", 0) == 0 and not player_match_rows:
-                note = "no_match_history"
-            on_player_event(
-                "player_finished",
-                player_name=detail.get("player_name", "") or name,
-                player_slug=slug,
-                team=detail.get("team", ""),
-                rank=player.get("rank", idx),
-                attempt_label=player.get("attempt", "initial"),
-                processed_count=processed,
-                total_players=min(len(players_list), max_players or len(players_list)),
-                scoring_system=scoring_system,
+            # 5) back to table for next player
+            if needs_table_return():
+                back_started_at = time.time()
+                if not click_back_to_players_table(page):
+                    logger.warning("Back-to-table failed; forcing go_back() and clearing search.")
+                    try:
+                        page.go_back(wait_until="domcontentloaded")
+                        clear_search_box_if_present(page)
+                    except Exception:
+                        pass
+                _log_timing(logger, "Back-to-table", back_started_at, player_slug=slug)
+            else:
+                logger.debug("Skipping back-to-table for final selected player: %s", name)
+
+            _cooldown()
+            pacing_policy.apply("after_player", processed=processed)
+            _log_timing(logger, "Full player cycle", player_started_at, player_slug=slug)
+            log_player_summary(
+                player,
+                idx=idx,
+                total=len(players_list),
+                status="ok",
+                started_at=player_started_at,
                 stats_rows=1,
-                match_rows=len(player_match_rows),
-                value_rows=len(player_value_history_rows),
+                match_count=len(player_match_rows),
+                value_count=len(player_value_history_rows),
                 stage=stage_label,
-                note=note,
             )
-
-        # 5) back to table for next player
-        if needs_table_return():
-            back_started_at = time.time()
-            if not click_back_to_players_table(page):
-                logger.warning("Back-to-table failed; forcing go_back() and clearing search.")
-                try:
-                    page.go_back(wait_until="domcontentloaded")
-                    clear_search_box_if_present(page)
-                except Exception:
-                    pass
-            _log_timing(logger, "Back-to-table", back_started_at, player_slug=slug)
-        else:
-            logger.debug("Skipping back-to-table for final selected player: %s", name)
-
-        _cooldown()
-        pacing_policy.apply("after_player", processed=processed)
-        _log_timing(logger, "Full player cycle", player_started_at, player_slug=slug)
-        log_player_summary(
-            player,
-            idx=idx,
-            total=len(players_list),
-            status="ok",
-            started_at=player_started_at,
-            stats_rows=1,
-            match_count=len(player_match_rows),
-            value_count=len(player_value_history_rows),
-            stage=stage_label,
-        )
-        pacing_policy.apply("every_10_players", processed=processed)
-        pacing_policy.apply("every_50_players", processed=processed)
+            pacing_policy.apply("every_10_players", processed=processed)
+            pacing_policy.apply("every_50_players", processed=processed)
 
     logger.info(
         f"🏁 Done. Players processed: {processed}. "
