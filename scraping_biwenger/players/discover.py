@@ -5,6 +5,7 @@ from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PWTimeout
 
 from scraping_biwenger.players.network_telemetry import network_action
+from scraping_biwenger.players.pacing import PlayerRunPacingPolicy
 from scraping_biwenger.shared.auth import dismiss_app_popups_if_present
 from scraping_biwenger.shared.timing import _rand_sleep
 
@@ -103,6 +104,7 @@ def extract_all_player_names(
     page: Page,
     max_pages: Optional[int] = None,
     max_players: Optional[int] = None,
+    pacing_policy: Optional[PlayerRunPacingPolicy] = None,
 ) -> List[Dict[str, str]]:
     """
     Iterate the players table by clicking '›' until it becomes disabled (last page),
@@ -121,6 +123,7 @@ def extract_all_player_names(
     """
     players_all: List[Dict[str, str]] = []
     seen = set()
+    pacing_policy = pacing_policy or PlayerRunPacingPolicy(profile="off", enabled=False)
 
     try:
         page_idx = 1
@@ -158,13 +161,15 @@ def extract_all_player_names(
 
             # Try to go next; if not enabled, we're done
             previous_first = get_first_row_key(page)
+            pacing_policy.apply("before_paginate", processed=len(players_all))
             if not click_next_if_enabled(page):
                 logger.info("✅ 'Next' is disabled (last page). Pagination finished.")
                 break
 
             # Wait for a real table change
             wait_for_table_change(page, previous_first, timeout_ms=12_000)
-            _rand_sleep(0.25, 0.6)
+            pacing_policy.apply("after_paginate", processed=len(players_all))
+            _rand_sleep(0.4, 0.9)
             page_idx += 1
 
         logger.info(f"✅ Finished pagination with {len(players_all)} unique players.")

@@ -21,7 +21,7 @@ def ETL_get_player_stats(
     checkpoint_dir: str = DEFAULT_CHECKPOINT_ROOT,
     checkpoint_enabled: bool = True,
     upload_batch_size: int = 10,
-    pacing_profile: str = "normal",
+    pacing_profile: str = "human",
     circuit_breaker_consecutive_failures: int = 4,
     circuit_breaker_window_size: int = 10,
     circuit_breaker_window_failures: int = 8,
@@ -133,9 +133,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--pacing-profile",
-        choices=["off", "normal", "slow"],
-        default="normal",
-        help="Human-like pacing profile for multi-player runs. Targeted --player-slug runs bypass pacing.",
+        choices=["off", "normal", "human", "slow"],
+        default="human",
+        help=(
+            "Human-like pacing profile for multi-player runs. "
+            "'human' is the recommended production default; targeted --player-slug runs bypass pacing."
+        ),
     )
     parser.add_argument(
         "--circuit-breaker-consecutive-failures",
