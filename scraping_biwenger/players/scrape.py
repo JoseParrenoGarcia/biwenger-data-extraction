@@ -56,7 +56,7 @@ def scrape_player_rows(
     on_players_selected=None,
     on_event=None,
     on_run_state=None,
-    pacing_profile: str = "normal",
+    pacing_profile: str = "human",
     circuit_breaker_consecutive_failures: int = 4,
     circuit_breaker_window_size: int = 10,
     circuit_breaker_window_failures: int = 8,
@@ -94,33 +94,37 @@ def scrape_player_rows(
         players_list = selected_players
     else:
         prepare_players_table(page, logger=logger)
-
         with network_action(page, "players_discovery"):
             players_list = extract_all_player_names(
                 logger=logger,
                 page=page,
                 max_pages=max_pages,
                 max_players=max_players_detail,
+                pacing_policy=build_pacing_policy(
+                    pacing_profile,
+                    targeted_player=bool(player_slug and selected_players_override is None),
+                    logger=logger,
+                ),
             )
-        if max_players_detail is not None:
-            selected_players = players_list[:max_players_detail]
-        else:
-            selected_players = players_list
-        selected_players = [
-            {
-                **player,
-                "rank": idx,
-                "attempt": "initial",
-            }
-            for idx, player in enumerate(selected_players, start=1)
-        ]
+            if max_players_detail is not None:
+                selected_players = players_list[:max_players_detail]
+            else:
+                selected_players = players_list
+            selected_players = [
+                {
+                    **player,
+                    "rank": idx,
+                    "attempt": "initial",
+                }
+                for idx, player in enumerate(selected_players, start=1)
+            ]
 
-        if logger:
-            logger.info(
-                "Discovered %s players and selected %s for detail scraping.",
-                len(players_list),
-                len(selected_players),
-            )
+            if logger:
+                logger.info(
+                    "Discovered %s players and selected %s for detail scraping.",
+                    len(players_list),
+                    len(selected_players),
+                )
 
     if on_players_selected and selected_players:
         on_players_selected(selected_players)
@@ -146,6 +150,7 @@ def scrape_player_rows(
     pacing_policy = build_pacing_policy(
         pacing_profile,
         targeted_player=bool(player_slug and selected_players_override is None),
+        logger=logger,
     )
     circuit_breaker = PlayerRunCircuitBreaker(
         consecutive_failures_threshold=circuit_breaker_consecutive_failures,

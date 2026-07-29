@@ -57,8 +57,9 @@ def test_retry_top_player_failure_once(monkeypatch):
     monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
     monkeypatch.setattr(
         "scraping_biwenger.players.scrape.extract_all_player_names",
-        lambda logger, page, max_pages, max_players=None: _players(),
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(),
     )
+
     monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
 
     _, detail_rows, _, _ = scrape_player_rows(
@@ -97,7 +98,7 @@ def test_player_outside_retry_cap_is_not_retried(monkeypatch):
     monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
     monkeypatch.setattr(
         "scraping_biwenger.players.scrape.extract_all_player_names",
-        lambda logger, page, max_pages, max_players=None: _players(),
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(),
     )
     monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
 
@@ -141,7 +142,7 @@ def test_partial_success_match_failure_is_not_retried(monkeypatch):
     monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
     monkeypatch.setattr(
         "scraping_biwenger.players.scrape.extract_all_player_names",
-        lambda logger, page, max_pages, max_players=None: _players(1),
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(1),
     )
     monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
 
@@ -176,7 +177,7 @@ def test_retry_failure_is_recorded_once_without_second_retry(monkeypatch):
     monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
     monkeypatch.setattr(
         "scraping_biwenger.players.scrape.extract_all_player_names",
-        lambda logger, page, max_pages, max_players=None: _players(1),
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(1),
     )
     monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
 
@@ -240,7 +241,7 @@ def test_value_incomplete_player_is_retried_once_after_main_pass(monkeypatch):
     monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
     monkeypatch.setattr(
         "scraping_biwenger.players.scrape.extract_all_player_names",
-        lambda logger, page, max_pages, max_players=None: _players(1),
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(1),
     )
     monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
 
@@ -287,7 +288,7 @@ def test_circuit_breaker_stops_main_pass_and_skips_retry_passes(monkeypatch):
     monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
     monkeypatch.setattr(
         "scraping_biwenger.players.scrape.extract_all_player_names",
-        lambda logger, page, max_pages, max_players=None: _players(10),
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(10),
     )
     monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
 
@@ -367,7 +368,7 @@ def test_value_retry_failure_is_recorded_once_without_loop(monkeypatch):
     monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
     monkeypatch.setattr(
         "scraping_biwenger.players.scrape.extract_all_player_names",
-        lambda logger, page, max_pages, max_players=None: _players(1),
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(1),
     )
     monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
 
