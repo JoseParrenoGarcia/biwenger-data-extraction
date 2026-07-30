@@ -306,90 +306,106 @@ def scrape_player_rows(
 
     if retry_candidates:
         retry_players = list(retry_candidates.values())
-        if logger:
-            logger.info(
-                "Starting retry pass for %s failed top-%s players.",
-                len(retry_players),
-                retry_top_players,
-            )
-        if on_event:
-            on_event(
-                "retry_pass_started",
-                retry_count=len(retry_players),
-                retry_top_players=retry_top_players,
-            )
-        retry_detail_rows, retry_match_rows, retry_value_history_rows = scrape_all_players_detail(
-            logger,
-            page,
-            retry_players,
-            max_players=len(retry_players),
-            collect_matches=True,
+        retry_detail_rows, retry_match_rows, retry_value_history_rows, recovered, failed = _run_retry_pass(
+            logger=logger,
+            page=page,
+            retry_players=retry_players,
+            pass_kind="retry",
+            start_message=f"Starting retry pass for {len(retry_players)} failed top-{retry_top_players} players.",
+            finish_message="Retry pass completed: %s recovered players, %s still failed.",
             on_player_payload=on_player_payload,
             on_player_error=handle_player_error,
             on_player_event=on_event,
+            pacing_policy=pacing_policy,
+            event_started_payload={
+                "retry_count": len(retry_players),
+                "retry_top_players": retry_top_players,
+            },
+            event_finished_payload={
+                "retry_count": len(retry_players),
+            },
         )
         player_detail_rows.extend(retry_detail_rows)
         match_rows.extend(retry_match_rows)
         value_history_rows.extend(retry_value_history_rows)
-        if logger:
-            recovered = len(retry_detail_rows)
-            failed = max(0, len(retry_players) - recovered)
-            logger.info(
-                "Retry pass completed: %s recovered players, %s still failed.",
-                recovered,
-                failed,
-            )
-        if on_event:
-            on_event(
-                "retry_pass_finished",
-                retry_count=len(retry_players),
-                recovered_count=recovered,
-                failed_count=failed,
-            )
 
     if value_retry_candidates:
         value_retry_players = list(value_retry_candidates.values())
-        if logger:
-            logger.info(
-                "Starting value retry pass for %s queued players.",
-                len(value_retry_players),
-            )
-        if on_event:
-            on_event(
-                "value_retry_pass_started",
-                retry_count=len(value_retry_players),
-            )
         value_retry_failures.clear()
-        value_retry_detail_rows, value_retry_match_rows, value_retry_history_rows = scrape_all_players_detail(
-            logger,
-            page,
-            value_retry_players,
-            max_players=len(value_retry_players),
-            collect_matches=True,
+        value_retry_detail_rows, value_retry_match_rows, value_retry_history_rows, recovered, failed = _run_retry_pass(
+            logger=logger,
+            page=page,
+            retry_players=value_retry_players,
+            pass_kind="value_retry",
+            start_message=f"Starting value retry pass for {len(value_retry_players)} queued players.",
+            finish_message="Value retry pass completed: %s recovered, %s still incomplete.",
             on_player_payload=on_player_payload,
             on_player_error=handle_player_error,
             on_player_event=on_event,
+            pacing_policy=pacing_policy,
+            event_started_payload={
+                "retry_count": len(value_retry_players),
+            },
+            event_finished_payload={
+                "retry_count": len(value_retry_players),
+            },
+            failure_counter=lambda: len(value_retry_failures),
         )
         player_detail_rows.extend(value_retry_detail_rows)
         match_rows.extend(value_retry_match_rows)
         value_history_rows.extend(value_retry_history_rows)
-        recovered = max(0, len(value_retry_players) - len(value_retry_failures))
-        failed = len(value_retry_failures)
-        if logger:
-            logger.info(
-                "Value retry pass completed: %s recovered, %s still incomplete.",
-                recovered,
-                failed,
-            )
-        if on_event:
-            on_event(
-                "value_retry_pass_finished",
-                retry_count=len(value_retry_players),
-                recovered_count=recovered,
-                failed_count=failed,
-            )
 
     return players_list, player_detail_rows, match_rows, value_history_rows
+
+
+def _run_retry_pass(
+    *,
+    logger,
+    page,
+    retry_players: list[dict],
+    pass_kind: str,
+    start_message: str,
+    finish_message: str,
+    on_player_payload,
+    on_player_error,
+    on_player_event,
+    pacing_policy,
+    event_started_payload: dict,
+    event_finished_payload: dict,
+    failure_counter=None,
+):
+    if logger:
+        logger.info(start_message)
+    if on_player_event:
+        on_player_event(f"{pass_kind}_pass_started", **event_started_payload)
+
+    retry_detail_rows, retry_match_rows, retry_value_history_rows = scrape_all_players_detail(
+        logger,
+        page,
+        retry_players,
+        max_players=len(retry_players),
+        collect_matches=True,
+        on_player_payload=on_player_payload,
+        on_player_error=on_player_error,
+        on_player_event=on_player_event,
+        pacing_policy=pacing_policy,
+    )
+    if failure_counter is None:
+        recovered = len(retry_detail_rows)
+        failed = max(0, len(retry_players) - recovered)
+    else:
+        failed = failure_counter()
+        recovered = max(0, len(retry_players) - failed)
+    if logger:
+        logger.info(finish_message, recovered, failed)
+    if on_player_event:
+        on_player_event(
+            f"{pass_kind}_pass_finished",
+            **event_finished_payload,
+            recovered_count=recovered,
+            failed_count=failed,
+        )
+    return retry_detail_rows, retry_match_rows, retry_value_history_rows, recovered, failed
 
 
 def _wrap_player_event(on_event, circuit_breaker: PlayerRunCircuitBreaker):

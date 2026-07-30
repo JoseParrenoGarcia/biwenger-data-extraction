@@ -385,3 +385,81 @@ def test_value_retry_failure_is_recorded_once_without_loop(monkeypatch):
     assert len(errors) == 2
     assert errors[0]["player"]["attempt"] == "initial"
     assert errors[1]["player"]["attempt"] == "value_retry"
+
+
+def test_retry_pass_reuses_main_pacing_policy(monkeypatch):
+    pacing_ids = []
+
+    def fake_detail_loop(logger, page, players, **kwargs):
+        pacing_ids.append(id(kwargs["pacing_policy"]))
+        if players[0].get("attempt") == "initial":
+            kwargs["on_player_error"](
+                player=players[0],
+                stage="select_scoring_system",
+                message="Timeout waiting for scoring menu",
+            )
+            return [], [], []
+        detail = {
+            "player_name": players[0]["name"],
+            "team": "Athletic",
+            "slug": players[0]["slug"],
+        }
+        return [detail], [], []
+
+    monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
+    monkeypatch.setattr(
+        "scraping_biwenger.players.scrape.extract_all_player_names",
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(1),
+    )
+    monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
+
+    scrape_player_rows(
+        object(),
+        FakeLogger(),
+        max_pages=1,
+        max_players_detail=1,
+        retry_top_players=1,
+        pacing_profile="human",
+    )
+
+    assert len(pacing_ids) == 2
+    assert pacing_ids[0] == pacing_ids[1]
+
+
+def test_value_retry_pass_reuses_main_pacing_policy(monkeypatch):
+    pacing_ids = []
+
+    def fake_detail_loop(logger, page, players, **kwargs):
+        pacing_ids.append(id(kwargs["pacing_policy"]))
+        detail = {
+            "player_name": players[0]["name"],
+            "team": "Athletic",
+            "slug": players[0]["slug"],
+        }
+        if players[0].get("attempt") == "initial":
+            kwargs["on_player_error"](
+                player=players[0],
+                stage="value_history_incomplete",
+                message="Value history incomplete: reason=csv_timeout matches=3 values=0",
+                details={"reason": "csv_timeout", "match_rows": 3, "value_rows": 0, "stats_rows": 1},
+            )
+            return [detail], [], []
+        return [detail], [], [{"date": "2026-07-24", "market_value_eur": 1000000, "slug": players[0]["slug"]}]
+
+    monkeypatch.setattr("scraping_biwenger.players.scrape.select_player_table_layout", lambda page, logger=None: None)
+    monkeypatch.setattr(
+        "scraping_biwenger.players.scrape.extract_all_player_names",
+        lambda logger, page, max_pages, max_players=None, pacing_policy=None: _players(1),
+    )
+    monkeypatch.setattr("scraping_biwenger.players.scrape.scrape_all_players_detail", fake_detail_loop)
+
+    scrape_player_rows(
+        object(),
+        FakeLogger(),
+        max_pages=1,
+        max_players_detail=1,
+        pacing_profile="human",
+    )
+
+    assert len(pacing_ids) == 2
+    assert pacing_ids[0] == pacing_ids[1]
