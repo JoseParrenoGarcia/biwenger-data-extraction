@@ -21,6 +21,10 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from dashboard.data import load_player_index, load_stats_history, load_value_history
+from dashboard.state import (
+    seed_market_trends_widget_from_shared,
+    sync_market_trends_widget_to_shared,
+)
 
 st.set_page_config(page_title="Market Trends · Biwenger", layout="wide")
 
@@ -268,6 +272,7 @@ if index_df.empty:
     st.stop()
 
 all_options, display_map, all_slugs_sorted, slug_to_name = _player_options(index_df)
+seed_market_trends_widget_from_shared(all_options, display_map, slug_to_name)
 
 # ── Controls ──────────────────────────────────────────────────────────────────
 with st.container(border=True):
@@ -276,8 +281,10 @@ with st.container(border=True):
         selected_labels = st.multiselect(
             "Players",
             options=all_options,
-            default=[],
+            key="dashboard_market_trends_selected_labels",
             placeholder="Search for a player…",
+            on_change=sync_market_trends_widget_to_shared,
+            kwargs={"display_map": display_map, "slug_to_name": slug_to_name},
         )
     with col_window:
         st.write("")  # vertical alignment nudge
