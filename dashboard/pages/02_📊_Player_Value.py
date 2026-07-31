@@ -22,6 +22,7 @@ import streamlit as st
 from plotly.subplots import make_subplots
 
 from dashboard.data import load_all_player_stats, load_current_team
+from dashboard.state import seed_player_value_widget_from_shared, sync_player_value_widget_to_shared
 from dashboard.valuation import (
     POSITION_COLOURS,
     POSITION_ORDER,
@@ -120,10 +121,13 @@ highlight_team_only = col_toggle.toggle("My squad only", value=False)
 # ── Player highlight selector ─────────────────────────────────────────────────
 
 player_labels = sorted(df_all["player_name"].dropna().unique().tolist())
+seed_player_value_widget_from_shared(player_labels)
 sel_players = st.multiselect(
     "Highlight players (gold ring)",
     player_labels,
+    key="dashboard_player_value_selected_names",
     placeholder="Search for a player…",
+    on_change=sync_player_value_widget_to_shared,
 )
 
 # ── Axis selectors ────────────────────────────────────────────────────────────
