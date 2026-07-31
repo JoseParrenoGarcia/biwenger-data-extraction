@@ -163,7 +163,9 @@ Points panel:
 Value panel:
 
 - Value tab: `tab[header='Value'], [role='tab']:has-text('Value')`
-- Chart canvas: `chart-js canvas`
+- Value panel root: `tab[header='Value']`
+- Chart surface: `chart-js canvas, svg-chart svg, svg-chart`
+- Tools: `chart-js .tools segmented-control, svg-chart-tools segmented-control`
 - CSV download button: `segmented-control button:has(.icon-download)`
 
 ## Selector Lessons Learned

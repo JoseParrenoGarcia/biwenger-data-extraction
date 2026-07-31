@@ -15,11 +15,30 @@ from playwright.sync_api import TimeoutError as PWTimeout
 from scraping_biwenger.players.network_telemetry import network_action
 from scraping_biwenger.shared.timing import log_timing_debug
 
-CSV_BTN = "segmented-control button:has(.icon-download)"
-IMG_BTN = "segmented-control button:has(.icon-image)"
-VALUE_TAB = "tab[header='Value'], [role='tab']:has-text('Value')"
-CHART_CANVAS = "chart-js canvas"
-TOOLS = "chart-js .tools segmented-control"
+CSV_BTN = "svg-chart-tools segmented-control button:has(.icon-download), segmented-control button:has(.icon-download)"
+IMG_BTN = "svg-chart-tools segmented-control button:has(.icon-image), segmented-control button:has(.icon-image)"
+VALUE_TAB = (
+    "tabs [role='tab']:has-text('Value'), "
+    "ul[role='tablist'] [role='tab']:has-text('Value'), "
+    "ul[role='tablist'] [role='tab']:has(a:has-text('Value')), "
+    "li[role='tab']:has-text('Value'), "
+    "tabs [role='tab']:has(.icon-chart), "
+    "ul[role='tablist'] [role='tab']:has(.icon-chart), "
+    "ul[role='tablist'] [role='tab']:has(a .icon-chart), "
+    "li[role='tab']:has(.icon-chart), "
+    "[role='tab']:has-text('Value')"
+)
+VALUE_PANEL = "tab[header='Value']"
+CHART_SURFACE = "chart-js canvas, svg-chart svg, svg-chart"
+TOOLS = "chart-js .tools segmented-control, svg-chart-tools segmented-control, svg-chart segmented-control"
+READY_SELECTORS = (
+    TOOLS,
+    CSV_BTN,
+    CHART_SURFACE,
+    "player-detail-price",
+    "value-chart",
+    "price-history",
+)
 
 
 @dataclass
@@ -33,12 +52,29 @@ def _log_timing(logger, label: str, started_at: float, *, player_slug: str = "")
     log_timing_debug(logger, label, started_at, player_slug=player_slug)
 
 
+def _wait_for_any_ready_selector(page: Page, timeout: float) -> bool:
+    per_selector_timeout = max(int(timeout / max(len(READY_SELECTORS), 1)), 750)
+    for selector in READY_SELECTORS:
+        try:
+            page.locator(selector).first.wait_for(state="visible", timeout=per_selector_timeout)
+            return True
+        except PWTimeout:
+            continue
+    return False
+
+
 def _hover_chart_to_reveal_tools(page: Page, timeout: float = 3000) -> None:
-    # Hover the canvas to reveal the segmented-control with the CSV/PNG buttons.
-    page.locator(CHART_CANVAS).wait_for(state="visible", timeout=timeout)
-    page.locator(CHART_CANVAS).hover()
-    # The tools often fade in; give them a moment.
-    page.locator(TOOLS).wait_for(state="visible", timeout=timeout)
+    # Some Biwenger builds expose the tools immediately; newer ones reveal them on hover.
+    try:
+        page.locator(TOOLS).first.wait_for(state="visible", timeout=1000)
+        return
+    except PWTimeout:
+        pass
+
+    chart = page.locator(CHART_SURFACE).first
+    chart.wait_for(state="visible", timeout=timeout)
+    chart.hover()
+    page.locator(TOOLS).first.wait_for(state="visible", timeout=timeout)
 
 
 def open_value_tab(page: Page, timeout: float = 5000) -> bool:
@@ -48,14 +84,28 @@ def open_value_tab(page: Page, timeout: float = 5000) -> bool:
     """
     try:
         with network_action(page, "open_value_tab"):
-            # Prefer the ARIA role first (most robust across Angular versions).
-            tab = page.get_by_role("tab", name=re.compile(r"^\s*Value\s*$", re.I))
-            if tab.count() > 0:
-                tab.first.click()
-            else:
-                page.locator(VALUE_TAB).first.click()
-            page.locator(CHART_CANVAS).wait_for(state="visible", timeout=timeout)
-        return True
+            # If the Value panel is already active, do not require another click.
+            value_panel = page.locator(VALUE_PANEL).first
+            try:
+                value_panel.wait_for(state="visible", timeout=1000)
+                return _wait_for_any_ready_selector(page, timeout)
+            except PWTimeout:
+                pass
+
+            # Prefer the visible tab header, not the hidden tabpanel content.
+            tab = page.locator(VALUE_TAB).filter(has_not=page.locator("[role='tabpanel']"))
+            if tab.count() == 0:
+                tab = page.get_by_role("tab", name=re.compile(r"\bValue\b", re.I))
+            if tab.count() == 0:
+                return False
+
+            tab.first.scroll_into_view_if_needed()
+            tab.first.click()
+            try:
+                value_panel.wait_for(state="visible", timeout=max(int(timeout / 2), 1000))
+            except PWTimeout:
+                pass
+            return _wait_for_any_ready_selector(page, timeout)
     except PWTimeout:
         return False
 
