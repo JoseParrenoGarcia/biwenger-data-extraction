@@ -358,6 +358,31 @@ def _fmt_delta(v: float | int | None) -> str:
     return f"{sign}{_fmt_money(abs(v))}"
 
 
+def _fmt_signed_int(v: float | int | None) -> str:
+    if v is None or pd.isna(v):
+        return "—"
+    return f"{int(round(float(v))):+d}"
+
+
+def _classify_value_view(*, is_selected: bool, value_gap: float, eff_gap: float, pts_gap: float) -> str:
+    if value_gap <= -300_000 and eff_gap >= -0.75 and abs(pts_gap) <= 8:
+        return "Clear buy"
+    if value_gap >= 800_000 and eff_gap <= 0.5:
+        return "Too expensive"
+    if is_selected:
+        return "Similar"
+    return "Similar"
+
+
+def _value_view_label(tag: str) -> str:
+    mapping = {
+        "Clear buy": "🟢 Clear buy",
+        "Similar": "🟡 Similar",
+        "Too expensive": "🔴 Too expensive",
+    }
+    return mapping.get(tag, tag)
+
+
 def _sim_player_option(row: pd.Series) -> str:
     return f"{row['player_name']} ({row['team']})"
 
@@ -604,17 +629,70 @@ else:
             "value_gap": "Value gap (€)",
         }
     )
+    comp_display["Eff. gap"] = (
+        cohort_df["points_per_100k"].to_numpy() - float(selected_row["points_per_100k"])
+    ).round(2)
+    comp_display["Value gap size (€)"] = cohort_df["value_gap"].abs().to_numpy()
+    comp_display["Value view"] = [
+        _classify_value_view(
+            is_selected=bool(is_selected),
+            value_gap=float(value_gap),
+            eff_gap=float(eff_gap),
+            pts_gap=float(pts_gap),
+        )
+        for is_selected, value_gap, eff_gap, pts_gap in zip(
+            cohort_df["is_selected_player"].to_numpy(),
+            cohort_df["value_gap"].to_numpy(),
+            comp_display["Eff. gap"].to_numpy(),
+            cohort_df["points_gap"].to_numpy(),
+            strict=False,
+        )
+    ]
+    comp_display["Value view"] = comp_display["Value view"].map(_value_view_label)
+    comp_display["Pts gap"] = comp_display["Pts gap"].map(_fmt_signed_int)
+    comp_display["Value gap (€)"] = cohort_df["value_gap"].map(_fmt_delta)
+    comp_display = comp_display[
+        [
+            "Band",
+            "Player",
+            "Team",
+            "Points",
+            "Pts/100k",
+            "Eff. gap",
+            "Value gap (€)",
+            "Value gap size (€)",
+            "Value view",
+            "Pts gap",
+        ]
+    ]
 
     st.caption("Nearest same-position players by total points")
+    comp_table_height = min(max(36 * len(comp_display) + 44, 240), 780)
     st.dataframe(
         comp_display,
         width="stretch",
+        height=comp_table_height,
         hide_index=True,
         column_config={
-            "Value (€)": st.column_config.NumberColumn(format="€%d"),
-            "Pts/100k": st.column_config.NumberColumn(format="%.2f"),
-            "Pts gap": st.column_config.NumberColumn(format="%.0f"),
-            "Value gap (€)": st.column_config.NumberColumn(format="€%d"),
+            "Points": st.column_config.ProgressColumn(
+                "Points",
+                format="%d",
+                min_value=int(comp_display["Points"].min()),
+                max_value=int(comp_display["Points"].max()),
+            ),
+            "Pts/100k": st.column_config.ProgressColumn(
+                "Pts/100k",
+                format="%.2f",
+                min_value=float(comp_display["Pts/100k"].min()),
+                max_value=float(comp_display["Pts/100k"].max()),
+            ),
+            "Eff. gap": st.column_config.NumberColumn(format="%+.2f"),
+            "Value gap size (€)": st.column_config.ProgressColumn(
+                "Value gap size (€)",
+                format="€%d",
+                min_value=0,
+                max_value=float(comp_display["Value gap size (€)"].max()),
+            ),
         },
     )
 
