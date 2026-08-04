@@ -5,7 +5,14 @@ Unit tests for dashboard/valuation.py — no Streamlit, no Supabase.
 import pandas as pd
 import pytest
 
-from dashboard.valuation import enrich_player_stats, mark_current_team
+from dashboard.valuation import (
+    build_points_cohort,
+    build_price_simulation_table,
+    enrich_player_stats,
+    fair_value_from_points,
+    mark_current_team,
+    summarize_points_cohort,
+)
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -68,6 +75,10 @@ def test_remaining_rounds_no_negative():
     assert df["remaining_rounds"].iloc[0] == 0
 
 
+def test_fair_value_from_points():
+    assert fair_value_from_points(140, 7.0) == pytest.approx(2_000_000.0)
+
+
 # ── enrich_player_stats: projected metrics ────────────────────────────────────
 
 
@@ -97,6 +108,10 @@ def test_projected_pessimistic_is_half_base_rate(tmp_path):
     expected_pess = round((pts + avg * rate_pess * remaining) / val * 100_000, 2)
     assert df["projected_pts_per_100k_base"].iloc[0] == pytest.approx(expected_base, abs=0.01)
     assert df["projected_pts_per_100k_pessimistic"].iloc[0] == pytest.approx(expected_pess, abs=0.01)
+    expected_base_points = round(pts + avg * rate_base * remaining, 2)
+    expected_pess_points = round(pts + avg * rate_pess * remaining, 2)
+    assert df["projected_points_base"].iloc[0] == pytest.approx(expected_base_points, abs=0.01)
+    assert df["projected_points_pessimistic"].iloc[0] == pytest.approx(expected_pess_points, abs=0.01)
 
 
 def test_optimistic_rate_capped_at_1():
@@ -176,3 +191,74 @@ def test_mark_current_team_does_not_mutate():
     team = pd.DataFrame([{"slug": "mbappe", "name": "Mbappé"}])
     mark_current_team(stats, team)
     assert "is_current_team" not in stats.columns
+
+
+def test_build_points_cohort_uses_same_position_and_neighbors():
+    rows = []
+    for i, points in enumerate([80, 90, 100, 110, 120, 130, 140]):
+        rows.append(
+            {
+                "player_name": f"Def {i}",
+                "team": f"Team {i}",
+                "slug": f"def-{i}",
+                "position": "Defender",
+                "points": points,
+                "value": 1_000_000 + i * 100_000,
+                "average": 4.0,
+                "matches_played": 20,
+            }
+        )
+    rows.append(
+        {
+            "player_name": "Fwd 1",
+            "team": "Other",
+            "slug": "fwd-1",
+            "position": "Forward",
+            "points": 999,
+            "value": 9_000_000,
+            "average": 8.0,
+            "matches_played": 20,
+        }
+    )
+
+    df = enrich_player_stats(pd.DataFrame(rows))
+    selected_index = df.index[df["player_name"] == "Def 3"][0]
+
+    selected_row, cohort = build_points_cohort(df, selected_index=selected_index, neighbors_each_side=2)
+
+    assert selected_row["player_name"] == "Def 3"
+    assert set(cohort["player_name"]) == {"Def 1", "Def 2", "Def 3", "Def 4", "Def 5"}
+    assert "Fwd 1" not in set(cohort["player_name"])
+    assert cohort["is_selected_player"].sum() == 1
+
+
+def test_summarize_points_cohort_and_price_simulation():
+    df = enrich_player_stats(
+        pd.DataFrame(
+            [
+                _base_row(player_name="A", team="TA", slug="a", position="Defender", points=100, value=2_000_000),
+                _base_row(player_name="B", team="TB", slug="b", position="Defender", points=110, value=2_000_000),
+                _base_row(player_name="C", team="TC", slug="c", position="Defender", points=120, value=2_000_000),
+                _base_row(player_name="D", team="TD", slug="d", position="Defender", points=130, value=2_000_000),
+                _base_row(player_name="E", team="TE", slug="e", position="Defender", points=140, value=2_000_000),
+            ]
+        )
+    )
+    selected_index = df.index[df["player_name"] == "C"][0]
+    selected_row, cohort = build_points_cohort(df, selected_index=selected_index, neighbors_each_side=2)
+    summary = summarize_points_cohort(selected_row, cohort)
+
+    assert summary["cohort_median_points_per_100k"] == pytest.approx(6.0)
+    assert summary["fair_value_current_points"] == pytest.approx(2_000_000.0)
+
+    sim = build_price_simulation_table(
+        selected_row,
+        bid_deltas=[200_000, 500_000],
+        point_scenarios=[("Base", 120), ("Upside", 150)],
+        cohort_target_points_per_100k=summary["cohort_median_points_per_100k"],
+    )
+
+    assert list(sim["Scenario"]) == ["Base", "Upside"]
+    assert sim.loc[0, "Current pts/100k"] == pytest.approx(6.0)
+    assert sim.loc[0, "+€200,000 pts/100k"] == pytest.approx(round(120 / 2_200_000 * 100_000, 2))
+    assert sim.loc[1, "Fair value @ cohort median"] == pytest.approx(2_500_000.0)

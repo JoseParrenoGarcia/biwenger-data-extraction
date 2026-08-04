@@ -66,20 +66,26 @@ def fetch_all_player_stats(supabase=None) -> pd.DataFrame:
 
     latest_slug = slug_rows.sort_values("as_of_date", ascending=False).drop_duplicates(subset=["slug"])
 
+    if legacy_rows.empty:
+        return latest_slug.reset_index(drop=True)
+
     # Exclude players already covered by a slugged row so a player with mixed
     # slug/null rows (e.g. Mbappé) does not appear twice.
     slug_player_keys = set(zip(latest_slug["player_name"].str.strip(), latest_slug["team"].str.strip()))
-    legacy_rows = legacy_rows[
-        ~legacy_rows.apply(
-            lambda r: (str(r["player_name"]).strip(), str(r["team"]).strip()) in slug_player_keys,
-            axis=1,
-        )
-    ]
+    legacy_keep_mask = ~legacy_rows.apply(
+        lambda r: (str(r["player_name"]).strip(), str(r["team"]).strip()) in slug_player_keys,
+        axis=1,
+    )
+    legacy_rows = legacy_rows.loc[legacy_keep_mask]
+
+    if legacy_rows.empty:
+        return latest_slug.reset_index(drop=True)
+
     latest_legacy = legacy_rows.sort_values("as_of_date", ascending=False).drop_duplicates(
         subset=["player_name", "team"]
     )
 
-    return pd.concat([latest_slug, latest_legacy], ignore_index=True)
+    return pd.concat([latest_slug, latest_legacy], ignore_index=True).reset_index(drop=True)
 
 
 def fetch_current_team(supabase=None) -> pd.DataFrame:
