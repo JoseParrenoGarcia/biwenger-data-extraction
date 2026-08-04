@@ -502,7 +502,9 @@ st.plotly_chart(fig, width="stretch")
 
 st.divider()
 st.subheader("Fair Value Simulator")
-st.caption("Pick one player, compare him to nearby same-position point totals, and stress-test how much efficiency you lose as the bid rises.")
+st.caption(
+    "Pick one player, compare him to nearby same-position point totals, and stress-test how much efficiency you lose as the bid rises."
+)
 
 sim_candidates = (
     df.sort_values(["points", "value"], ascending=[False, True])
@@ -544,7 +546,9 @@ else:
 
     selected_index = sim_option_to_index[selected_sim_option]
     selected_market_row = df_all.loc[selected_index]
-    selected_row, cohort_df = build_points_cohort(df_all, selected_index=selected_index, neighbors_each_side=neighbors_each_side)
+    selected_row, cohort_df = build_points_cohort(
+        df_all, selected_index=selected_index, neighbors_each_side=neighbors_each_side
+    )
     cohort_summary = summarize_points_cohort(selected_row, cohort_df)
     target_pp100k = cohort_summary["cohort_median_points_per_100k"]
 
@@ -555,11 +559,19 @@ else:
     with st.container(border=True):
         points_col1, points_col2, points_col3 = st.columns(3)
         point_scenarios = [
-            ("Current points", float(points_col1.number_input("Points scenario 1", min_value=0, value=points_default_current, step=5))),
-            ("Base projection", float(points_col2.number_input("Points scenario 2", min_value=0, value=points_default_base, step=5))),
+            (
+                "Current points",
+                float(points_col1.number_input("Points scenario 1", min_value=0, value=points_default_current, step=5)),
+            ),
+            (
+                "Base projection",
+                float(points_col2.number_input("Points scenario 2", min_value=0, value=points_default_base, step=5)),
+            ),
             (
                 "Upside projection",
-                float(points_col3.number_input("Points scenario 3", min_value=0, value=points_default_optimistic, step=5)),
+                float(
+                    points_col3.number_input("Points scenario 3", min_value=0, value=points_default_optimistic, step=5)
+                ),
             ),
         ]
 
@@ -633,9 +645,9 @@ else:
             "value_gap": "Value gap (€)",
         }
     )
-    comp_display["Eff. gap"] = (
-        cohort_df["points_per_100k"].to_numpy() - float(selected_row["points_per_100k"])
-    ).round(2)
+    comp_display["Eff. gap"] = (cohort_df["points_per_100k"].to_numpy() - float(selected_row["points_per_100k"])).round(
+        2
+    )
     comp_display["Value gap size (€)"] = cohort_df["value_gap"].abs().to_numpy()
     comp_display["Value view"] = [
         _classify_value_view(

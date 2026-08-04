@@ -215,7 +215,9 @@ def build_points_cohort(
     cohort["value_gap"] = (cohort["value"] - float(selected_row["value"])).round(0)
     cohort["is_selected_player"] = cohort["cohort_band"] == "Selected"
     cohort["display_label"] = cohort["player_name"].astype(str) + " (" + cohort["team"].astype(str) + ")"
-    cohort = cohort.sort_values(["points", "value", "player_name"], ascending=[False, True, True]).reset_index(drop=True)
+    cohort = cohort.sort_values(["points", "value", "player_name"], ascending=[False, True, True]).reset_index(
+        drop=True
+    )
     return selected_row.copy(), cohort
 
 
