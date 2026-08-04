@@ -28,48 +28,6 @@ from dashboard.state import (
 
 st.set_page_config(page_title="Market Trends · Biwenger", layout="wide")
 
-# ── Colour palette ────────────────────────────────────────────────────────────
-# Hand-picked, perceptually distinct colours. Assigned by sorted slug position
-# so the same player always gets the same colour regardless of selection order.
-
-_PALETTE = [
-    "#2563eb",  # blue
-    "#dc2626",  # red
-    "#16a34a",  # green
-    "#d97706",  # amber
-    "#7c3aed",  # violet
-    "#0891b2",  # cyan
-    "#be185d",  # pink
-    "#65a30d",  # lime
-    "#9333ea",  # purple
-    "#ea580c",  # orange
-]
-
-
-def _colour_map(selected_slugs: list[str], all_slugs_sorted: list[str]) -> dict[str, str]:
-    return {
-        slug: _PALETTE[all_slugs_sorted.index(slug) % len(_PALETTE)]
-        for slug in selected_slugs
-        if slug in all_slugs_sorted
-    }
-
-
-def _name_colour_map(
-    selected_slugs: list[str],
-    all_slugs_sorted: list[str],
-    slug_to_name: dict[str, str],
-) -> dict[str, str]:
-    """Same palette slot as the slug colour map, but keyed by player_name.
-
-    Used for stats charts where slug is currently null.
-    """
-    return {
-        slug_to_name[slug]: _PALETTE[all_slugs_sorted.index(slug) % len(_PALETTE)]
-        for slug in selected_slugs
-        if slug in all_slugs_sorted and slug in slug_to_name
-    }
-
-
 # ── Window helpers ────────────────────────────────────────────────────────────
 
 _WINDOWS = {"7d": 7, "30d": 30, "All": None}
@@ -137,7 +95,7 @@ _YAXIS_GRID = dict(showgrid=True, gridcolor="#f0f0f0", tickfont=dict(size=11))
 # ── Chart builders ─────────────────────────────────────────────────────────────
 
 
-def _build_value_chart(df: pd.DataFrame, colour_map: dict[str, str]) -> go.Figure:
+def _build_value_chart(df: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
     for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("date")
@@ -149,7 +107,7 @@ def _build_value_chart(df: pd.DataFrame, colour_map: dict[str, str]) -> go.Figur
                 mode="lines+markers",
                 marker=dict(size=4, symbol="circle"),
                 name=label,
-                line=dict(color=colour_map.get(slug, "#888"), width=2),
+                line=dict(width=2),
                 hovertemplate=(f"<b>{label}</b><br>€%{{y:,.0f}}<extra></extra>"),
             )
         )
@@ -166,7 +124,7 @@ def _build_value_chart(df: pd.DataFrame, colour_map: dict[str, str]) -> go.Figur
     return fig
 
 
-def _build_delta_chart(df: pd.DataFrame, colour_map: dict[str, str]) -> go.Figure:
+def _build_delta_chart(df: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
     for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("date")
@@ -178,7 +136,7 @@ def _build_delta_chart(df: pd.DataFrame, colour_map: dict[str, str]) -> go.Figur
                 mode="lines+markers",
                 marker=dict(size=4, symbol="circle"),
                 name=label,
-                line=dict(color=colour_map.get(slug, "#888"), width=1.5),
+                line=dict(width=1.5),
                 customdata=grp["value_change_1d"].apply(_fmt_k),
                 hovertemplate=(f"<b>{label}</b><br>%{{customdata}}<extra></extra>"),
             )
@@ -197,13 +155,12 @@ def _build_delta_chart(df: pd.DataFrame, colour_map: dict[str, str]) -> go.Figur
     return fig
 
 
-def _build_market_activity_chart(df: pd.DataFrame, name_colour_map: dict[str, str]) -> go.Figure:
+def _build_market_activity_chart(df: pd.DataFrame) -> go.Figure:
     """Purchases % — one line per player."""
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
         grp = grp.sort_values("as_of_date")
         label = grp["display_name"].iloc[0]
-        colour = name_colour_map.get(pname, "#888")
         fig.add_trace(
             go.Scatter(
                 x=grp["as_of_date"],
@@ -211,7 +168,7 @@ def _build_market_activity_chart(df: pd.DataFrame, name_colour_map: dict[str, st
                 mode="lines+markers",
                 marker=dict(size=5, symbol="circle"),
                 name=label,
-                line=dict(color=colour, width=2, dash="solid"),
+                line=dict(width=2, dash="solid"),
                 hovertemplate=(f"<b>{label}</b><br>%{{y:.1f}}%<extra></extra>"),
             )
         )
@@ -228,7 +185,7 @@ def _build_market_activity_chart(df: pd.DataFrame, name_colour_map: dict[str, st
     return fig
 
 
-def _build_ratio_chart(df: pd.DataFrame, name_colour_map: dict[str, str]) -> go.Figure:
+def _build_ratio_chart(df: pd.DataFrame) -> go.Figure:
     """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers."""
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
@@ -241,7 +198,7 @@ def _build_ratio_chart(df: pd.DataFrame, name_colour_map: dict[str, str]) -> go.
                 mode="lines+markers",
                 marker=dict(size=5, symbol="circle"),
                 name=label,
-                line=dict(color=name_colour_map.get(pname, "#888"), width=2),
+                line=dict(width=2),
                 hovertemplate=(f"<b>{label}</b><br>ratio: %{{y:.2f}}<extra></extra>"),
             )
         )
@@ -300,9 +257,6 @@ selected_slugs = tuple(display_map[lbl] for lbl in selected_labels)
 selected_names = tuple(slug_to_name[s] for s in selected_slugs if s in slug_to_name)
 today = pd.Timestamp.utcnow().normalize()
 cutoff = _cutoff_date(window, today)
-colour_map = _colour_map(list(selected_slugs), all_slugs_sorted)
-name_colour_map = _name_colour_map(list(selected_slugs), all_slugs_sorted, slug_to_name)
-
 with st.spinner("Loading value history…"):
     df_val = load_value_history(selected_slugs, cutoff)
 
@@ -317,15 +271,15 @@ if missing:
 
 # ── Value charts ──────────────────────────────────────────────────────────────
 if not df_val.empty:
-    st.plotly_chart(_build_value_chart(df_val, colour_map), width="stretch")
-    st.plotly_chart(_build_delta_chart(df_val, colour_map), width="stretch")
+    st.plotly_chart(_build_value_chart(df_val), width="stretch")
+    st.plotly_chart(_build_delta_chart(df_val), width="stretch")
 
 # ── Market activity charts ────────────────────────────────────────────────────
 if not df_stats.empty:
     st.divider()
     st.caption("Market activity data comes from daily scraper snapshots — one point per scrape run.")
-    st.plotly_chart(_build_market_activity_chart(df_stats, name_colour_map), width="stretch")
-    st.plotly_chart(_build_ratio_chart(df_stats, name_colour_map), width="stretch")
+    st.plotly_chart(_build_market_activity_chart(df_stats), width="stretch")
+    st.plotly_chart(_build_ratio_chart(df_stats), width="stretch")
 elif not df_val.empty:
     st.divider()
     st.info("No market activity snapshots yet for the selected players / window.")
