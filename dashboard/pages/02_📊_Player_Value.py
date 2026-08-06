@@ -276,7 +276,9 @@ def _build_scatter(
     # Background layer: dim when highlight_team_only is on
     bg_opacity = 0.08 if highlight_team_only else 0.25
     _add_layer(df[bg_mask], size=7, border_color=None, border_width=0, opacity=bg_opacity)
-    _add_layer(df[team_mask], size=11, border_color=_TEAM_BORDER_COLOUR, border_width=2.5, opacity=1.0)
+    _add_layer(
+        df[team_mask], size=11, border_color=_TEAM_BORDER_COLOUR, border_width=2.5, opacity=1.0, show_labels=True
+    )
     # Selected: halo bloom first, then crisp dot + label on top
     _add_halo_layer(df[sel_mask])
     _add_layer(
