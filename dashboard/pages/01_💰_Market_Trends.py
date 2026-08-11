@@ -19,6 +19,7 @@ Run via:
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from plotly.colors import qualitative
 
 from dashboard.data import load_player_index, load_stats_history, load_value_history
 from dashboard.state import (
@@ -92,10 +93,22 @@ _XAXIS_STYLE = dict(showgrid=False, showline=True, linecolor="#e0e0e0", tickfont
 _YAXIS_GRID = dict(showgrid=True, gridcolor="#f0f0f0", tickfont=dict(size=11))
 
 
+def _player_colours(player_slugs: tuple[str, ...], slug_to_name: dict[str, str]) -> dict[str, str]:
+    """Assign each selected player one colour for every chart on this page."""
+    palette = qualitative.Plotly
+    colours: dict[str, str] = {}
+    for index, slug in enumerate(player_slugs):
+        colour = palette[index % len(palette)]
+        colours[slug] = colour
+        if slug in slug_to_name:
+            colours[slug_to_name[slug]] = colour
+    return colours
+
+
 # ── Chart builders ─────────────────────────────────────────────────────────────
 
 
-def _build_value_chart(df: pd.DataFrame) -> go.Figure:
+def _build_value_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
     fig = go.Figure()
     for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("date")
@@ -105,9 +118,9 @@ def _build_value_chart(df: pd.DataFrame) -> go.Figure:
                 x=grp["date"],
                 y=grp["market_value_eur"],
                 mode="lines+markers",
-                marker=dict(size=4, symbol="circle"),
+                marker=dict(size=4, symbol="circle", color=player_colours[slug]),
                 name=label,
-                line=dict(width=2),
+                line=dict(width=2, color=player_colours[slug]),
                 hovertemplate=(f"<b>{label}</b><br>€%{{y:,.0f}}<extra></extra>"),
             )
         )
@@ -124,7 +137,7 @@ def _build_value_chart(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def _build_delta_chart(df: pd.DataFrame) -> go.Figure:
+def _build_delta_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
     fig = go.Figure()
     for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("date")
@@ -134,9 +147,9 @@ def _build_delta_chart(df: pd.DataFrame) -> go.Figure:
                 x=grp["date"],
                 y=grp["value_change_1d"],
                 mode="lines+markers",
-                marker=dict(size=4, symbol="circle"),
+                marker=dict(size=4, symbol="circle", color=player_colours[slug]),
                 name=label,
-                line=dict(width=1.5),
+                line=dict(width=1.5, color=player_colours[slug]),
                 customdata=grp["value_change_1d"].apply(_fmt_k),
                 hovertemplate=(f"<b>{label}</b><br>%{{customdata}}<extra></extra>"),
             )
@@ -155,7 +168,7 @@ def _build_delta_chart(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def _build_market_activity_chart(df: pd.DataFrame) -> go.Figure:
+def _build_market_activity_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
     """Purchases % — one line per player."""
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
@@ -166,9 +179,9 @@ def _build_market_activity_chart(df: pd.DataFrame) -> go.Figure:
                 x=grp["as_of_date"],
                 y=grp["market_purchases_pct"],
                 mode="lines+markers",
-                marker=dict(size=5, symbol="circle"),
+                marker=dict(size=5, symbol="circle", color=player_colours[pname]),
                 name=label,
-                line=dict(width=2, dash="solid"),
+                line=dict(width=2, dash="solid", color=player_colours[pname]),
                 hovertemplate=(f"<b>{label}</b><br>%{{y:.1f}}%<extra></extra>"),
             )
         )
@@ -185,7 +198,7 @@ def _build_market_activity_chart(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def _build_ratio_chart(df: pd.DataFrame) -> go.Figure:
+def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
     """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers."""
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
@@ -196,9 +209,9 @@ def _build_ratio_chart(df: pd.DataFrame) -> go.Figure:
                 x=grp["as_of_date"],
                 y=grp["ratio_purchase_sales"],
                 mode="lines+markers",
-                marker=dict(size=5, symbol="circle"),
+                marker=dict(size=5, symbol="circle", color=player_colours[pname]),
                 name=label,
-                line=dict(width=2),
+                line=dict(width=2, color=player_colours[pname]),
                 hovertemplate=(f"<b>{label}</b><br>ratio: %{{y:.2f}}<extra></extra>"),
             )
         )
@@ -255,6 +268,7 @@ if not selected_labels:
 # ── Phase 2 — fires when the user has selected players ───────────────────────
 selected_slugs = tuple(display_map[lbl] for lbl in selected_labels)
 selected_names = tuple(slug_to_name[s] for s in selected_slugs if s in slug_to_name)
+player_colours = _player_colours(selected_slugs, slug_to_name)
 today = pd.Timestamp.utcnow().normalize()
 cutoff = _cutoff_date(window, today)
 with st.spinner("Loading value history…"):
@@ -271,15 +285,15 @@ if missing:
 
 # ── Value charts ──────────────────────────────────────────────────────────────
 if not df_val.empty:
-    st.plotly_chart(_build_value_chart(df_val), width="stretch")
-    st.plotly_chart(_build_delta_chart(df_val), width="stretch")
+    st.plotly_chart(_build_value_chart(df_val, player_colours), width="stretch")
+    st.plotly_chart(_build_delta_chart(df_val, player_colours), width="stretch")
 
 # ── Market activity charts ────────────────────────────────────────────────────
 if not df_stats.empty:
     st.divider()
     st.caption("Market activity data comes from daily scraper snapshots — one point per scrape run.")
-    st.plotly_chart(_build_market_activity_chart(df_stats), width="stretch")
-    st.plotly_chart(_build_ratio_chart(df_stats), width="stretch")
+    st.plotly_chart(_build_market_activity_chart(df_stats, player_colours), width="stretch")
+    st.plotly_chart(_build_ratio_chart(df_stats, player_colours), width="stretch")
 elif not df_val.empty:
     st.divider()
     st.info("No market activity snapshots yet for the selected players / window.")
