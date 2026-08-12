@@ -28,6 +28,7 @@ from dashboard.valuation import (
     POSITION_ORDER,
     build_points_cohort,
     build_price_simulation_table,
+    enrich_market_columns,
     enrich_player_stats,
     mark_current_team,
     summarize_points_cohort,
@@ -47,6 +48,15 @@ _AXIS_OPTIONS: dict[str, str] = {
     "Pts per 100k": "points_per_100k",
     "Projected pts/100k (base)": "projected_pts_per_100k_base",
     "Participation rate": "participation_rate",
+    "Market purchases %": "market_purchases_pct",
+    "Market sales %": "market_sales_pct",
+}
+
+_SCATTER_PRESETS: dict[str, tuple[str, str] | None] = {
+    "Value vs Points": ("Market value (€)", "Total points"),
+    "Efficiency vs Value": ("Market value (€)", "Pts per 100k"),
+    "Market Activity": ("Market sales %", "Market purchases %"),
+    "Custom": None,
 }
 
 _TABLE_COLUMNS: list[str] = [
@@ -62,6 +72,8 @@ _TABLE_COLUMNS: list[str] = [
     "projected_pts_per_100k_pessimistic",
     "projected_pts_per_100k_base",
     "projected_pts_per_100k_optimistic",
+    "market_purchases_pct",
+    "market_sales_pct",
 ]
 
 _TABLE_LABELS: dict[str, str] = {
@@ -77,6 +89,8 @@ _TABLE_LABELS: dict[str, str] = {
     "projected_pts_per_100k_pessimistic": "Proj pessimistic",
     "projected_pts_per_100k_base": "Proj base",
     "projected_pts_per_100k_optimistic": "Proj optimistic",
+    "market_purchases_pct": "Buys %",
+    "market_sales_pct": "Sales %",
 }
 
 _SIM_DEFAULT_BID_DELTAS = [200_000, 500_000, 1_000_000]
@@ -92,6 +106,7 @@ def _load_enriched() -> pd.DataFrame:
         return stats
     enriched = enrich_player_stats(stats)
     enriched = mark_current_team(enriched, team)
+    enriched = enrich_market_columns(enriched)
     return enriched
 
 
@@ -130,12 +145,27 @@ sel_players = st.multiselect(
     on_change=sync_player_value_widget_to_shared,
 )
 
+# ── Scatter preset ───────────────────────────────────────────────────────────
+
+selected_preset = st.radio(
+    "Scatter preset",
+    list(_SCATTER_PRESETS.keys()),
+    index=0,
+    horizontal=True,
+    label_visibility="collapsed",
+)
+
 # ── Axis selectors ────────────────────────────────────────────────────────────
 
-ax_col1, ax_col2 = st.columns(2)
-axis_labels = list(_AXIS_OPTIONS.keys())
-x_label = ax_col1.selectbox("X axis", axis_labels, index=0)
-y_label = ax_col2.selectbox("Y axis", axis_labels, index=1)
+preset_axes = _SCATTER_PRESETS[selected_preset]
+if preset_axes is not None:
+    x_label, y_label = preset_axes
+else:
+    ax_col1, ax_col2 = st.columns(2)
+    axis_labels = list(_AXIS_OPTIONS.keys())
+    x_label = ax_col1.selectbox("X axis", axis_labels, index=0)
+    y_label = ax_col2.selectbox("Y axis", axis_labels, index=1)
+
 x_col = _AXIS_OPTIONS[x_label]
 y_col = _AXIS_OPTIONS[y_label]
 
@@ -187,6 +217,7 @@ def _hover_text(row: pd.Series) -> str:
         f"Value: {_fmt(row['value'], '€')} | Points: {_fmt(row['points'])} | Avg: {_fmt(row['average'])}<br>"
         f"Pts/100k: {_fmt(row.get('points_per_100k'))} | Games: {row.get('matches_played', '—')} "
         f"(rate: {_fmt(row.get('participation_rate'))})<br>"
+        f"Buys %: {_fmt(row.get('market_purchases_pct'))} | Sales %: {_fmt(row.get('market_sales_pct'))}<br>"
         f"Projected pess/base/opti: {proj_range}"
     )
 
