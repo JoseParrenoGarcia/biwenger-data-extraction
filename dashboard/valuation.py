@@ -16,6 +16,10 @@ Columns added by ``enrich_player_stats``:
     projected_pts_per_100k_pessimistic  — 50% of base rate
     projected_pts_per_100k_optimistic   — 150% of base rate (capped at 100%)
     position_display            — human-readable position label
+
+Columns added by ``enrich_market_columns``:
+    ratio_purchase_sales        — market_purchases_pct / market_sales_pct (NaN when sales == 0)
+    market_net_demand_pct       — market_purchases_pct - market_sales_pct
 """
 
 import numpy as np
@@ -164,6 +168,25 @@ def mark_current_team(
         return bool(name and name in team_names)
 
     out["is_current_team"] = out.apply(_is_team, axis=1)
+    return out
+
+
+def enrich_market_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add market-activity derived columns to a player-stats DataFrame.
+
+    Ensures ``market_purchases_pct`` and ``market_sales_pct`` are numeric,
+    then adds ``ratio_purchase_sales`` and ``market_net_demand_pct``.
+
+    Returns a new DataFrame (input is not mutated).
+    """
+    out = df.copy()
+    for col in ("market_purchases_pct", "market_sales_pct"):
+        if col not in out.columns:
+            out[col] = 0.0
+        out[col] = pd.to_numeric(out[col], errors="coerce").fillna(0.0)
+    out["ratio_purchase_sales"] = (out["market_purchases_pct"] / out["market_sales_pct"].replace(0, np.nan)).round(2)
+    out["market_net_demand_pct"] = (out["market_purchases_pct"] - out["market_sales_pct"]).round(2)
     return out
 
 

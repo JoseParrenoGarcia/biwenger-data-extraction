@@ -8,6 +8,7 @@ import pytest
 from dashboard.valuation import (
     build_points_cohort,
     build_price_simulation_table,
+    enrich_market_columns,
     enrich_player_stats,
     fair_value_from_points,
     mark_current_team,
@@ -262,3 +263,55 @@ def test_summarize_points_cohort_and_price_simulation():
     assert sim.loc[0, "Current pts/100k"] == pytest.approx(6.0)
     assert sim.loc[0, "+€200,000 pts/100k"] == pytest.approx(round(120 / 2_200_000 * 100_000, 2))
     assert sim.loc[1, "Fair value @ cohort median"] == pytest.approx(2_500_000.0)
+
+
+# ── enrich_market_columns ─────────────────────────────────────────────────────
+
+
+def _market_df(**kwargs) -> pd.DataFrame:
+    defaults = {"market_purchases_pct": 20.0, "market_sales_pct": 5.0}
+    defaults.update(kwargs)
+    return pd.DataFrame([defaults])
+
+
+def test_enrich_market_columns_adds_derived_columns():
+    df = enrich_market_columns(_market_df())
+    assert "ratio_purchase_sales" in df.columns
+    assert "market_net_demand_pct" in df.columns
+
+
+def test_enrich_market_columns_ratio():
+    df = enrich_market_columns(_market_df(market_purchases_pct=20.0, market_sales_pct=5.0))
+    assert df["ratio_purchase_sales"].iloc[0] == pytest.approx(4.0)
+
+
+def test_enrich_market_columns_net_demand():
+    df = enrich_market_columns(_market_df(market_purchases_pct=20.0, market_sales_pct=5.0))
+    assert df["market_net_demand_pct"].iloc[0] == pytest.approx(15.0)
+
+
+def test_enrich_market_columns_zero_sales_gives_nan_ratio():
+    import math
+
+    df = enrich_market_columns(_market_df(market_purchases_pct=10.0, market_sales_pct=0.0))
+    assert math.isnan(df["ratio_purchase_sales"].iloc[0])
+
+
+def test_enrich_market_columns_missing_cols_filled_with_zero():
+    df = enrich_market_columns(pd.DataFrame([{"player_name": "X"}]))
+    assert df["market_purchases_pct"].iloc[0] == pytest.approx(0.0)
+    assert df["market_sales_pct"].iloc[0] == pytest.approx(0.0)
+    assert df["market_net_demand_pct"].iloc[0] == pytest.approx(0.0)
+
+
+def test_enrich_market_columns_does_not_mutate_input():
+    original = _market_df()
+    enrich_market_columns(original)
+    assert "ratio_purchase_sales" not in original.columns
+
+
+def test_enrich_market_columns_coerces_string_values():
+    df = pd.DataFrame([{"market_purchases_pct": "15", "market_sales_pct": "bad"}])
+    out = enrich_market_columns(df)
+    assert out["market_purchases_pct"].iloc[0] == pytest.approx(15.0)
+    assert out["market_sales_pct"].iloc[0] == pytest.approx(0.0)  # coerced NaN → 0
