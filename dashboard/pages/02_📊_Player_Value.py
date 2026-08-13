@@ -121,6 +121,11 @@ if df_all.empty:
     st.warning("No player stats available.")
     st.stop()
 
+df_all = df_all.copy()
+df_all["player_label"] = (
+    df_all["player_name"].astype(str).str.strip() + " (" + df_all["team"].fillna("").astype(str).str.strip() + ")"
+)
+
 # ── Filters ───────────────────────────────────────────────────────────────────
 
 col_pos, col_team, col_toggle = st.columns([2, 3, 1])
@@ -135,14 +140,23 @@ highlight_team_only = col_toggle.toggle("My squad only", value=False)
 
 # ── Player highlight selector ─────────────────────────────────────────────────
 
-player_labels = sorted(df_all["player_name"].dropna().unique().tolist())
-seed_player_value_widget_from_shared(player_labels)
+player_index = (
+    df_all[["player_name", "player_label"]]
+    .dropna(subset=["player_name"])
+    .drop_duplicates(subset=["player_name", "player_label"])
+    .sort_values(["player_name", "player_label"], kind="mergesort")
+)
+player_labels = player_index["player_label"].tolist()
+label_to_name = dict(zip(player_index["player_label"], player_index["player_name"]))
+name_to_label = dict(zip(player_index["player_name"], player_index["player_label"]))
+seed_player_value_widget_from_shared(player_labels, name_to_label)
 sel_players = st.multiselect(
     "Highlight players (gold ring)",
     player_labels,
     key="dashboard_player_value_selected_names",
     placeholder="Search for a player…",
     on_change=sync_player_value_widget_to_shared,
+    args=(label_to_name,),
 )
 
 # ── Scatter preset ───────────────────────────────────────────────────────────
@@ -232,7 +246,7 @@ def _build_scatter(
     fig = go.Figure()
 
     # Split into layers
-    is_selected = df["player_name"].isin(sel_players)
+    is_selected = df["player_label"].isin(sel_players)
     is_team = df["is_current_team"]
 
     bg_mask = ~is_team & ~is_selected
@@ -553,7 +567,7 @@ else:
 
     default_sim_option = sim_candidates["sim_option"].iloc[0]
     if sel_players:
-        matching = sim_candidates[sim_candidates["player_name"].isin(sel_players)]
+        matching = sim_candidates[sim_candidates["player_label"].isin(sel_players)]
         if not matching.empty:
             default_sim_option = matching["sim_option"].iloc[0]
 
@@ -772,7 +786,7 @@ df_table_src = df.copy()
 if highlight_team_only:
     df_table_src = df_table_src[df_table_src["is_current_team"]]
 elif sel_players:
-    df_table_src = df_table_src[df_table_src["is_current_team"] | df_table_src["player_name"].isin(sel_players)]
+    df_table_src = df_table_src[df_table_src["is_current_team"] | df_table_src["player_label"].isin(sel_players)]
 
 available_cols = [c for c in _TABLE_COLUMNS if c in df_table_src.columns]
 df_table = (
