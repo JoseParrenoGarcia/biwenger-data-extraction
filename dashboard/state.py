@@ -49,13 +49,33 @@ def seed_market_trends_widget_from_shared(
     st.session_state[_MARKET_TRENDS_WIDGET_KEY] = seeded_labels
 
 
-def sync_player_value_widget_to_shared() -> None:
-    selected_names = st.session_state.get(_PLAYER_VALUE_WIDGET_KEY, [])
-    set_shared_player_names(selected_names if isinstance(selected_names, list) else [])
+def sync_player_value_widget_to_shared(label_to_name: dict[str, str] | None = None) -> None:
+    selected_values = st.session_state.get(_PLAYER_VALUE_WIDGET_KEY, [])
+    if not isinstance(selected_values, list):
+        set_shared_player_names([])
+        return
+    if label_to_name is None:
+        set_shared_player_names(selected_values)
+        return
+    selected_names = [label_to_name[label] for label in selected_values if label in label_to_name]
+    set_shared_player_names(selected_names)
 
 
-def seed_player_value_widget_from_shared(valid_player_names: list[str]) -> None:
+def seed_player_value_widget_from_shared(
+    valid_player_names: list[str],
+    name_to_label: dict[str, str] | None = None,
+) -> None:
     if _PLAYER_VALUE_WIDGET_KEY in st.session_state:
         return
-    shared_names = [name for name in get_shared_player_names() if name in valid_player_names]
-    st.session_state[_PLAYER_VALUE_WIDGET_KEY] = shared_names
+    if name_to_label is None:
+        shared_names = [name for name in get_shared_player_names() if name in valid_player_names]
+        st.session_state[_PLAYER_VALUE_WIDGET_KEY] = shared_names
+        return
+
+    valid_options = set(valid_player_names)
+    shared_labels = [
+        name_to_label[name]
+        for name in get_shared_player_names()
+        if name in name_to_label and name_to_label[name] in valid_options
+    ]
+    st.session_state[_PLAYER_VALUE_WIDGET_KEY] = shared_labels
