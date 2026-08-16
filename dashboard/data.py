@@ -17,6 +17,7 @@ from dashboard.queries import (
     fetch_all_player_stats,
     fetch_all_value_history,
     fetch_current_team,
+    fetch_player_stat_seasons,
     fetch_stats_history_for_players,
     fetch_value_history_for_slugs,
     fetch_value_player_index,
@@ -96,9 +97,15 @@ def load_stats_history(player_names: tuple[str, ...], cutoff: str | None) -> pd.
 
 
 @st.cache_data(ttl=300)
-def load_all_player_stats() -> pd.DataFrame:
-    """Latest stats snapshot per player, scoped to SofaScore."""
-    return fetch_all_player_stats()
+def load_player_stat_seasons() -> pd.DataFrame:
+    """Available player-stat seasons with their latest snapshot date."""
+    return fetch_player_stat_seasons()
+
+
+@st.cache_data(ttl=300)
+def load_all_player_stats(season: str | None = None) -> pd.DataFrame:
+    """Latest stats snapshot per player for the selected season, scoped to SofaScore."""
+    return fetch_all_player_stats(season=season)
 
 
 @st.cache_data(ttl=300)

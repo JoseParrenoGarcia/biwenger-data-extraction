@@ -21,7 +21,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from dashboard.data import load_all_player_stats, load_current_team
+from dashboard.data import load_all_player_stats, load_current_team, load_player_stat_seasons
 from dashboard.state import seed_player_value_widget_from_shared, sync_player_value_widget_to_shared
 from dashboard.valuation import (
     POSITION_COLOURS,
@@ -99,8 +99,8 @@ _SIM_DEFAULT_BID_DELTAS = [200_000, 500_000, 1_000_000]
 
 
 @st.cache_data(ttl=300)
-def _load_enriched() -> pd.DataFrame:
-    stats = load_all_player_stats()
+def _load_enriched(season: str | None = None) -> pd.DataFrame:
+    stats = load_all_player_stats(season=season)
     team = load_current_team()
     if stats.empty:
         return stats
@@ -115,11 +115,29 @@ def _load_enriched() -> pd.DataFrame:
 st.title("Player Value Comparison")
 st.caption("Who produces enough points for their price? Where does your squad stand?")
 
-df_all = _load_enriched()
+season_options = load_player_stat_seasons()
+selected_season: str | None = None
+latest_snapshot_date: str | None = None
+
+if not season_options.empty:
+    season_options = season_options.copy()
+    season_options["season_label"] = season_options["season"].astype(str)
+    season_order = season_options["season_label"].tolist()
+    season_to_value = dict(zip(season_options["season_label"], season_options["season"]))
+    season_to_latest_date = dict(zip(season_options["season_label"], season_options["as_of_date"].dt.date.astype(str)))
+
+    selected_season_label = st.selectbox("Season", season_order, index=0)
+    selected_season = str(season_to_value[selected_season_label])
+    latest_snapshot_date = season_to_latest_date[selected_season_label]
+
+df_all = _load_enriched(season=selected_season)
 
 if df_all.empty:
     st.warning("No player stats available.")
     st.stop()
+
+if latest_snapshot_date:
+    st.caption(f"Showing the latest {selected_season} stats, scraped on {latest_snapshot_date}.")
 
 df_all = df_all.copy()
 df_all["player_label"] = (
