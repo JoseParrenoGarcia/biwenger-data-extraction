@@ -39,21 +39,49 @@ def _paginate(query_factory, page_size: int = 1000) -> list[dict]:
     return all_rows
 
 
-def fetch_all_player_stats(supabase=None) -> pd.DataFrame:
+def fetch_player_stat_seasons(supabase=None) -> pd.DataFrame:
+    """
+    Return available player-stat seasons with their latest snapshot date.
+
+    The result is one row per non-null ``season``, scoped to SofaScore, sorted
+    with the newest season snapshot first.
+    """
+    client = _client(supabase)
+    rows = _paginate(
+        lambda: (
+            client.table(STATS_TABLE)
+            .select("season, as_of_date")
+            .eq("scoring_system", SCORING_SYSTEM)
+            .order("as_of_date", desc=True)
+        )
+    )
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    df["as_of_date"] = pd.to_datetime(df["as_of_date"])
+    df = df.dropna(subset=["season"])
+    return df.sort_values("as_of_date", ascending=False).drop_duplicates(subset=["season"]).reset_index(drop=True)
+
+
+def fetch_all_player_stats(
+    supabase=None,
+    *,
+    season: str | None = None,
+) -> pd.DataFrame:
     """
     Return the most recent stats snapshot per player (by slug where present,
     else by player_name + team), scoped to SofaScore.
 
+    When ``season`` is provided, rows are limited to that Biwenger season and
+    each player resolves to the latest available snapshot in that season.
+
     Full table is returned — callers filter locally.
     """
     client = _client(supabase)
-    response = (
-        client.table(STATS_TABLE)
-        .select("*")
-        .eq("scoring_system", SCORING_SYSTEM)
-        .order("as_of_date", desc=True)
-        .execute()
-    )
+    query = client.table(STATS_TABLE).select("*").eq("scoring_system", SCORING_SYSTEM)
+    if season:
+        query = query.eq("season", season)
+    response = query.order("as_of_date", desc=True).execute()
     df = pd.DataFrame(response.data)
     if df.empty:
         return df
