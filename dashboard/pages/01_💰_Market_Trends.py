@@ -21,7 +21,12 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.colors import qualitative
 
-from dashboard.data import load_player_index, load_stats_history, load_value_history
+from dashboard.data import (
+    load_latest_market_stats,
+    load_player_index,
+    load_stats_history,
+    load_value_history,
+)
 from dashboard.state import (
     seed_market_trends_widget_from_shared,
     sync_market_trends_widget_to_shared,
@@ -107,20 +112,33 @@ def _player_colours(player_slugs: tuple[str, ...], slug_to_name: dict[str, str])
 
 # ── Chart builders ─────────────────────────────────────────────────────────────
 
+_DIMMED_OPACITY = 0.15
 
-def _build_value_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
+
+def _trace_style(key: str, highlighted: str | None, base_width: float, base_marker: float) -> dict:
+    """Return opacity/width/marker-size for a trace, dimming everyone but `highlighted`."""
+    if highlighted is None:
+        return dict(opacity=1.0, width=base_width, marker=base_marker)
+    if key == highlighted:
+        return dict(opacity=1.0, width=base_width + 1.5, marker=base_marker + 2)
+    return dict(opacity=_DIMMED_OPACITY, width=base_width, marker=base_marker)
+
+
+def _build_value_chart(df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None) -> go.Figure:
     fig = go.Figure()
     for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("date")
         label = grp["display_name"].iloc[0]
+        style = _trace_style(slug, highlighted, base_width=2, base_marker=4)
         fig.add_trace(
             go.Scatter(
                 x=grp["date"],
                 y=grp["market_value_eur"],
                 mode="lines+markers",
-                marker=dict(size=4, symbol="circle", color=player_colours[slug]),
+                marker=dict(size=style["marker"], symbol="circle", color=player_colours[slug]),
                 name=label,
-                line=dict(width=2, color=player_colours[slug]),
+                line=dict(width=style["width"], color=player_colours[slug]),
+                opacity=style["opacity"],
                 hovertemplate=(f"<b>{label}</b><br>€%{{y:,.0f}}<extra></extra>"),
             )
         )
@@ -137,19 +155,21 @@ def _build_value_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.F
     return fig
 
 
-def _build_delta_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
+def _build_delta_chart(df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None) -> go.Figure:
     fig = go.Figure()
     for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("date")
         label = grp["display_name"].iloc[0]
+        style = _trace_style(slug, highlighted, base_width=1.5, base_marker=4)
         fig.add_trace(
             go.Scatter(
                 x=grp["date"],
                 y=grp["value_change_1d"],
                 mode="lines+markers",
-                marker=dict(size=4, symbol="circle", color=player_colours[slug]),
+                marker=dict(size=style["marker"], symbol="circle", color=player_colours[slug]),
                 name=label,
-                line=dict(width=1.5, color=player_colours[slug]),
+                line=dict(width=style["width"], color=player_colours[slug]),
+                opacity=style["opacity"],
                 customdata=grp["value_change_1d"].apply(_fmt_k),
                 hovertemplate=(f"<b>{label}</b><br>%{{customdata}}<extra></extra>"),
             )
@@ -168,20 +188,24 @@ def _build_delta_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.F
     return fig
 
 
-def _build_market_activity_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
+def _build_market_activity_chart(
+    df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None
+) -> go.Figure:
     """Purchases % — one line per player."""
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
         grp = grp.sort_values("as_of_date")
         label = grp["display_name"].iloc[0]
+        style = _trace_style(pname, highlighted, base_width=2, base_marker=5)
         fig.add_trace(
             go.Scatter(
                 x=grp["as_of_date"],
                 y=grp["market_purchases_pct"],
                 mode="lines+markers",
-                marker=dict(size=5, symbol="circle", color=player_colours[pname]),
+                marker=dict(size=style["marker"], symbol="circle", color=player_colours[pname]),
                 name=label,
-                line=dict(width=2, dash="solid", color=player_colours[pname]),
+                line=dict(width=style["width"], dash="solid", color=player_colours[pname]),
+                opacity=style["opacity"],
                 hovertemplate=(f"<b>{label}</b><br>%{{y:.1f}}%<extra></extra>"),
             )
         )
@@ -198,20 +222,22 @@ def _build_market_activity_chart(df: pd.DataFrame, player_colours: dict[str, str
     return fig
 
 
-def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str]) -> go.Figure:
+def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None) -> go.Figure:
     """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers."""
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
         grp = grp.sort_values("as_of_date")
         label = grp["display_name"].iloc[0]
+        style = _trace_style(pname, highlighted, base_width=2, base_marker=5)
         fig.add_trace(
             go.Scatter(
                 x=grp["as_of_date"],
                 y=grp["ratio_purchase_sales"],
                 mode="lines+markers",
-                marker=dict(size=5, symbol="circle", color=player_colours[pname]),
+                marker=dict(size=style["marker"], symbol="circle", color=player_colours[pname]),
                 name=label,
-                line=dict(width=2, color=player_colours[pname]),
+                line=dict(width=style["width"], color=player_colours[pname]),
+                opacity=style["opacity"],
                 hovertemplate=(f"<b>{label}</b><br>ratio: %{{y:.2f}}<extra></extra>"),
             )
         )
@@ -260,6 +286,109 @@ with st.container(border=True):
         st.write("")  # vertical alignment nudge
         window = st.radio("Window", list(_WINDOWS.keys()), index=1, horizontal=True)
 
+    if selected_labels:
+        highlight_label = st.pills(
+            "Highlight (dims everyone else, on every chart below)",
+            options=["All"] + selected_labels,
+            default="All",
+            key="dashboard_market_trends_highlight",
+        )
+    else:
+        highlight_label = "All"
+
+highlighted_slug = display_map.get(highlight_label) if highlight_label != "All" else None
+highlighted_name = slug_to_name.get(highlighted_slug) if highlighted_slug else None
+
+# ── Similar players (by purchase/sales ratio) ─────────────────────────────────
+with st.expander("🔍 Find players with a similar purchase/sales ratio"):
+    latest_stats = load_latest_market_stats()
+    if latest_stats.empty:
+        st.info("No stats snapshots available yet.")
+    else:
+        default_anchor_index = all_options.index(selected_labels[0]) if selected_labels else 0
+        anchor_label = st.selectbox(
+            "Anchor player",
+            options=all_options,
+            index=default_anchor_index,
+            key="dashboard_market_trends_similar_anchor",
+        )
+        col_tol, col_n = st.columns(2)
+        with col_tol:
+            tolerance_pct = st.slider("Value tolerance (±%)", min_value=5, max_value=50, value=20, step=1)
+        with col_n:
+            top_n = st.slider("Number of peers", min_value=5, max_value=25, value=10, step=1)
+
+        anchor_slug = display_map[anchor_label]
+        anchor_rows = latest_stats[latest_stats["slug"] == anchor_slug]
+        if anchor_rows.empty or pd.isna(anchor_rows["ratio_purchase_sales"].iloc[0]):
+            st.warning(f"No usable ratio data for **{anchor_label}** yet.")
+        else:
+            anchor_value = anchor_rows["value"].iloc[0]
+            anchor_ratio = anchor_rows["ratio_purchase_sales"].iloc[0]
+            lower = anchor_value * (1 - tolerance_pct / 100)
+            upper = anchor_value * (1 + tolerance_pct / 100)
+            candidates = latest_stats[
+                (latest_stats["slug"] != anchor_slug)
+                & latest_stats["ratio_purchase_sales"].notna()
+                & latest_stats["value"].between(lower, upper)
+            ].copy()
+            candidates["ratio_diff"] = (candidates["ratio_purchase_sales"] - anchor_ratio).abs()
+            peers = candidates.sort_values("ratio_diff").head(top_n)
+
+            if peers.empty:
+                st.info(f"No peers found within ±{tolerance_pct}% of {anchor_label}'s value.")
+            else:
+                st.caption(
+                    f"Anchor: **{anchor_label}** — value €{anchor_value:,.0f}, "
+                    f"ratio {anchor_ratio:.2f}. Peers within ±{tolerance_pct}% value, "
+                    "ranked by closest ratio."
+                )
+                st.dataframe(
+                    peers[
+                        [
+                            "display_name",
+                            "team",
+                            "value",
+                            "ratio_purchase_sales",
+                            "market_purchases_pct",
+                            "market_sales_pct",
+                        ]
+                    ].rename(
+                        columns={
+                            "display_name": "Player",
+                            "team": "Team",
+                            "value": "Value (€)",
+                            "ratio_purchase_sales": "Ratio",
+                            "market_purchases_pct": "Purchases %",
+                            "market_sales_pct": "Sales %",
+                        }
+                    ),
+                    width="stretch",
+                    hide_index=True,
+                )
+
+                peer_labels = [
+                    lbl
+                    for lbl, slug in display_map.items()
+                    if slug in set(peers["slug"]) and lbl not in selected_labels
+                ]
+
+                def _add_peers_to_comparison(labels: list[str]) -> None:
+                    current = st.session_state.get("dashboard_market_trends_selected_labels", [])
+                    st.session_state["dashboard_market_trends_selected_labels"] = list(
+                        dict.fromkeys([*current, *labels])
+                    )
+                    sync_market_trends_widget_to_shared(display_map=display_map, slug_to_name=slug_to_name)
+
+                st.button(
+                    f"Add these {len(peer_labels)} peers to the comparison charts"
+                    if peer_labels
+                    else "All peers already selected",
+                    disabled=not peer_labels,
+                    on_click=_add_peers_to_comparison,
+                    args=(peer_labels,),
+                )
+
 # ── Empty state ───────────────────────────────────────────────────────────────
 if not selected_labels:
     st.info("Select one or more players above to see their market value trends.")
@@ -285,15 +414,15 @@ if missing:
 
 # ── Value charts ──────────────────────────────────────────────────────────────
 if not df_val.empty:
-    st.plotly_chart(_build_value_chart(df_val, player_colours), width="stretch")
-    st.plotly_chart(_build_delta_chart(df_val, player_colours), width="stretch")
+    st.plotly_chart(_build_value_chart(df_val, player_colours, highlighted_slug), width="stretch")
+    st.plotly_chart(_build_delta_chart(df_val, player_colours, highlighted_slug), width="stretch")
 
 # ── Market activity charts ────────────────────────────────────────────────────
 if not df_stats.empty:
     st.divider()
     st.caption("Market activity data comes from daily scraper snapshots — one point per scrape run.")
-    st.plotly_chart(_build_market_activity_chart(df_stats, player_colours), width="stretch")
-    st.plotly_chart(_build_ratio_chart(df_stats, player_colours), width="stretch")
+    st.plotly_chart(_build_market_activity_chart(df_stats, player_colours, highlighted_name), width="stretch")
+    st.plotly_chart(_build_ratio_chart(df_stats, player_colours, highlighted_name), width="stretch")
 elif not df_val.empty:
     st.divider()
     st.info("No market activity snapshots yet for the selected players / window.")

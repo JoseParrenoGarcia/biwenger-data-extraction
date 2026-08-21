@@ -93,6 +93,27 @@ def load_stats_history(player_names: tuple[str, ...], cutoff: str | None) -> pd.
     return df
 
 
+@st.cache_data(ttl=300)
+def load_latest_market_stats() -> pd.DataFrame:
+    """
+    Latest stats snapshot per player (all players, any season), with
+    display_name and ratio_purchase_sales added.
+
+    Used by the "similar players" ratio-proximity search on the Market
+    Trends page. Only rows with a real slug are kept, so results line up
+    with the value-history player index used elsewhere on that page.
+    """
+    df = fetch_all_player_stats(season=None)
+    if df.empty:
+        return df
+    df = df[df["slug"].notna() & (df["slug"].str.strip() != "")].copy()
+    if df.empty:
+        return df
+    df["display_name"] = make_display_name(df)
+    df["ratio_purchase_sales"] = (df["market_purchases_pct"] / df["market_sales_pct"].replace(0, pd.NA)).round(2)
+    return df
+
+
 # ── Full-table loads (raw-data tabs in app.py) ────────────────────────────────
 
 
