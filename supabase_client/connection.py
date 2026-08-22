@@ -15,21 +15,42 @@ def _resolve_secrets_path(secrets_path_override: str | None = None) -> str:
 
 def _load_supabase_config(secrets_path_override: str | None = None) -> dict:
     secrets_path = _resolve_secrets_path(secrets_path_override=secrets_path_override)
-    if not os.path.exists(secrets_path):
+    if os.path.exists(secrets_path):
+        config = toml.load(secrets_path)
+        supabase_config = config.get("supabase", {})
+    elif secrets_path_override:
+        # An explicit override is used by tests and local tooling; do not
+        # silently replace it with Streamlit's process-level secrets.
         raise FileNotFoundError(f"Missing secrets file at: {secrets_path}")
+    else:
+        supabase_config = _load_streamlit_supabase_config()
+        if supabase_config is None:
+            raise FileNotFoundError(
+                f"Missing secrets file at: {secrets_path}; configure [supabase] in Streamlit secrets"
+            )
 
-    config = toml.load(secrets_path)
-    supabase_config = config.get("supabase", {})
     if not supabase_config.get("url"):
-        raise KeyError("Missing 'url' in supabase.toml")
+        raise KeyError("Missing 'url' in Supabase configuration")
     return supabase_config
+
+
+def _load_streamlit_supabase_config() -> dict | None:
+    """Return the ``[supabase]`` Streamlit secrets section when available."""
+    try:
+        import streamlit as st
+
+        supabase_config = st.secrets.get("supabase")
+    except (FileNotFoundError, ImportError):
+        return None
+
+    return dict(supabase_config) if supabase_config else None
 
 
 def _create_supabase_client(key_name: str, *, secrets_path_override: str | None = None) -> Client:
     config = _load_supabase_config(secrets_path_override=secrets_path_override)
     key = config.get(key_name)
     if not key:
-        raise KeyError(f"Missing '{key_name}' in supabase.toml")
+        raise KeyError(f"Missing '{key_name}' in Supabase configuration")
     return create_client(config["url"], key)
 
 
