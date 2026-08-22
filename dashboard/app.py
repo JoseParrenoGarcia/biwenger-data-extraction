@@ -5,6 +5,20 @@ Run with:
     streamlit run dashboard/app.py
 """
 
+# The path bootstrap below must run before importing the local dashboard package.
+# ruff: noqa: E402
+
+import sys
+from pathlib import Path
+
+# Streamlit Cloud executes an app located in this directory with ``dashboard/``
+# as the script path. Add the repository root so the dashboard package and the
+# sibling packages used by its data layer are importable there as well as when
+# launched locally with ``make dashboard``.
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 import streamlit as st
 
 from dashboard.data import (

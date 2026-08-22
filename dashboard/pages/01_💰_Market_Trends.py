@@ -16,6 +16,16 @@ Run via:
     streamlit run dashboard/app.py
 """
 
+# The path bootstrap below must run before importing the local dashboard package.
+# ruff: noqa: E402
+
+import sys
+from pathlib import Path
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st

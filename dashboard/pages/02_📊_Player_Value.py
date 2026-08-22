@@ -13,7 +13,17 @@ Scatter chart : 3-layer rendering (background / team / selected)
 Table         : same filtered players, sortable
 """
 
+# The path bootstrap below must run before importing the local dashboard package.
+# ruff: noqa: E402
+
 from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 import numpy as np
 import pandas as pd
