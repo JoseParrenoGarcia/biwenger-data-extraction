@@ -1,5 +1,6 @@
 import pytest
 
+import supabase_client.connection as connection
 from supabase_client.connection import (
     get_supabase_admin_client,
     get_supabase_backend_read_client,
@@ -18,6 +19,22 @@ def test_missing_file_raises_file_not_found():
     """
     with pytest.raises(FileNotFoundError):
         get_supabase_client(secrets_path_override="/nonexistent_path/supabase.toml")
+
+
+def test_streamlit_secrets_are_used_when_local_file_is_missing(monkeypatch):
+    monkeypatch.setattr(connection, "_resolve_secrets_path", lambda secrets_path_override=None: "/missing.toml")
+    monkeypatch.setattr(
+        connection,
+        "_load_streamlit_supabase_config",
+        lambda: {
+            "url": "https://valid-url.supabase.co",
+            "service_role_key": "service-role-test-key",
+        },
+    )
+
+    client = get_supabase_backend_read_client()
+
+    assert client is not None
 
 
 def test_missing_service_role_key_raises_keyerror(tmp_path):
