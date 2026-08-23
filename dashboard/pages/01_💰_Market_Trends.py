@@ -232,23 +232,63 @@ def _build_market_activity_chart(
     return fig
 
 
+def _imputed_ratio_series(grp: pd.DataFrame) -> tuple[list, list[bool], list[str]]:
+    """Build a per-player ratio series, estimating points where sales == 0.
+
+    For days where ``market_sales_pct`` is 0 (so the true ratio is undefined),
+    estimate the ratio as today's purchases ÷ the last known non-zero sales,
+    carried forward from earlier snapshots for the same player. Days where we
+    cannot estimate (no prior non-zero sales, or no purchases either) stay NaN
+    and render as a gap.
+
+    Returns (ratio_values, imputed_mask, hover_text) aligned to ``grp`` rows.
+    """
+    ratio = pd.to_numeric(grp["ratio_purchase_sales"], errors="coerce").to_numpy(dtype=float).copy()
+    purchases = pd.to_numeric(grp["market_purchases_pct"], errors="coerce").to_numpy(dtype=float)
+    sales = pd.to_numeric(grp["market_sales_pct"], errors="coerce").to_numpy(dtype=float)
+    imputed = [False] * len(grp)
+    last_known_sales = 0.0
+    for i in range(len(grp)):
+        s = sales[i]
+        if s > 0:
+            last_known_sales = s
+            continue
+        p = purchases[i]
+        if last_known_sales > 0 and p > 0:
+            ratio[i] = round(p / last_known_sales, 2)
+            imputed[i] = True
+    hover_text = [
+        (f"ratio: {y:.2f}  (est., no sales today)" if imp else f"ratio: {y:.2f}") if not pd.isna(y) else ""
+        for y, imp in zip(ratio, imputed)
+    ]
+    return ratio.tolist(), imputed, hover_text
+
+
 def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None) -> go.Figure:
-    """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers."""
+    """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers.
+
+    On days with zero sales the true ratio is undefined; we estimate it from
+    today's purchases over the last known non-zero sales and mark those points
+    with a hollow marker so they are distinguishable from real observations.
+    """
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
-        grp = grp.sort_values("as_of_date")
+        grp = grp.sort_values("as_of_date").reset_index(drop=True)
         label = grp["display_name"].iloc[0]
         style = _trace_style(pname, highlighted, base_width=2, base_marker=5)
+        ratio, imputed, hover_text = _imputed_ratio_series(grp)
+        symbols = ["circle-open" if imp else "circle" for imp in imputed]
         fig.add_trace(
             go.Scatter(
                 x=grp["as_of_date"],
-                y=grp["ratio_purchase_sales"],
+                y=ratio,
                 mode="lines+markers",
-                marker=dict(size=style["marker"], symbol="circle", color=player_colours[pname]),
+                marker=dict(size=style["marker"], symbol=symbols, color=player_colours[pname]),
                 name=label,
                 line=dict(width=style["width"], color=player_colours[pname]),
                 opacity=style["opacity"],
-                hovertemplate=(f"<b>{label}</b><br>ratio: %{{y:.2f}}<extra></extra>"),
+                text=hover_text,
+                hovertemplate=(f"<b>{label}</b><br>%{{text}}<extra></extra>"),
             )
         )
     fig.add_hline(y=1, line_dash="dot", line_color="#aaaaaa", line_width=1)
@@ -433,6 +473,10 @@ if not df_stats.empty:
     st.caption("Market activity data comes from daily scraper snapshots — one point per scrape run.")
     st.plotly_chart(_build_market_activity_chart(df_stats, player_colours, highlighted_name), width="stretch")
     st.plotly_chart(_build_ratio_chart(df_stats, player_colours, highlighted_name), width="stretch")
+    st.caption(
+        "Hollow dots on the ratio chart are estimates for days with 0% sales "
+        "(today's purchases ÷ last known non-zero sales)."
+    )
 elif not df_val.empty:
     st.divider()
     st.info("No market activity snapshots yet for the selected players / window.")
