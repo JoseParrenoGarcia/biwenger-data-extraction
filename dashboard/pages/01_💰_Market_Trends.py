@@ -232,6 +232,38 @@ def _build_market_activity_chart(
     return fig
 
 
+def _imputed_ratio_series(grp: pd.DataFrame) -> tuple[list, list[bool], list[str]]:
+    """Build a per-player ratio series, estimating points where sales == 0.
+
+    For days where ``market_sales_pct`` is 0 (so the true ratio is undefined),
+    estimate the ratio as today's purchases ÷ the last known non-zero sales,
+    carried forward from earlier snapshots for the same player. Days where we
+    cannot estimate (no prior non-zero sales, or no purchases either) stay NaN
+    and render as a gap.
+
+    Returns (ratio_values, imputed_mask, hover_text) aligned to ``grp`` rows.
+    """
+    ratio = pd.to_numeric(grp["ratio_purchase_sales"], errors="coerce").to_numpy(dtype=float).copy()
+    purchases = pd.to_numeric(grp["market_purchases_pct"], errors="coerce").to_numpy(dtype=float)
+    sales = pd.to_numeric(grp["market_sales_pct"], errors="coerce").to_numpy(dtype=float)
+    imputed = [False] * len(grp)
+    last_known_sales = 0.0
+    for i in range(len(grp)):
+        s = sales[i]
+        if s > 0:
+            last_known_sales = s
+            continue
+        p = purchases[i]
+        if last_known_sales > 0 and p > 0:
+            ratio[i] = round(p / last_known_sales, 2)
+            imputed[i] = True
+    hover_text = [
+        (f"ratio: {y:.2f}  (est., no sales today)" if imp else f"ratio: {y:.2f}") if not pd.isna(y) else ""
+        for y, imp in zip(ratio, imputed)
+    ]
+    return ratio.tolist(), imputed, hover_text
+
+
 def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None) -> go.Figure:
     """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers.
 
