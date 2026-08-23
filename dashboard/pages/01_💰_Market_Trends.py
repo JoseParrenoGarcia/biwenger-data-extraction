@@ -233,22 +233,30 @@ def _build_market_activity_chart(
 
 
 def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None) -> go.Figure:
-    """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers."""
+    """Purchase/sales ratio per player. Ratio > 1 means more buyers than sellers.
+
+    On days with zero sales the true ratio is undefined; we estimate it from
+    today's purchases over the last known non-zero sales and mark those points
+    with a hollow marker so they are distinguishable from real observations.
+    """
     fig = go.Figure()
     for pname, grp in df.groupby("player_name"):
-        grp = grp.sort_values("as_of_date")
+        grp = grp.sort_values("as_of_date").reset_index(drop=True)
         label = grp["display_name"].iloc[0]
         style = _trace_style(pname, highlighted, base_width=2, base_marker=5)
+        ratio, imputed, hover_text = _imputed_ratio_series(grp)
+        symbols = ["circle-open" if imp else "circle" for imp in imputed]
         fig.add_trace(
             go.Scatter(
                 x=grp["as_of_date"],
-                y=grp["ratio_purchase_sales"],
+                y=ratio,
                 mode="lines+markers",
-                marker=dict(size=style["marker"], symbol="circle", color=player_colours[pname]),
+                marker=dict(size=style["marker"], symbol=symbols, color=player_colours[pname]),
                 name=label,
                 line=dict(width=style["width"], color=player_colours[pname]),
                 opacity=style["opacity"],
-                hovertemplate=(f"<b>{label}</b><br>ratio: %{{y:.2f}}<extra></extra>"),
+                text=hover_text,
+                hovertemplate=(f"<b>{label}</b><br>%{{text}}<extra></extra>"),
             )
         )
     fig.add_hline(y=1, line_dash="dot", line_color="#aaaaaa", line_width=1)
@@ -433,6 +441,10 @@ if not df_stats.empty:
     st.caption("Market activity data comes from daily scraper snapshots — one point per scrape run.")
     st.plotly_chart(_build_market_activity_chart(df_stats, player_colours, highlighted_name), width="stretch")
     st.plotly_chart(_build_ratio_chart(df_stats, player_colours, highlighted_name), width="stretch")
+    st.caption(
+        "Hollow dots on the ratio chart are estimates for days with 0% sales "
+        "(today's purchases ÷ last known non-zero sales)."
+    )
 elif not df_val.empty:
     st.divider()
     st.info("No market activity snapshots yet for the selected players / window.")
