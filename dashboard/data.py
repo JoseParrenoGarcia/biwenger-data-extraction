@@ -18,7 +18,7 @@ from dashboard.queries import (
     fetch_all_value_history,
     fetch_current_team,
     fetch_player_stat_seasons,
-    fetch_stats_history_for_players,
+    fetch_stats_history_for_slugs,
     fetch_value_history_for_slugs,
     fetch_value_player_index,
 )
@@ -78,14 +78,15 @@ def load_value_history(slugs: tuple[str, ...], cutoff: str | None) -> pd.DataFra
 
 
 @st.cache_data(ttl=300)
-def load_stats_history(player_names: tuple[str, ...], cutoff: str | None) -> pd.DataFrame:
+def load_stats_history(slugs: tuple[str, ...], cutoff: str | None) -> pd.DataFrame:
     """
-    All stats snapshots (one per scrape date) for the given player names.
+    All stats snapshots (one per scrape date) for the given slugs.
     Adds: display_name, ratio_purchase_sales.
-    Uses player_name as the join key — slug is not yet backfilled in stats.
-    Cache key: (player_names, cutoff).
+    Queries by slug — the stable identity — so historical rows are not lost
+    when Biwenger changes the displayed player name.
+    Cache key: (slugs, cutoff).
     """
-    df = fetch_stats_history_for_players(list(player_names), cutoff_date=cutoff)
+    df = fetch_stats_history_for_slugs(list(slugs), cutoff_date=cutoff)
     if df.empty:
         return df
     df["display_name"] = make_display_name(df)
