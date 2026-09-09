@@ -203,18 +203,18 @@ def _build_market_activity_chart(
 ) -> go.Figure:
     """Purchases % — one line per player."""
     fig = go.Figure()
-    for pname, grp in df.groupby("player_name"):
+    for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("as_of_date")
         label = grp["display_name"].iloc[0]
-        style = _trace_style(pname, highlighted, base_width=2, base_marker=5)
+        style = _trace_style(slug, highlighted, base_width=2, base_marker=5)
         fig.add_trace(
             go.Scatter(
                 x=grp["as_of_date"],
                 y=grp["market_purchases_pct"],
                 mode="lines+markers",
-                marker=dict(size=style["marker"], symbol="circle", color=player_colours[pname]),
+                marker=dict(size=style["marker"], symbol="circle", color=player_colours[slug]),
                 name=label,
-                line=dict(width=style["width"], dash="solid", color=player_colours[pname]),
+                line=dict(width=style["width"], dash="solid", color=player_colours[slug]),
                 opacity=style["opacity"],
                 hovertemplate=(f"<b>{label}</b><br>%{{y:.1f}}%<extra></extra>"),
             )
@@ -272,10 +272,10 @@ def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str], highlig
     with a hollow marker so they are distinguishable from real observations.
     """
     fig = go.Figure()
-    for pname, grp in df.groupby("player_name"):
+    for slug, grp in df.groupby("slug"):
         grp = grp.sort_values("as_of_date").reset_index(drop=True)
         label = grp["display_name"].iloc[0]
-        style = _trace_style(pname, highlighted, base_width=2, base_marker=5)
+        style = _trace_style(slug, highlighted, base_width=2, base_marker=5)
         ratio, imputed, hover_text = _imputed_ratio_series(grp)
         symbols = ["circle-open" if imp else "circle" for imp in imputed]
         fig.add_trace(
@@ -283,9 +283,9 @@ def _build_ratio_chart(df: pd.DataFrame, player_colours: dict[str, str], highlig
                 x=grp["as_of_date"],
                 y=ratio,
                 mode="lines+markers",
-                marker=dict(size=style["marker"], symbol=symbols, color=player_colours[pname]),
+                marker=dict(size=style["marker"], symbol=symbols, color=player_colours[slug]),
                 name=label,
-                line=dict(width=style["width"], color=player_colours[pname]),
+                line=dict(width=style["width"], color=player_colours[slug]),
                 opacity=style["opacity"],
                 text=hover_text,
                 hovertemplate=(f"<b>{label}</b><br>%{{text}}<extra></extra>"),
@@ -347,7 +347,6 @@ with st.container(border=True):
         highlight_label = "All"
 
 highlighted_slug = display_map.get(highlight_label) if highlight_label != "All" else None
-highlighted_name = slug_to_name.get(highlighted_slug) if highlighted_slug else None
 
 # ── Similar players (by purchase/sales ratio) ─────────────────────────────────
 with st.expander("🔍 Find players with a similar purchase/sales ratio"):
@@ -446,7 +445,6 @@ if not selected_labels:
 
 # ── Phase 2 — fires when the user has selected players ───────────────────────
 selected_slugs = tuple(display_map[lbl] for lbl in selected_labels)
-selected_names = tuple(slug_to_name[s] for s in selected_slugs if s in slug_to_name)
 player_colours = _player_colours(selected_slugs, slug_to_name)
 today = pd.Timestamp.utcnow().normalize()
 cutoff = _cutoff_date(window, today)
@@ -454,7 +452,7 @@ with st.spinner("Loading value history…"):
     df_val = load_value_history(selected_slugs, cutoff)
 
 with st.spinner("Loading market stats…"):
-    df_stats = load_stats_history(selected_names, cutoff)
+    df_stats = load_stats_history(selected_slugs, cutoff)
 
 # Warn for any player with no value rows in the chosen window.
 present_val = set(df_val["slug"].unique()) if not df_val.empty else set()
@@ -471,8 +469,8 @@ if not df_val.empty:
 if not df_stats.empty:
     st.divider()
     st.caption("Market activity data comes from daily scraper snapshots — one point per scrape run.")
-    st.plotly_chart(_build_market_activity_chart(df_stats, player_colours, highlighted_name), width="stretch")
-    st.plotly_chart(_build_ratio_chart(df_stats, player_colours, highlighted_name), width="stretch")
+    st.plotly_chart(_build_market_activity_chart(df_stats, player_colours, highlighted_slug), width="stretch")
+    st.plotly_chart(_build_ratio_chart(df_stats, player_colours, highlighted_slug), width="stretch")
     st.caption(
         "Hollow dots on the ratio chart are estimates for days with 0% sales "
         "(today's purchases ÷ last known non-zero sales)."

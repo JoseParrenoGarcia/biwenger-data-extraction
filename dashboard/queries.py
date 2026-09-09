@@ -209,25 +209,25 @@ def fetch_value_player_index(supabase=None) -> pd.DataFrame:
     return df.drop_duplicates(subset=["slug"]).reset_index(drop=True)
 
 
-def fetch_stats_history_for_players(
-    player_names: list[str],
+def fetch_stats_history_for_slugs(
+    slugs: list[str],
     cutoff_date: str | None = None,
     supabase=None,
 ) -> pd.DataFrame:
     """
-    Return all stats snapshots for the given player names (one row per scrape
-    date), scoped to SofaScore.
+    Return all stats snapshots for the given slugs (one row per scrape date),
+    scoped to SofaScore.
 
-    Uses player_name as the join key because slug is not yet backfilled for
-    most rows in biwenger_player_stats. Once slugs are backfilled, this query
-    can be extended to prefer slug-based lookup.
+    Queries by slug — the stable player identity — so that historical rows are
+    not lost when Biwenger changes the displayed name (e.g. "Canales" →
+    "Sergio Canales"). All current stats rows have a non-null slug.
     """
     client = _client(supabase)
     q = (
         client.table(STATS_TABLE)
         .select("slug, player_name, team, as_of_date, market_purchases_pct, market_sales_pct")
         .eq("scoring_system", SCORING_SYSTEM)
-        .in_("player_name", player_names)
+        .in_("slug", slugs)
     )
     if cutoff_date:
         q = q.gte("as_of_date", cutoff_date)

@@ -15,6 +15,14 @@ class FakeQuery:
         self.rows = [row for row in self.rows if row.get(column) == value]
         return self
 
+    def in_(self, column, values):
+        self.rows = [row for row in self.rows if row.get(column) in values]
+        return self
+
+    def gte(self, column, value):
+        self.rows = [row for row in self.rows if row.get(column) >= value]
+        return self
+
     def lte(self, column, value):
         self.rows = [row for row in self.rows if row.get(column) <= value]
         return self
@@ -194,3 +202,46 @@ def test_fetch_player_stat_seasons_returns_latest_date_per_season():
         ("2026/2027 season", "2026-08-15"),
         ("2025/2026 season", "2026-05-30"),
     ]
+
+
+def test_fetch_stats_history_for_slugs_returns_all_rows_despite_name_variants():
+    """Regression: Biwenger sometimes changes the displayed player_name (e.g.
+    'Canales' → 'Sergio Canales'). The query must filter by slug so that all
+    historical snapshots are returned, not just the latest-name rows."""
+    supabase = FakeSupabase(
+        [
+            {
+                "slug": "canales",
+                "player_name": "Canales",
+                "team": "Racing",
+                "as_of_date": "2026-07-21",
+                "scoring_system": "sofascore",
+                "market_purchases_pct": 53.0,
+                "market_sales_pct": 9.0,
+            },
+            {
+                "slug": "canales",
+                "player_name": "Canales",
+                "team": "Racing",
+                "as_of_date": "2026-08-01",
+                "scoring_system": "sofascore",
+                "market_purchases_pct": 61.0,
+                "market_sales_pct": 2.0,
+            },
+            {
+                "slug": "canales",
+                "player_name": "Sergio Canales",
+                "team": "Racing",
+                "as_of_date": "2026-09-08",
+                "scoring_system": "sofascore",
+                "market_purchases_pct": 32.0,
+                "market_sales_pct": 1.0,
+            },
+        ]
+    )
+
+    df = queries.fetch_stats_history_for_slugs(["canales"], supabase=supabase)
+
+    assert len(df) == 3
+    assert set(df["player_name"]) == {"Canales", "Sergio Canales"}
+    assert df["slug"].tolist() == ["canales", "canales", "canales"]
