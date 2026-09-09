@@ -4,8 +4,9 @@ Market value trends page.
 Player multiselect + time window → charts:
   1. Market value over time (absolute).
   2. Daily value change vs. previous observation.
-  3. Market purchases % and sales % over time (from daily stats snapshots).
-  4. Purchase/sales ratio over time.
+  3. Market purchases % over time (from daily stats snapshots).
+  4. Market sales % over time (from daily stats snapshots).
+  5. Purchase/sales ratio over time.
 
 Load strategy (two phases):
   Phase 1 — cheap: fetch only (slug, player_name, team) for the dropdown.
@@ -222,6 +223,40 @@ def _build_market_activity_chart(
     layout = {**_LAYOUT_BASE, "legend": _LAYOUT_LEGEND_V, "margin": dict(l=10, r=160, t=50, b=40)}
     fig.update_layout(
         title=dict(text="Market Purchases %", font=dict(size=15, color="#333")),
+        yaxis_title="% of market",
+        yaxis_ticksuffix="%",
+        height=320,
+        **layout,
+    )
+    fig.update_xaxes(**_XAXIS_STYLE)
+    fig.update_yaxes(**_YAXIS_GRID, zeroline=False, rangemode="tozero")
+    return fig
+
+
+def _build_sales_activity_chart(
+    df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None
+) -> go.Figure:
+    """Sales % — one line per player."""
+    fig = go.Figure()
+    for slug, grp in df.groupby("slug"):
+        grp = grp.sort_values("as_of_date")
+        label = grp["display_name"].iloc[0]
+        style = _trace_style(slug, highlighted, base_width=2, base_marker=5)
+        fig.add_trace(
+            go.Scatter(
+                x=grp["as_of_date"],
+                y=grp["market_sales_pct"],
+                mode="lines+markers",
+                marker=dict(size=style["marker"], symbol="circle", color=player_colours[slug]),
+                name=label,
+                line=dict(width=style["width"], dash="solid", color=player_colours[slug]),
+                opacity=style["opacity"],
+                hovertemplate=(f"<b>{label}</b><br>%{{y:.1f}}%<extra></extra>"),
+            )
+        )
+    layout = {**_LAYOUT_BASE, "legend": _LAYOUT_LEGEND_V, "margin": dict(l=10, r=160, t=50, b=40)}
+    fig.update_layout(
+        title=dict(text="Market Sales %", font=dict(size=15, color="#333")),
         yaxis_title="% of market",
         yaxis_ticksuffix="%",
         height=320,
@@ -470,6 +505,7 @@ if not df_stats.empty:
     st.divider()
     st.caption("Market activity data comes from daily scraper snapshots — one point per scrape run.")
     st.plotly_chart(_build_market_activity_chart(df_stats, player_colours, highlighted_slug), width="stretch")
+    st.plotly_chart(_build_sales_activity_chart(df_stats, player_colours, highlighted_slug), width="stretch")
     st.plotly_chart(_build_ratio_chart(df_stats, player_colours, highlighted_slug), width="stretch")
     st.caption(
         "Hollow dots on the ratio chart are estimates for days with 0% sales "
