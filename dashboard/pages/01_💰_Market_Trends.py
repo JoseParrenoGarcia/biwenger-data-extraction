@@ -4,9 +4,10 @@ Market value trends page.
 Player multiselect + time window → charts:
   1. Market value over time (absolute).
   2. Daily value change vs. previous observation.
-  3. Market purchases % over time (from daily stats snapshots).
-  4. Market sales % over time (from daily stats snapshots).
-  5. Purchase/sales ratio over time.
+  3. Value momentum — change in the daily change (acceleration of the DoD series).
+  4. Market purchases % over time (from daily stats snapshots).
+  5. Market sales % over time (from daily stats snapshots).
+  6. Purchase/sales ratio over time.
 
 Load strategy (two phases):
   Phase 1 — cheap: fetch only (slug, player_name, team) for the dropdown.
@@ -189,6 +190,45 @@ def _build_delta_chart(df: pd.DataFrame, player_colours: dict[str, str], highlig
     fig.update_layout(
         title=dict(text="Value Change (vs. previous observation)", font=dict(size=15, color="#333")),
         yaxis_title="Change (€)",
+        yaxis_tickprefix="€",
+        yaxis_tickformat=",.0f",
+        height=340,
+        **_LAYOUT_BASE,
+    )
+    fig.update_xaxes(**_XAXIS_STYLE)
+    fig.update_yaxes(**_YAXIS_GRID, zeroline=True, zerolinecolor="#cccccc", zerolinewidth=1)
+    return fig
+
+
+def _build_accel_chart(df: pd.DataFrame, player_colours: dict[str, str], highlighted: str | None = None) -> go.Figure:
+    """Change in the daily value change — the momentum of the DoD series.
+
+    Positive = the daily change is improving (loss decelerating or gain
+    accelerating). Negative = the daily change is worsening (loss accelerating
+    or gain decelerating).
+    """
+    fig = go.Figure()
+    for slug, grp in df.groupby("slug"):
+        grp = grp.sort_values("date")
+        label = grp["display_name"].iloc[0]
+        style = _trace_style(slug, highlighted, base_width=1.5, base_marker=4)
+        fig.add_trace(
+            go.Scatter(
+                x=grp["date"],
+                y=grp["value_accel_1d"],
+                mode="lines+markers",
+                marker=dict(size=style["marker"], symbol="circle", color=player_colours[slug]),
+                name=label,
+                line=dict(width=style["width"], color=player_colours[slug]),
+                opacity=style["opacity"],
+                customdata=grp["value_accel_1d"].apply(_fmt_k),
+                hovertemplate=(f"<b>{label}</b><br>%{{customdata}}<extra></extra>"),
+            )
+        )
+    fig.add_hline(y=0, line_dash="dot", line_color="#aaaaaa", line_width=1)
+    fig.update_layout(
+        title=dict(text="Value Momentum (change in daily change)", font=dict(size=15, color="#333")),
+        yaxis_title="Δ of change (€)",
         yaxis_tickprefix="€",
         yaxis_tickformat=",.0f",
         height=340,
@@ -499,6 +539,11 @@ if missing:
 if not df_val.empty:
     st.plotly_chart(_build_value_chart(df_val, player_colours, highlighted_slug), width="stretch")
     st.plotly_chart(_build_delta_chart(df_val, player_colours, highlighted_slug), width="stretch")
+    st.plotly_chart(_build_accel_chart(df_val, player_colours, highlighted_slug), width="stretch")
+    st.caption(
+        "Positive momentum = daily change improving (loss decelerating or gain accelerating). "
+        "Negative = daily change worsening (loss accelerating or gain decelerating)."
+    )
 
 # ── Market activity charts ────────────────────────────────────────────────────
 if not df_stats.empty:

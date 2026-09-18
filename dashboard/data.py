@@ -62,7 +62,7 @@ def load_player_index() -> pd.DataFrame:
 def load_value_history(slugs: tuple[str, ...], cutoff: str | None) -> pd.DataFrame:
     """
     Market-value rows for the given slugs, server-filtered by cutoff date.
-    Adds: display_name, value_change_1d.
+    Adds: display_name, value_change_1d, value_accel_1d.
     Cache key: (slugs, cutoff) — changes correctly when window or selection changes.
     """
     df = fetch_value_history_for_slugs(list(slugs), cutoff_date=cutoff)
@@ -71,6 +71,7 @@ def load_value_history(slugs: tuple[str, ...], cutoff: str | None) -> pd.DataFra
     df["display_name"] = make_display_name(df)
     df = df.sort_values(["slug", "date"]).copy()
     df["value_change_1d"] = df.groupby("slug")["market_value_eur"].diff()
+    df["value_accel_1d"] = df.groupby("slug")["value_change_1d"].diff()
     return df
 
 
