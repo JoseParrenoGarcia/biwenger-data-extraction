@@ -7,6 +7,7 @@ selectors, timing, and parser behavior.
 
 - Clean reference notes: `docs/player_stats_dom_notes.md`
 - Raw copied DOM snapshot: `docs/player_stats_html.txt`
+- Current-team (squad) page notes: `docs/current_team_dom_notes.md`
 
 The raw snapshot is intentionally preserved because Angular attributes,
 component names, text placement, and class names can matter for selector work.

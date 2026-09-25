@@ -9,7 +9,7 @@ from scraping_biwenger.shared.config import (
     assert_biwenger_profile_allowed,
     load_biwenger_credentials,
 )
-from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu, scroll_into_view
+from scraping_biwenger.shared.navigation import click_tab_in_horizontal_main_menu
 
 
 def select_table_layout(page, logger=None) -> None:
@@ -40,6 +40,31 @@ def select_table_layout(page, logger=None) -> None:
         logger.info("No table layout selector matched; scraper will wait for table rows.")
 
 
+def scroll_squad_into_view(page, logger=None) -> None:
+    """
+    Best-effort scroll of the Squad tab into view.
+
+    The Squad tab is active by default and the team table renders without
+    clicking it, so a missing or renamed button must not abort the run.
+    Biwenger switched the button from aria-label to title around Sep 22 2026;
+    both are tried for robustness.
+    """
+    selectors = [
+        "segmented-control button[title='Squad']",
+        "segmented-control button[aria-label='Squad']",
+    ]
+    for selector in selectors:
+        try:
+            page.locator(selector).first.scroll_into_view_if_needed(timeout=2000)
+            if logger:
+                logger.info("Scrolled Squad tab into view with selector %s.", selector)
+            return
+        except Exception:
+            continue
+    if logger:
+        logger.info("Squad tab not found for scroll; continuing to table scrape.")
+
+
 def scrape_current_team_snapshot(page, logger=None):
     """
     Navigate from the logged-in app to the team table and return normalized rows.
@@ -47,7 +72,7 @@ def scrape_current_team_snapshot(page, logger=None):
     click_tab_in_horizontal_main_menu(page, "team", logger=logger)
     dismiss_app_popups_if_present(page, logger=logger)
     select_table_layout(page, logger=logger)
-    scroll_into_view(page, "segmented-control button[aria-label='Squad']")
+    scroll_squad_into_view(page, logger=logger)
     raw_df = scrape_basic_team_table(page)
     return transform_current_team(raw_df)
 

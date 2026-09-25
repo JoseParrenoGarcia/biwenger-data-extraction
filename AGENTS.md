@@ -66,6 +66,7 @@ Important current decisions:
 - Supabase schema bootstrap uses the Supabase CLI as a system dependency, not a Python package. Do not add the Supabase CLI to `requirements.txt`.
 - Keep generic Supabase primitives in `supabase_client/`; Biwenger-specific table identity, delete, and delta logic belongs under `scraping_biwenger/current_team/` or `scraping_biwenger/players/`.
 - Player detail DOM notes are available at @docs/player_stats_dom_notes.md. Start there when investigating player scraping selectors, timing, or parser behavior. The raw copied DOM snapshot is at @docs/player_stats_html.txt.
+- Current-team (squad) page DOM notes are available at @docs/current_team_dom_notes.md. Start there when investigating current-team selectors, layout buttons, or the Squad segmented control.
 - If inspecting large copied Biwenger HTML dumps, prefer using subagents or narrow shell searches so the main context is not flooded with raw DOM.
 - Validate dataframe columns and payload schemas before uploads.
 - Keep local automation simple and documented.
