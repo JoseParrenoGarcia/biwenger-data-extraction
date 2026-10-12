@@ -43,6 +43,7 @@ from dashboard.state import (
     seed_market_trends_widget_from_shared,
     sync_market_trends_widget_to_shared,
 )
+from dashboard.valuation import find_similar_market_stats
 
 st.set_page_config(page_title="Market Trends · Biwenger", layout="wide")
 
@@ -423,8 +424,8 @@ with st.container(border=True):
 
 highlighted_slug = display_map.get(highlight_label) if highlight_label != "All" else None
 
-# ── Similar players (by purchase/sales ratio) ─────────────────────────────────
-with st.expander("🔍 Find players with a similar purchase/sales ratio"):
+# ── Similar players ────────────────────────────────────────────────────────────
+with st.expander("🔍 Find similar players"):
     latest_stats = load_latest_market_stats()
     if latest_stats.empty:
         st.info("No stats snapshots available yet.")
@@ -436,36 +437,49 @@ with st.expander("🔍 Find players with a similar purchase/sales ratio"):
             index=default_anchor_index,
             key="dashboard_market_trends_similar_anchor",
         )
-        col_tol, col_n = st.columns(2)
+        col_basis, col_tol, col_n = st.columns([2, 2, 1])
+        with col_basis:
+            similarity_basis = st.radio(
+                "Match peers by",
+                options=["Value", "Purchase/sales ratio"],
+                horizontal=True,
+                help="Value finds similarly priced players. Ratio finds players with similar buyer/seller demand.",
+            )
         with col_tol:
-            tolerance_pct = st.slider("Value tolerance (±%)", min_value=5, max_value=50, value=20, step=1)
+            tolerance_pct = st.slider(f"{similarity_basis} tolerance (±%)", min_value=5, max_value=50, value=20, step=1)
         with col_n:
             top_n = st.slider("Number of peers", min_value=5, max_value=25, value=10, step=1)
 
         anchor_slug = display_map[anchor_label]
         anchor_rows = latest_stats[latest_stats["slug"] == anchor_slug]
-        if anchor_rows.empty or pd.isna(anchor_rows["ratio_purchase_sales"].iloc[0]):
-            st.warning(f"No usable ratio data for **{anchor_label}** yet.")
+        metric = "value" if similarity_basis == "Value" else "ratio_purchase_sales"
+        metric_label = "value" if similarity_basis == "Value" else "ratio"
+        if anchor_rows.empty or pd.isna(anchor_rows[metric].iloc[0]):
+            st.warning(f"No usable {metric_label} data for **{anchor_label}** yet.")
         else:
             anchor_value = anchor_rows["value"].iloc[0]
             anchor_ratio = anchor_rows["ratio_purchase_sales"].iloc[0]
-            lower = anchor_value * (1 - tolerance_pct / 100)
-            upper = anchor_value * (1 + tolerance_pct / 100)
-            candidates = latest_stats[
-                (latest_stats["slug"] != anchor_slug)
-                & latest_stats["ratio_purchase_sales"].notna()
-                & latest_stats["value"].between(lower, upper)
-            ].copy()
-            candidates["ratio_diff"] = (candidates["ratio_purchase_sales"] - anchor_ratio).abs()
-            peers = candidates.sort_values("ratio_diff").head(top_n)
+            peers = find_similar_market_stats(
+                latest_stats,
+                anchor_slug,
+                basis="value" if similarity_basis == "Value" else "ratio",
+                tolerance_pct=tolerance_pct,
+                top_n=top_n,
+            )
 
             if peers.empty:
-                st.info(f"No peers found within ±{tolerance_pct}% of {anchor_label}'s value.")
+                st.info(f"No peers found within ±{tolerance_pct}% of {anchor_label}'s {metric_label}.")
             else:
+                anchor_metric = anchor_value if similarity_basis == "Value" else anchor_ratio
+                anchor_metric_display = (
+                    f"€{anchor_metric:,.0f}" if similarity_basis == "Value" else f"{anchor_metric:.2f}"
+                )
+                anchor_ratio_display = "—" if pd.isna(anchor_ratio) else f"{anchor_ratio:.2f}"
                 st.caption(
                     f"Anchor: **{anchor_label}** — value €{anchor_value:,.0f}, "
-                    f"ratio {anchor_ratio:.2f}. Peers within ±{tolerance_pct}% value, "
-                    "ranked by closest ratio."
+                    f"ratio {anchor_ratio_display}. Peers matched by **{similarity_basis.lower()}** "
+                    f"(anchor {anchor_metric_display}), "
+                    f"within ±{tolerance_pct}%, ranked by closest {metric_label}."
                 )
                 st.dataframe(
                     peers[

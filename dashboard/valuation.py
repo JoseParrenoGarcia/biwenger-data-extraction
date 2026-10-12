@@ -190,6 +190,46 @@ def enrich_market_columns(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def find_similar_market_stats(
+    stats_df: pd.DataFrame,
+    anchor_slug: str,
+    *,
+    basis: str = "value",
+    tolerance_pct: int = 20,
+    top_n: int = 10,
+) -> pd.DataFrame:
+    """Return players closest to an anchor by market value or purchase/sales ratio.
+
+    ``tolerance_pct`` is relative to the anchor metric in either mode. The
+    anchor itself is excluded, and rows without the selected metric are ignored.
+    The returned frame is sorted by absolute distance and includes the
+    ``similarity_diff`` helper column.
+    """
+    metric_by_basis = {
+        "value": "value",
+        "ratio": "ratio_purchase_sales",
+    }
+    if basis not in metric_by_basis:
+        raise ValueError(f"Unknown market similarity basis: {basis}")
+
+    metric = metric_by_basis[basis]
+    if metric not in stats_df.columns or "slug" not in stats_df.columns:
+        return stats_df.iloc[0:0].copy()
+
+    anchor_rows = stats_df[stats_df["slug"] == anchor_slug]
+    if anchor_rows.empty or pd.isna(anchor_rows[metric].iloc[0]):
+        return stats_df.iloc[0:0].copy()
+
+    anchor_metric = float(anchor_rows[metric].iloc[0])
+    lower = anchor_metric * (1 - tolerance_pct / 100)
+    upper = anchor_metric * (1 + tolerance_pct / 100)
+    candidates = stats_df[
+        (stats_df["slug"] != anchor_slug) & stats_df[metric].notna() & stats_df[metric].between(lower, upper)
+    ].copy()
+    candidates["similarity_diff"] = (candidates[metric] - anchor_metric).abs()
+    return candidates.sort_values("similarity_diff", kind="mergesort").head(top_n)
+
+
 def build_points_cohort(
     stats_df: pd.DataFrame,
     *,
