@@ -11,6 +11,7 @@ from dashboard.valuation import (
     enrich_market_columns,
     enrich_player_stats,
     fair_value_from_points,
+    find_similar_market_stats,
     mark_current_team,
     summarize_points_cohort,
 )
@@ -315,3 +316,33 @@ def test_enrich_market_columns_coerces_string_values():
     out = enrich_market_columns(df)
     assert out["market_purchases_pct"].iloc[0] == pytest.approx(15.0)
     assert out["market_sales_pct"].iloc[0] == pytest.approx(0.0)  # coerced NaN → 0
+
+
+def _similar_market_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {"slug": "anchor", "value": 10_000_000, "ratio_purchase_sales": 2.0},
+            {"slug": "value-close", "value": 10_500_000, "ratio_purchase_sales": 4.0},
+            {"slug": "ratio-close", "value": 12_000_000, "ratio_purchase_sales": 2.1},
+            {"slug": "outside", "value": 13_000_000, "ratio_purchase_sales": 2.5},
+        ]
+    )
+
+
+def test_find_similar_market_stats_matches_and_ranks_by_value():
+    peers = find_similar_market_stats(_similar_market_df(), "anchor", tolerance_pct=20)
+
+    assert list(peers["slug"]) == ["value-close", "ratio-close"]
+    assert "anchor" not in peers["slug"].tolist()
+
+
+def test_find_similar_market_stats_matches_and_ranks_by_ratio():
+    peers = find_similar_market_stats(_similar_market_df(), "anchor", basis="ratio", tolerance_pct=20)
+
+    assert list(peers["slug"]) == ["ratio-close"]
+    assert peers["similarity_diff"].iloc[0] == pytest.approx(0.1)
+
+
+def test_find_similar_market_stats_rejects_unknown_basis():
+    with pytest.raises(ValueError, match="Unknown market similarity basis"):
+        find_similar_market_stats(_similar_market_df(), "anchor", basis="points")
