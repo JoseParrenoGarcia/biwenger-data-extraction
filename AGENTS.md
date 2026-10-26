@@ -61,6 +61,13 @@ Important current decisions:
   - `maguette-gueye` for scoring-system menu timeout regressions.
 - For current-team scraper changes, run `make dry-run-team`.
 - Raw commands are documented in `README.md` and `docs/repo_architecture_audit.md` if Make is not convenient.
+- A targeted headed write can be run directly after activating the repository
+  virtualenv: `python -m scraping_biwenger.get_player_stats --headed
+  --player-slug <slug> --upload-batch-size 1`. Targeted slug mode skips player
+  list discovery and uses the normal stats, matches, value-history, checkpoint,
+  and Supabase persistence paths. Before diagnosing the environment, verify the
+  user's activated shell with `which python` and `python --version`; do not
+  assume `.venv` is broken based on a different tool process's interpreter path.
 - Before committing normal code, parser, persistence, or documentation changes, run `make ci` by default. It covers Ruff linting, Ruff format checks, and pytest. Fix issues locally before committing where practical.
 - Do not write to Supabase until dry-run output looks correct and the user explicitly approves a write test. Optional write checks are `make write-players-2` and `make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>`.
 - Supabase schema bootstrap uses the Supabase CLI as a system dependency, not a Python package. Do not add the Supabase CLI to `requirements.txt`.
@@ -69,6 +76,10 @@ Important current decisions:
 - Current-team (squad) page DOM notes are available at @docs/current_team_dom_notes.md. Start there when investigating current-team selectors, layout buttons, or the Squad segmented control.
 - If inspecting large copied Biwenger HTML dumps, prefer using subagents or narrow shell searches so the main context is not flooded with raw DOM.
 - Validate dataframe columns and payload schemas before uploads.
+- Biwenger Value-tab CSV dates can span month names and timezone transitions;
+  parse them with pandas `format="mixed"` so later-month rows are not silently
+  coerced to missing dates. Keep the compact parsed-range and persistence-count
+  diagnostics when changing this path.
 - Keep local automation simple and documented.
 - The supported macOS scheduler path is `launchd` with user LaunchAgents. Keep the operational detail in @launchd/biwenger_scheduler_setup.md rather than duplicating it here.
 - For scheduler work, use `bash_scripts/run_players.sh` and `bash_scripts/run_current_team.sh` as the supported entrypoints.

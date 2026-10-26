@@ -72,3 +72,20 @@ def test_parse_value_csv_text_fixture_normalizes_dates_and_values():
         {"date": "2025-07-19", "market_value_eur": 23010000},
         {"date": "2025-07-20", "market_value_eur": 23130000},
     ]
+
+
+def test_parse_value_csv_text_keeps_rows_when_month_names_change():
+    csv_text = (
+        ";\n"
+        "Mon May 18 2026 17:07:23 GMT+0200 (Central European Summer Time);270000\n"
+        "Sun May 31 2026 17:07:23 GMT+0200 (Central European Summer Time);210000\n"
+        "Mon Oct 26 2026 17:07:23 GMT+0100 (Central European Standard Time);750000\n"
+    )
+
+    df = parse_value_csv_text(csv_text)
+
+    assert df.to_dict(orient="records") == [
+        {"date": "2026-05-18", "market_value_eur": 270000},
+        {"date": "2026-05-31", "market_value_eur": 210000},
+        {"date": "2026-10-26", "market_value_eur": 750000},
+    ]

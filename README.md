@@ -169,6 +169,33 @@ make upload-checkpoint CHECKPOINT_DIR=run_artifacts/player_runs/<run_id>
 `upload-checkpoint` skips Biwenger entirely and uploads rows already saved in a
 checkpoint run folder.
 
+For a single-player headed scrape with an immediate Supabase upload, activate the
+repository virtualenv and run the module directly:
+
+```bash
+source .venv/bin/activate
+python -m scraping_biwenger.get_player_stats \
+  --headed \
+  --player-slug nacho-perez \
+  --upload-batch-size 1
+```
+
+Omit `--dry-run` to enable persistence. The targeted slug mode skips player-list
+discovery, so this is the preferred way to recheck one player's detail, match,
+and value-history tabs. A successful run writes a checkpoint under
+`run_artifacts/player_runs/<run_id>/` and reports the Supabase batch results in
+the terminal. A transient `net::ERR_NETWORK_CHANGED` during the initial
+navigation can occur before login; retry the same command after connectivity is
+stable. Do not infer that the repository virtualenv is broken from a different
+shell or execution context: verify it in the user's activated terminal with
+`which python` and `python --version` before changing the environment.
+
+The player scraper logs compact value-history diagnostics after parsing the
+downloaded CSV and during Supabase persistence. These records include parsed row
+count, date range, value range, existing database rows, and new/changed row
+counts. Use the run log when investigating a player whose stats are current but
+whose value history is missing or stale.
+
 ## Scheduling on macOS
 
 The supported scheduler path is macOS `launchd` with **user LaunchAgents**.
