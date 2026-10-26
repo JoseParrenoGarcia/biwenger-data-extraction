@@ -159,7 +159,10 @@ def parse_value_csv_text(csv_text: str) -> pd.DataFrame:
         s = s.replace("GMT", "").strip()  # "GMT+0200" → "+0200"
         return s
 
-    dt = pd.to_datetime(df[date_col].map(_clean_date), errors="coerce", utc=True)
+    # Biwenger can emit month names that change with the season/timezone
+    # transition. ``format="mixed"`` prevents pandas from inferring the first
+    # row's month format and dropping later rows from the same CSV.
+    dt = pd.to_datetime(df[date_col].map(_clean_date), errors="coerce", utc=True, format="mixed")
 
     # 4) Numeric value
     vals = pd.to_numeric(df[val_col], errors="coerce")
@@ -243,6 +246,23 @@ def scrape_value_history_result_for_player(
     step_started_at = time.time()
     df = _read_price_csv_to_df(dl)
     _log_timing(logger, "Value CSV parse", step_started_at, player_slug=player_slug)
+
+    if logger:
+        if df.empty:
+            logger.warning(
+                "Value CSV parsed zero rows for %s; raw download was received but contained no usable date/value pairs.",
+                player_slug or "(unknown)",
+            )
+        else:
+            logger.info(
+                "Value CSV parsed for %s: rows=%s date_range=%s..%s value_range=%s..%s",
+                player_slug or "(unknown)",
+                len(df),
+                df["date"].min(),
+                df["date"].max(),
+                df["market_value_eur"].min(),
+                df["market_value_eur"].max(),
+            )
 
     # Add optional context (player_name, team, slug, etc.)
     if player_ctx:

@@ -180,6 +180,19 @@ def persist_player_values(value_history_df: pd.DataFrame, *, supabase, logger=No
         new_mask = ~group["date"].isin(existing["date"])
         changed_mask = group["date"].isin(existing["date"]) & (group["market_value_eur"] != group["date"].map(db_map))
 
+        if logger:
+            logger.info(
+                "Value persistence comparison for %s: incoming_rows=%s incoming_dates=%s..%s "
+                "existing_rows=%s new_rows=%s changed_rows=%s",
+                slug,
+                len(group),
+                group["date"].min(),
+                group["date"].max(),
+                len(existing),
+                int(new_mask.sum()),
+                int(changed_mask.sum()),
+            )
+
         changed_rows = group.loc[changed_mask]
         if not changed_rows.empty:
             delete_value_history_dates(
